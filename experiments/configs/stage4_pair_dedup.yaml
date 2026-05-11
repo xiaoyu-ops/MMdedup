@@ -1,0 +1,12 @@
+stage4:
+  embedding_backend: auto
+  model_name: hf-hub:laion/CLIP-ViT-B-16-laion2B-s34B-b88K
+  pretrained:
+  device: auto
+  batch_size: 32
+  joint_method: concat
+  alpha: 0.5
+  tau_cross: 0.95
+  image_quality: resolution
+  cache_dir:
+  max_exact_pairs: 2000000

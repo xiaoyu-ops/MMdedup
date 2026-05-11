@@ -1,0 +1,7 @@
+# Keep planning records trackable, but leave generated experiment payloads local.
+*
+!.gitignore
+!README.md
+!experiment_ledger.csv
+!daily_logs/
+!daily_logs/**

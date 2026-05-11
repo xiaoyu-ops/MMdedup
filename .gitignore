@@ -69,6 +69,7 @@ node_modules/
 
 # ── 配置（含机器相关路径，不入库） ──────────────────────
 *.yaml
+!experiments/configs/stage4_pair_dedup.yaml
 
 # ── 其他 ─────────────────────────────────────────────────
 audio/test.py
