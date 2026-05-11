@@ -7,7 +7,7 @@
 ## Current Starting Point
 
 - Branch: `codex/plan-b-stage4-pair-dedup`
-- Latest validated commit on Mac: `13e9b8b Add Plan B stage4 validation pipeline`
+- Latest validated commit on Mac: `660b370 Add Windows migration task checklist`
 - Mac status before migration:
   - Stage 4 smoke passed.
   - Candidate mining smoke passed.
