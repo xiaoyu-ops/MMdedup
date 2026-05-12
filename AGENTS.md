@@ -385,6 +385,10 @@ Every experiment that may appear in the paper must have a record with:
 Recommended location:
 
 - `experiments/results/plan_b_stage4/`
+- For experiments executed on the Windows RTX 3090 machine, copy/sync the
+  resulting experiment directory back to the Mac after the run. The Mac-side
+  mirror location is:
+  `experiments/results/plan_b_stage4/windows_sync/`.
 
 Recommended files:
 
@@ -396,6 +400,9 @@ Recommended files:
 Hard rules:
 
 - Do not paste numbers into the paper unless they can be traced to the ledger.
+- Windows-generated results must have a Mac-side copy before they are treated
+  as stable source-of-truth records. Keep the Windows original and the Mac copy
+  until the paper submission is complete.
 - Do not report "best" numbers without saving the threshold / config sweep that
   produced them.
 - Do not overwrite result files from previous runs; create a new experiment id.
