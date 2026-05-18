@@ -1,0 +1,108 @@
+{
+  "candidate_funnel": [
+    {
+      "label": "CC3M 200K 数据池",
+      "value": 200000,
+      "unit": "pairs",
+      "note": "已下载并验证的 image-caption pairs"
+    },
+    {
+      "label": "候选 pair-pairs",
+      "value": 500000,
+      "unit": "pair-pairs",
+      "note": "image/text/joint top-k 初筛候选"
+    },
+    {
+      "label": "High-joint 候选池",
+      "value": 129139,
+      "unit": "pair-pairs",
+      "note": "joint >= 0.80 且 image >= 0.60"
+    },
+    {
+      "label": "人工标注目标",
+      "value": 1000,
+      "unit": "pair-pairs",
+      "note": "当前主标注表规模"
+    },
+    {
+      "label": "已完成标注",
+      "value": 0,
+      "unit": "pair-pairs",
+      "note": "来自 annotation_sheet_labeled.csv"
+    }
+  ],
+  "annotation_distribution": [
+    {
+      "label": "重复",
+      "key": "duplicate",
+      "value": 0
+    },
+    {
+      "label": "近重复",
+      "key": "near-duplicate",
+      "value": 0
+    },
+    {
+      "label": "非重复",
+      "key": "not-duplicate",
+      "value": 0
+    },
+    {
+      "label": "未标注",
+      "key": "unlabeled",
+      "value": 1000
+    }
+  ],
+  "phase_progress": [
+    {
+      "label": "Stage 4 实现",
+      "value": 100,
+      "status": "done"
+    },
+    {
+      "label": "CC3M 200K 数据准备",
+      "value": 100,
+      "status": "done"
+    },
+    {
+      "label": "候选挖掘",
+      "value": 100,
+      "status": "done"
+    },
+    {
+      "label": "人工标注",
+      "value": 0,
+      "status": "active"
+    },
+    {
+      "label": "Stage 4 主评价",
+      "value": 0,
+      "status": "blocked"
+    },
+    {
+      "label": "LLaVA 下游验证",
+      "value": 0,
+      "status": "pending"
+    }
+  ],
+  "experiment_runtime": [
+    {
+      "label": "cc3m_subset_200k_20260515",
+      "value": 41.2,
+      "unit": "minutes",
+      "note": "saved_pairs=200000; jpg_count=200000; txt_count=200000; manifest_rows=200000; sampled_images_verified=500"
+    },
+    {
+      "label": "exp_stage4_candidates_200k_manifest_20260516",
+      "value": 76.8,
+      "unit": "minutes",
+      "note": "num_pairs=200000; num_candidates=500000; signals=image|text|joint; method=torch; top_k=10; min_similarity=0.70"
+    },
+    {
+      "label": "exp_stage4_annotation_1000_200k_high_joint_20260516",
+      "value": 0.02,
+      "unit": "minutes",
+      "note": "annotation_rows=1000; audit_rows=200; buckets=very_high:500|high:500; review_sheets=125"
+    }
+  ]
+}

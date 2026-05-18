@@ -1,0 +1,422 @@
+{
+  "updated_at": "2026-05-17T22:09:03+08:00",
+  "target": {
+    "venue": "CIKM 2026 Full Paper",
+    "deadline": "2026-05-23 AoE",
+    "branch": "codex/plan-b-stage4-pair-dedup",
+    "claim": "面向图文训练语料的 image-caption pair 级跨模态去重。"
+  },
+  "summary_cards": [
+    {
+      "label": "CC3M pool",
+      "value": "200,000",
+      "note": "Windows RTX 3090 上已准备的图文对数量"
+    },
+    {
+      "label": "候选 pair-pairs",
+      "value": "500,000",
+      "note": "由 image/text/joint CLIP top-k 挖掘得到"
+    },
+    {
+      "label": "High-joint pool",
+      "value": "129,139",
+      "note": "筛选条件：joint >= 0.80 且 image >= 0.60"
+    },
+    {
+      "label": "标注目标",
+      "value": "1,000",
+      "note": "其中 200 条用于合作者抽查"
+    }
+  ],
+  "phase_progress": [
+    {
+      "name": "Stage 4 实现",
+      "status": "done",
+      "percent": 100,
+      "detail": "已完成 CLIP 图像/文本 embedding、joint embedding、候选挖掘与 keep/drop 流程。"
+    },
+    {
+      "name": "CC3M 200K 数据准备",
+      "status": "done",
+      "percent": 100,
+      "detail": "Windows 端已准备并验证 200,000 个 image-caption sidecar pairs。"
+    },
+    {
+      "name": "候选挖掘",
+      "status": "done",
+      "percent": 100,
+      "detail": "已挖掘 500,000 个候选；high-joint/high-image 池保留 129,139 个。"
+    },
+    {
+      "name": "人工标注",
+      "status": "active",
+      "percent": 0,
+      "detail": "1000 条主标注表是当前正式 P/R/F1 评价的关键阻塞项。"
+    },
+    {
+      "name": "Stage 4 主评价",
+      "status": "blocked",
+      "percent": 0,
+      "detail": "等待人工标注、合作者抽查和 adjudication。"
+    },
+    {
+      "name": "LLaVA 下游验证",
+      "status": "pending",
+      "percent": 0,
+      "detail": "阈值确定后继续准备 A/B/C/D/E 五组数据并运行 LoRA。"
+    }
+  ],
+  "charts": {
+    "candidate_funnel": [
+      {
+        "label": "CC3M 200K 数据池",
+        "value": 200000,
+        "unit": "pairs",
+        "note": "已下载并验证的 image-caption pairs"
+      },
+      {
+        "label": "候选 pair-pairs",
+        "value": 500000,
+        "unit": "pair-pairs",
+        "note": "image/text/joint top-k 初筛候选"
+      },
+      {
+        "label": "High-joint 候选池",
+        "value": 129139,
+        "unit": "pair-pairs",
+        "note": "joint >= 0.80 且 image >= 0.60"
+      },
+      {
+        "label": "人工标注目标",
+        "value": 1000,
+        "unit": "pair-pairs",
+        "note": "当前主标注表规模"
+      },
+      {
+        "label": "已完成标注",
+        "value": 0,
+        "unit": "pair-pairs",
+        "note": "来自 annotation_sheet_labeled.csv"
+      }
+    ],
+    "annotation_distribution": [
+      {
+        "label": "重复",
+        "key": "duplicate",
+        "value": 0
+      },
+      {
+        "label": "近重复",
+        "key": "near-duplicate",
+        "value": 0
+      },
+      {
+        "label": "非重复",
+        "key": "not-duplicate",
+        "value": 0
+      },
+      {
+        "label": "未标注",
+        "key": "unlabeled",
+        "value": 1000
+      }
+    ],
+    "phase_progress": [
+      {
+        "label": "Stage 4 实现",
+        "value": 100,
+        "status": "done"
+      },
+      {
+        "label": "CC3M 200K 数据准备",
+        "value": 100,
+        "status": "done"
+      },
+      {
+        "label": "候选挖掘",
+        "value": 100,
+        "status": "done"
+      },
+      {
+        "label": "人工标注",
+        "value": 0,
+        "status": "active"
+      },
+      {
+        "label": "Stage 4 主评价",
+        "value": 0,
+        "status": "blocked"
+      },
+      {
+        "label": "LLaVA 下游验证",
+        "value": 0,
+        "status": "pending"
+      }
+    ],
+    "experiment_runtime": [
+      {
+        "label": "cc3m_subset_200k_20260515",
+        "value": 41.2,
+        "unit": "minutes",
+        "note": "saved_pairs=200000; jpg_count=200000; txt_count=200000; manifest_rows=200000; sampled_images_verified=500"
+      },
+      {
+        "label": "exp_stage4_candidates_200k_manifest_20260516",
+        "value": 76.8,
+        "unit": "minutes",
+        "note": "num_pairs=200000; num_candidates=500000; signals=image|text|joint; method=torch; top_k=10; min_similarity=0.70"
+      },
+      {
+        "label": "exp_stage4_annotation_1000_200k_high_joint_20260516",
+        "value": 0.02,
+        "unit": "minutes",
+        "note": "annotation_rows=1000; audit_rows=200; buckets=very_high:500|high:500; review_sheets=125"
+      }
+    ]
+  },
+  "plan_requirements": [
+    {
+      "name": "Stage 4 实现",
+      "status": "complete",
+      "required_data": [
+        "image-caption pair id",
+        "图像路径",
+        "caption 文本",
+        "CLIP 图像/文本 embeddings",
+        "joint embedding"
+      ],
+      "current_outputs": [
+        "keepers",
+        "drops",
+        "duplicate groups",
+        "summary / metrics",
+        "Windows 端 embedding cache"
+      ],
+      "evidence": [
+        "pipelines/stage4_pair_dedup.py",
+        "experiments/scripts/mine_stage4_candidates.py",
+        "experiments/results/plan_b_stage4/windows_sync/exp_stage4_candidates_200k_manifest_20260516/metrics.json"
+      ]
+    },
+    {
+      "name": "CC3M Ground Truth 构建",
+      "status": "active",
+      "required_data": [
+        "100K-300K CC3M 数据池",
+        "先挖掘 candidate pair-pairs，再人工标注",
+        "1000 条已标注 pair-pairs",
+        "尽量获得 200 个 positive examples",
+        "20% 合作者抽查子集"
+      ],
+      "current_outputs": [
+        "200K CC3M 数据池",
+        "500K mined candidates",
+        "129,139 个 high-joint/high-image candidates",
+        "1000 条主标注表",
+        "200 条 audit rows"
+      ],
+      "evidence": [
+        "experiments/results/plan_b_stage4/windows_sync/cc3m_subset_200k_20260515/validation_summary.json",
+        "experiments/results/plan_b_stage4/windows_sync/exp_stage4_candidates_200k_high_joint_20260516/metrics.json",
+        "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv"
+      ]
+    },
+    {
+      "name": "Stage 4 主评价",
+      "status": "blocked",
+      "required_data": [
+        "adjudicated human labels",
+        "image-only baseline scores",
+        "text-only baseline scores",
+        "naive union baseline scores",
+        "Stage 4 joint scores"
+      ],
+      "current_outputs": [
+        "评价脚本已存在",
+        "正式指标等待标注结果"
+      ],
+      "evidence": [
+        "experiments/scripts/evaluate_stage4_groundtruth.py",
+        "experiments/scripts/adjudicate_stage4_annotations.py"
+      ]
+    },
+    {
+      "name": "MLLM 下游验证",
+      "status": "pending",
+      "required_data": [
+        "raw split A",
+        "image-only split B",
+        "text-only split C",
+        "naive union split D",
+        "Stage 4 split E",
+        "LLaVA LoRA logs 与 VQAv2/TextVQA metrics"
+      ],
+      "current_outputs": [
+        "尚未开始"
+      ],
+      "evidence": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "name": "系统与效率结果",
+      "status": "partial",
+      "required_data": [
+        "CLIP embedding time",
+        "candidate search time",
+        "端到端 wall-clock time",
+        "GPU peak memory",
+        "throughput"
+      ],
+      "current_outputs": [
+        "已记录 200K candidate mining runtime",
+        "GPU peak memory 尚未记录"
+      ],
+      "evidence": [
+        "experiments/results/plan_b_stage4/experiment_ledger.csv"
+      ]
+    },
+    {
+      "name": "论文修改",
+      "status": "pending",
+      "required_data": [
+        "Stage 4 方法描述",
+        "CC3M ground truth 构建过程",
+        "主评价表",
+        "LLaVA 下游表",
+        "效率表"
+      ],
+      "current_outputs": [
+        "已有修改计划",
+        "正式结果表等待标注与训练"
+      ],
+      "evidence": [
+        "docs/MMdedup修改计划.md",
+        "paper/latex/main.tex"
+      ]
+    }
+  ],
+  "experiments": [
+    {
+      "id": "cc3m_subset_200k_20260515",
+      "dataset": "WeiChow/cc3m train streaming",
+      "hardware": "Windows 11 RTX 3090 Python 3.12.13",
+      "runtime": "41.2 min",
+      "numbers": "saved_pairs=200000; jpg_count=200000; txt_count=200000; manifest_rows=200000; sampled_images_verified=500",
+      "notes": "Data-prep source-of-truth for 200K CC3M pool; raw jpg/txt data remains on Windows at D:\\data\\cc3m_subset_200k"
+    },
+    {
+      "id": "exp_stage4_candidates_200k_manifest_20260516",
+      "dataset": "WeiChow/cc3m 200K manifest",
+      "hardware": "Windows 11 RTX 3090 Python 3.12.13",
+      "runtime": "1.28 h",
+      "numbers": "num_pairs=200000; num_candidates=500000; signals=image|text|joint; method=torch; top_k=10; min_similarity=0.70",
+      "notes": "200K candidate mining for formal annotation pool; embedding cache remains on Windows for now"
+    },
+    {
+      "id": "exp_stage4_candidates_200k_high_joint_20260516",
+      "dataset": "WeiChow/cc3m 200K candidate pairs",
+      "hardware": "Windows 11 RTX 3090 Python 3.12.13",
+      "runtime": "n/a",
+      "numbers": "source_candidates=500000; filter=joint>=0.80 & image>=0.60; candidates=129139",
+      "notes": "Targeted high-joint/high-image candidate pool for higher positive-density annotation"
+    },
+    {
+      "id": "exp_stage4_annotation_1000_200k_high_joint_20260516",
+      "dataset": "WeiChow/cc3m 200K high-joint candidate pairs",
+      "hardware": "Windows 11 RTX 3090 Python 3.12.13",
+      "runtime": "1.1 s",
+      "numbers": "annotation_rows=1000; audit_rows=200; buckets=very_high:500|high:500; review_sheets=125",
+      "notes": "Preferred primary human annotation sheet; sampled from high-joint/high-image candidates to reduce text-only/template false positives"
+    }
+  ],
+  "annotation": {
+    "total": 1000,
+    "done": 0,
+    "remaining": 1000,
+    "percent": 0.0,
+    "positives": 0,
+    "audit_rows": 200,
+    "counts": {
+      "duplicate": 0,
+      "near-duplicate": 0,
+      "not-duplicate": 0,
+      "unlabeled": 1000
+    },
+    "source_csv": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv",
+    "labeled_csv": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv",
+    "review_sheets": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/review_sheets"
+  },
+  "artifacts": [
+    {
+      "title": "Primary annotation CSV",
+      "path": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv"
+    },
+    {
+      "title": "Labeled annotation CSV",
+      "path": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv"
+    },
+    {
+      "title": "Review sheets",
+      "path": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/review_sheets/"
+    },
+    {
+      "title": "Experiment ledger",
+      "path": "experiments/results/plan_b_stage4/experiment_ledger.csv"
+    },
+    {
+      "title": "Daily log",
+      "path": "experiments/results/plan_b_stage4/daily_logs/2026-05-16.md"
+    }
+  ],
+  "data_exports": [
+    {
+      "title": "Dashboard status JSON",
+      "href": "data/status.json",
+      "description": "Dashboard 使用的完整状态快照。"
+    },
+    {
+      "title": "图表数据 JSON",
+      "href": "data/charts.json",
+      "description": "candidate funnel、标注分布、阶段进度和实验耗时的图表数据。"
+    },
+    {
+      "title": "方案数据需求 JSON",
+      "href": "data/plan_requirements.json",
+      "description": "每个 Plan B 产物需要的数据、当前产物和证据路径。"
+    },
+    {
+      "title": "最新标注状态 JSON",
+      "href": "data/latest_annotation_status.json",
+      "description": "当前标签数量、标注进度和输出路径。"
+    },
+    {
+      "title": "实验 ledger CSV",
+      "href": "data/experiment_ledger.csv",
+      "description": "source-of-truth 实验台账快照。"
+    }
+  ],
+  "risks": [
+    {
+      "level": "high",
+      "title": "人工标注尚未完成",
+      "detail": "1000 条 high-joint 标注表完成前，Checkpoint 3 的 P/R/F1 不能正式计算。"
+    },
+    {
+      "level": "medium",
+      "title": "embedding cache 仍只在 Windows 端",
+      "detail": "200K CLIP embedding cache 约 762 MB，目前尚未完整镜像回 Mac。"
+    },
+    {
+      "level": "medium",
+      "title": "LLaVA 下游验证尚未开始",
+      "detail": "A/B/C/D/E 五组 LoRA 训练需要在标注和 Stage 4 阈值选择之后继续推进。"
+    }
+  ],
+  "next_steps": [
+    "完成 high-joint 1000 条主标注表的人工标注。",
+    "让合作者抽查 200 条 audit rows，并计算一致率。",
+    "基于 adjudicated labels 计算 Stage 4 vs image-only/text-only/naive-union 的 P/R/F1。",
+    "确定阈值后准备 A/B/C/D/E 五组 LLaVA 训练数据划分。"
+  ]
+}

@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Stage 4 实现",
+    "status": "complete",
+    "required_data": [
+      "image-caption pair id",
+      "图像路径",
+      "caption 文本",
+      "CLIP 图像/文本 embeddings",
+      "joint embedding"
+    ],
+    "current_outputs": [
+      "keepers",
+      "drops",
+      "duplicate groups",
+      "summary / metrics",
+      "Windows 端 embedding cache"
+    ],
+    "evidence": [
+      "pipelines/stage4_pair_dedup.py",
+      "experiments/scripts/mine_stage4_candidates.py",
+      "experiments/results/plan_b_stage4/windows_sync/exp_stage4_candidates_200k_manifest_20260516/metrics.json"
+    ]
+  },
+  {
+    "name": "CC3M Ground Truth 构建",
+    "status": "active",
+    "required_data": [
+      "100K-300K CC3M 数据池",
+      "先挖掘 candidate pair-pairs，再人工标注",
+      "1000 条已标注 pair-pairs",
+      "尽量获得 200 个 positive examples",
+      "20% 合作者抽查子集"
+    ],
+    "current_outputs": [
+      "200K CC3M 数据池",
+      "500K mined candidates",
+      "129,139 个 high-joint/high-image candidates",
+      "1000 条主标注表",
+      "200 条 audit rows"
+    ],
+    "evidence": [
+      "experiments/results/plan_b_stage4/windows_sync/cc3m_subset_200k_20260515/validation_summary.json",
+      "experiments/results/plan_b_stage4/windows_sync/exp_stage4_candidates_200k_high_joint_20260516/metrics.json",
+      "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv"
+    ]
+  },
+  {
+    "name": "Stage 4 主评价",
+    "status": "blocked",
+    "required_data": [
+      "adjudicated human labels",
+      "image-only baseline scores",
+      "text-only baseline scores",
+      "naive union baseline scores",
+      "Stage 4 joint scores"
+    ],
+    "current_outputs": [
+      "评价脚本已存在",
+      "正式指标等待标注结果"
+    ],
+    "evidence": [
+      "experiments/scripts/evaluate_stage4_groundtruth.py",
+      "experiments/scripts/adjudicate_stage4_annotations.py"
+    ]
+  },
+  {
+    "name": "MLLM 下游验证",
+    "status": "pending",
+    "required_data": [
+      "raw split A",
+      "image-only split B",
+      "text-only split C",
+      "naive union split D",
+      "Stage 4 split E",
+      "LLaVA LoRA logs 与 VQAv2/TextVQA metrics"
+    ],
+    "current_outputs": [
+      "尚未开始"
+    ],
+    "evidence": [
+      "AGENTS.md"
+    ]
+  },
+  {
+    "name": "系统与效率结果",
+    "status": "partial",
+    "required_data": [
+      "CLIP embedding time",
+      "candidate search time",
+      "端到端 wall-clock time",
+      "GPU peak memory",
+      "throughput"
+    ],
+    "current_outputs": [
+      "已记录 200K candidate mining runtime",
+      "GPU peak memory 尚未记录"
+    ],
+    "evidence": [
+      "experiments/results/plan_b_stage4/experiment_ledger.csv"
+    ]
+  },
+  {
+    "name": "论文修改",
+    "status": "pending",
+    "required_data": [
+      "Stage 4 方法描述",
+      "CC3M ground truth 构建过程",
+      "主评价表",
+      "LLaVA 下游表",
+      "效率表"
+    ],
+    "current_outputs": [
+      "已有修改计划",
+      "正式结果表等待标注与训练"
+    ],
+    "evidence": [
+      "docs/MMdedup修改计划.md",
+      "paper/latex/main.tex"
+    ]
+  }
+]

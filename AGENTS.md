@@ -419,13 +419,54 @@ Minimum source-of-truth files:
 - `experiments/results/plan_b_stage4/<experiment_id>/stdout.log`
 - `experiments/results/plan_b_stage4/<experiment_id>/stderr.log`
 
+## Stage 4 Dashboard Rules
+
+The project dashboard is a lightweight front end for current progress, required
+Plan B data, experiment status, annotation status, and source-of-truth exports.
+
+Dashboard location:
+
+- `docs/stage4_dashboard/`
+
+Dashboard data generator:
+
+- `experiments/scripts/build_stage4_dashboard_data.py`
+
+Required update rule:
+
+- After every experiment that updates the ledger, metrics, annotation status, or
+  stage progress, rerun:
+  `uv run python experiments/scripts/build_stage4_dashboard_data.py`
+- Treat `docs/stage4_dashboard/data/status.json` as the current front-end
+  snapshot.
+- The dashboard must expose plan-relevant data through front-end-readable files
+  under `docs/stage4_dashboard/data/`, including:
+  - `status.json`
+  - `plan_requirements.json`
+  - `latest_annotation_status.json`
+  - `experiment_ledger.csv`
+
+Hard rules:
+
+- Do not use the dashboard as the source of truth. The source of truth remains
+  the experiment ledger, metrics/config/log files, annotation CSVs, and daily
+  logs.
+- Do use the dashboard as the public/project-facing view of the current
+  source-of-truth state.
+- If the dashboard and ledger disagree, update the ledger or metrics first, then
+  regenerate the dashboard.
+- If the dashboard is deployed under a domain, deploy the full
+  `docs/stage4_dashboard/` directory so the JSON/CSV exports remain available.
+
 Required paper-number workflow:
 
 1. Run experiment and save raw outputs.
 2. Compute metrics into `metrics.json` or `metrics.csv`.
 3. Add / update one row in `experiment_ledger.csv`.
-4. Only then copy the number into the paper table.
-5. In the paper working notes, cite the experiment id next to each table row.
+4. Regenerate the dashboard:
+   `uv run python experiments/scripts/build_stage4_dashboard_data.py`
+5. Only then copy the number into the paper table.
+6. In the paper working notes, cite the experiment id next to each table row.
 
 ## Current Priority Order
 

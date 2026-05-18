@@ -1,0 +1,17 @@
+{
+  "total": 1000,
+  "done": 0,
+  "remaining": 1000,
+  "percent": 0.0,
+  "positives": 0,
+  "audit_rows": 200,
+  "counts": {
+    "duplicate": 0,
+    "near-duplicate": 0,
+    "not-duplicate": 0,
+    "unlabeled": 1000
+  },
+  "source_csv": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv",
+  "labeled_csv": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv",
+  "review_sheets": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/review_sheets"
+}
