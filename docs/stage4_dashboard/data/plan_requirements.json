@@ -36,18 +36,20 @@
       "200K CC3M 数据池",
       "500K mined candidates",
       "129,139 个 high-joint/high-image candidates",
-      "1000 条主标注表",
-      "200 条 audit rows"
+      "1000 条已标注主标注表",
+      "200 条 audit rows",
+      "adjudicated ground truth"
     ],
     "evidence": [
       "experiments/results/plan_b_stage4/windows_sync/cc3m_subset_200k_20260515/validation_summary.json",
       "experiments/results/plan_b_stage4/windows_sync/exp_stage4_candidates_200k_high_joint_20260516/metrics.json",
-      "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv"
+      "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv",
+      "experiments/results/plan_b_stage4/exp_stage4_adjudicated_1000_200k_high_joint_20260519/adjudicated_annotations.csv"
     ]
   },
   {
     "name": "Stage 4 主评价",
-    "status": "blocked",
+    "status": "active",
     "required_data": [
       "adjudicated human labels",
       "image-only baseline scores",
@@ -56,12 +58,16 @@
       "Stage 4 joint scores"
     ],
     "current_outputs": [
-      "评价脚本已存在",
-      "正式指标等待标注结果"
+      "1000 条 adjudicated labels",
+      "image/text/naive_union/joint/max 阈值扫描结果",
+      "per-threshold metrics CSV",
+      "metrics JSON"
     ],
     "evidence": [
       "experiments/scripts/evaluate_stage4_groundtruth.py",
-      "experiments/scripts/adjudicate_stage4_annotations.py"
+      "experiments/scripts/adjudicate_stage4_annotations.py",
+      "experiments/results/plan_b_stage4/exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json",
+      "experiments/results/plan_b_stage4/exp_stage4_eval_1000_200k_high_joint_20260519/per_threshold_metrics.csv"
     ]
   },
   {

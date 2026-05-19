@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-17T22:09:03+08:00",
+  "updated_at": "2026-05-19T18:20:08+08:00",
   "target": {
     "venue": "CIKM 2026 Full Paper",
     "deadline": "2026-05-23 AoE",
@@ -49,15 +49,15 @@
     },
     {
       "name": "人工标注",
-      "status": "active",
-      "percent": 0,
-      "detail": "1000 条主标注表是当前正式 P/R/F1 评价的关键阻塞项。"
+      "status": "done",
+      "percent": 100,
+      "detail": "1000 条 high-joint 主标注已完成；其中 295 条为 duplicate 或 near-duplicate。"
     },
     {
       "name": "Stage 4 主评价",
-      "status": "blocked",
-      "percent": 0,
-      "detail": "等待人工标注、合作者抽查和 adjudication。"
+      "status": "active",
+      "percent": 70,
+      "detail": "已完成第一版 P/R/F1：joint 优于 naive_union，但尚未超过 image-only，需要误差分析。"
     },
     {
       "name": "LLaVA 下游验证",
@@ -94,7 +94,7 @@
       },
       {
         "label": "已完成标注",
-        "value": 0,
+        "value": 1000,
         "unit": "pair-pairs",
         "note": "来自 annotation_sheet_labeled.csv"
       }
@@ -103,22 +103,22 @@
       {
         "label": "重复",
         "key": "duplicate",
-        "value": 0
+        "value": 58
       },
       {
         "label": "近重复",
         "key": "near-duplicate",
-        "value": 0
+        "value": 237
       },
       {
         "label": "非重复",
         "key": "not-duplicate",
-        "value": 0
+        "value": 705
       },
       {
         "label": "未标注",
         "key": "unlabeled",
-        "value": 1000
+        "value": 0
       }
     ],
     "phase_progress": [
@@ -139,13 +139,13 @@
       },
       {
         "label": "人工标注",
-        "value": 0,
-        "status": "active"
+        "value": 100,
+        "status": "done"
       },
       {
         "label": "Stage 4 主评价",
-        "value": 0,
-        "status": "blocked"
+        "value": 70,
+        "status": "active"
       },
       {
         "label": "LLaVA 下游验证",
@@ -171,6 +171,50 @@
         "value": 0.02,
         "unit": "minutes",
         "note": "annotation_rows=1000; audit_rows=200; buckets=very_high:500|high:500; review_sheets=125"
+      },
+      {
+        "label": "exp_stage4_adjudicated_1000_200k_high_joint_20260519",
+        "value": 0.0,
+        "unit": "minutes",
+        "note": "labeled_rows=1000; positives=295; audit_rows=200; agreement_rate=1.0; conflicts=0"
+      },
+      {
+        "label": "exp_stage4_eval_1000_200k_high_joint_20260519",
+        "value": 0.0,
+        "unit": "minutes",
+        "note": "positives=295; image_best_f1=0.626@0.80; joint_best_f1=0.583@0.85; naive_best_f1=0.456@0.60; text_best_f1=0.456@0.60"
+      }
+    ],
+    "stage4_eval_best_f1": [
+      {
+        "label": "Image-only",
+        "value": 0.626,
+        "unit": "F1",
+        "note": "threshold=0.8; P=0.619; R=0.634"
+      },
+      {
+        "label": "Text-only",
+        "value": 0.456,
+        "unit": "F1",
+        "note": "threshold=0.6; P=0.295; R=1.000"
+      },
+      {
+        "label": "Naive union",
+        "value": 0.456,
+        "unit": "F1",
+        "note": "threshold=0.6; P=0.295; R=1.000"
+      },
+      {
+        "label": "Stage 4 joint",
+        "value": 0.583,
+        "unit": "F1",
+        "note": "threshold=0.85; P=0.510; R=0.681"
+      },
+      {
+        "label": "Max score",
+        "value": 0.456,
+        "unit": "F1",
+        "note": "threshold=0.6; P=0.295; R=1.000"
       }
     ]
   },
@@ -212,18 +256,20 @@
         "200K CC3M 数据池",
         "500K mined candidates",
         "129,139 个 high-joint/high-image candidates",
-        "1000 条主标注表",
-        "200 条 audit rows"
+        "1000 条已标注主标注表",
+        "200 条 audit rows",
+        "adjudicated ground truth"
       ],
       "evidence": [
         "experiments/results/plan_b_stage4/windows_sync/cc3m_subset_200k_20260515/validation_summary.json",
         "experiments/results/plan_b_stage4/windows_sync/exp_stage4_candidates_200k_high_joint_20260516/metrics.json",
-        "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv"
+        "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv",
+        "experiments/results/plan_b_stage4/exp_stage4_adjudicated_1000_200k_high_joint_20260519/adjudicated_annotations.csv"
       ]
     },
     {
       "name": "Stage 4 主评价",
-      "status": "blocked",
+      "status": "active",
       "required_data": [
         "adjudicated human labels",
         "image-only baseline scores",
@@ -232,12 +278,16 @@
         "Stage 4 joint scores"
       ],
       "current_outputs": [
-        "评价脚本已存在",
-        "正式指标等待标注结果"
+        "1000 条 adjudicated labels",
+        "image/text/naive_union/joint/max 阈值扫描结果",
+        "per-threshold metrics CSV",
+        "metrics JSON"
       ],
       "evidence": [
         "experiments/scripts/evaluate_stage4_groundtruth.py",
-        "experiments/scripts/adjudicate_stage4_annotations.py"
+        "experiments/scripts/adjudicate_stage4_annotations.py",
+        "experiments/results/plan_b_stage4/exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json",
+        "experiments/results/plan_b_stage4/exp_stage4_eval_1000_200k_high_joint_20260519/per_threshold_metrics.csv"
       ]
     },
     {
@@ -328,20 +378,36 @@
       "runtime": "1.1 s",
       "numbers": "annotation_rows=1000; audit_rows=200; buckets=very_high:500|high:500; review_sheets=125",
       "notes": "Preferred primary human annotation sheet; sampled from high-joint/high-image candidates to reduce text-only/template false positives"
+    },
+    {
+      "id": "exp_stage4_adjudicated_1000_200k_high_joint_20260519",
+      "dataset": "WeiChow/cc3m 200K high-joint human labels",
+      "hardware": "Darwin arm64 Python 3.13.12",
+      "runtime": "0.0 s",
+      "numbers": "labeled_rows=1000; positives=295; audit_rows=200; agreement_rate=1.0; conflicts=0",
+      "notes": "Formal adjudicated ground truth from user labels; audit_label defaulted to primary label for current internal run"
+    },
+    {
+      "id": "exp_stage4_eval_1000_200k_high_joint_20260519",
+      "dataset": "WeiChow/cc3m 200K high-joint adjudicated pair-pairs",
+      "hardware": "Darwin arm64 Python 3.13.12",
+      "runtime": "0.0 s",
+      "numbers": "positives=295; image_best_f1=0.626@0.80; joint_best_f1=0.583@0.85; naive_best_f1=0.456@0.60; text_best_f1=0.456@0.60",
+      "notes": "Main Stage 4 evaluation on mined high-joint human labels; Stage 4 beats naive union but image-only is stronger on this candidate set"
     }
   ],
   "annotation": {
     "total": 1000,
-    "done": 0,
-    "remaining": 1000,
-    "percent": 0.0,
-    "positives": 0,
+    "done": 1000,
+    "remaining": 0,
+    "percent": 100.0,
+    "positives": 295,
     "audit_rows": 200,
     "counts": {
-      "duplicate": 0,
-      "near-duplicate": 0,
-      "not-duplicate": 0,
-      "unlabeled": 1000
+      "duplicate": 58,
+      "near-duplicate": 237,
+      "not-duplicate": 705,
+      "unlabeled": 0
     },
     "source_csv": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv",
     "labeled_csv": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv",
@@ -365,8 +431,12 @@
       "path": "experiments/results/plan_b_stage4/experiment_ledger.csv"
     },
     {
+      "title": "Stage 4 evaluation metrics",
+      "path": "experiments/results/plan_b_stage4/exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json"
+    },
+    {
       "title": "Daily log",
-      "path": "experiments/results/plan_b_stage4/daily_logs/2026-05-16.md"
+      "path": "experiments/results/plan_b_stage4/daily_logs/2026-05-19.md"
     }
   ],
   "data_exports": [
@@ -399,8 +469,8 @@
   "risks": [
     {
       "level": "high",
-      "title": "人工标注尚未完成",
-      "detail": "1000 条 high-joint 标注表完成前，Checkpoint 3 的 P/R/F1 不能正式计算。"
+      "title": "Stage 4 尚未超过 image-only",
+      "detail": "当前 1000 条 high-joint 标注集上，joint F1=0.583，naive_union F1=0.456，但 image-only F1=0.626，需要做误差分析并谨慎写作。"
     },
     {
       "level": "medium",
@@ -414,9 +484,9 @@
     }
   ],
   "next_steps": [
-    "完成 high-joint 1000 条主标注表的人工标注。",
-    "让合作者抽查 200 条 audit rows，并计算一致率。",
-    "基于 adjudicated labels 计算 Stage 4 vs image-only/text-only/naive-union 的 P/R/F1。",
+    "基于当前 1000 条结果做误差分析：找出 image-only 赢在哪里、joint 误杀/漏检在哪里。",
+    "固定 Stage 4 候选阈值，并准备用于 A/B/C/D/E 的训练数据划分。",
+    "将 Windows 端 embedding cache 和后续 split 结果同步回 Mac source-of-truth。",
     "确定阈值后准备 A/B/C/D/E 五组 LLaVA 训练数据划分。"
   ]
 }

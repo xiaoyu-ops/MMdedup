@@ -51,6 +51,10 @@ function renderCharts(charts) {
     valueFormatter: (value) => `${value}%`,
     maxMode: "fixed100",
   });
+  renderBarChart("stage4EvalChart", charts.stage4_eval_best_f1 || [], {
+    valueFormatter: (value) => value.toFixed(3),
+    fixedMax: 1,
+  });
   renderBarChart("runtimeChart", charts.experiment_runtime, {
     valueFormatter: (value) => `${value} min`,
     maxMode: "local",
@@ -60,9 +64,11 @@ function renderCharts(charts) {
 function renderBarChart(rootId, rows, options = {}) {
   const root = document.getElementById(rootId);
   root.innerHTML = "";
-  const maxValue = options.maxMode === "fixed100"
-    ? 100
-    : Math.max(1, ...rows.map((row) => Number(row.value || 0)));
+  const maxValue = options.fixedMax
+    ? options.fixedMax
+    : options.maxMode === "fixed100"
+      ? 100
+      : Math.max(1, ...rows.map((row) => Number(row.value || 0)));
   rows.forEach((row) => {
     const value = Number(row.value || 0);
     const item = el("div", "chart-row");

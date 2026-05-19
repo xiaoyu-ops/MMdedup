@@ -27,8 +27,8 @@
         <h2>当前状态</h2>
         <p>
           目前已经从小规模 smoke test 推进到 200K CC3M 数据池。
-          候选挖掘已经完成；现在最关键的阻塞项是人工标注，
-          标注完成后才能生成正式的 Stage 4 评价表。
+          候选挖掘、1000 条人工标注和第一版 Stage 4 主评价已经完成；
+          现在最关键的是误差分析、阈值固定和 LLaVA A/B/C/D/E 训练划分。
         </p>
         <div class="actions">
           <a href="http://127.0.0.1:8765" class="button primary">打开本地标注工具</a>
@@ -61,6 +61,10 @@
         <article class="chart-card">
           <h3>阶段进度</h3>
           <div id="phaseProgressChart" class="bar-chart"></div>
+        </article>
+        <article class="chart-card">
+          <h3>主评价最佳 F1</h3>
+          <div id="stage4EvalChart" class="bar-chart compact"></div>
         </article>
         <article class="chart-card">
           <h3>实验耗时</h3>

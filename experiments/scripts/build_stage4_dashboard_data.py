@@ -40,8 +40,8 @@ def main() -> int:
         "risks": [
             {
                 "level": "high",
-                "title": "人工标注尚未完成",
-                "detail": "1000 条 high-joint 标注表完成前，Checkpoint 3 的 P/R/F1 不能正式计算。",
+                "title": "Stage 4 尚未超过 image-only",
+                "detail": "当前 1000 条 high-joint 标注集上，joint F1=0.583，naive_union F1=0.456，但 image-only F1=0.626，需要做误差分析并谨慎写作。",
             },
             {
                 "level": "medium",
@@ -55,9 +55,9 @@ def main() -> int:
             },
         ],
         "next_steps": [
-            "完成 high-joint 1000 条主标注表的人工标注。",
-            "让合作者抽查 200 条 audit rows，并计算一致率。",
-            "基于 adjudicated labels 计算 Stage 4 vs image-only/text-only/naive-union 的 P/R/F1。",
+            "基于当前 1000 条结果做误差分析：找出 image-only 赢在哪里、joint 误杀/漏检在哪里。",
+            "固定 Stage 4 候选阈值，并准备用于 A/B/C/D/E 的训练数据划分。",
+            "将 Windows 端 embedding cache 和后续 split 结果同步回 Mac source-of-truth。",
             "确定阈值后准备 A/B/C/D/E 五组 LLaVA 训练数据划分。",
         ],
     }
@@ -119,15 +119,15 @@ def _phase_progress() -> list[dict[str, str | int]]:
         },
         {
             "name": "人工标注",
-            "status": "active",
+            "status": "done",
             "percent": _annotation_percent(),
-            "detail": "1000 条主标注表是当前正式 P/R/F1 评价的关键阻塞项。",
+            "detail": "1000 条 high-joint 主标注已完成；其中 295 条为 duplicate 或 near-duplicate。",
         },
         {
             "name": "Stage 4 主评价",
-            "status": "blocked",
-            "percent": 0,
-            "detail": "等待人工标注、合作者抽查和 adjudication。",
+            "status": "active",
+            "percent": 70,
+            "detail": "已完成第一版 P/R/F1：joint 优于 naive_union，但尚未超过 image-only，需要误差分析。",
         },
         {
             "name": "LLaVA 下游验证",
@@ -177,18 +177,20 @@ def _plan_requirements() -> list[dict[str, object]]:
                 "200K CC3M 数据池",
                 "500K mined candidates",
                 "129,139 个 high-joint/high-image candidates",
-                "1000 条主标注表",
+                "1000 条已标注主标注表",
                 "200 条 audit rows",
+                "adjudicated ground truth",
             ],
             "evidence": [
                 "experiments/results/plan_b_stage4/windows_sync/cc3m_subset_200k_20260515/validation_summary.json",
                 "experiments/results/plan_b_stage4/windows_sync/exp_stage4_candidates_200k_high_joint_20260516/metrics.json",
-                "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv",
+                "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv",
+                "experiments/results/plan_b_stage4/exp_stage4_adjudicated_1000_200k_high_joint_20260519/adjudicated_annotations.csv",
             ],
         },
         {
             "name": "Stage 4 主评价",
-            "status": "blocked",
+            "status": "active",
             "required_data": [
                 "adjudicated human labels",
                 "image-only baseline scores",
@@ -197,12 +199,16 @@ def _plan_requirements() -> list[dict[str, object]]:
                 "Stage 4 joint scores",
             ],
             "current_outputs": [
-                "评价脚本已存在",
-                "正式指标等待标注结果",
+                "1000 条 adjudicated labels",
+                "image/text/naive_union/joint/max 阈值扫描结果",
+                "per-threshold metrics CSV",
+                "metrics JSON",
             ],
             "evidence": [
                 "experiments/scripts/evaluate_stage4_groundtruth.py",
                 "experiments/scripts/adjudicate_stage4_annotations.py",
+                "experiments/results/plan_b_stage4/exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json",
+                "experiments/results/plan_b_stage4/exp_stage4_eval_1000_200k_high_joint_20260519/per_threshold_metrics.csv",
             ],
         },
         {
@@ -269,6 +275,8 @@ def _experiments() -> list[dict[str, str]]:
         "exp_stage4_candidates_200k_manifest_20260516",
         "exp_stage4_candidates_200k_high_joint_20260516",
         "exp_stage4_annotation_1000_200k_high_joint_20260516",
+        "exp_stage4_adjudicated_1000_200k_high_joint_20260519",
+        "exp_stage4_eval_1000_200k_high_joint_20260519",
     ]
     rows = []
     ledger = RESULTS / "experiment_ledger.csv"
@@ -355,6 +363,7 @@ def _charts(annotation: dict[str, object]) -> dict[str, list[dict[str, object]]]
             for phase in _phase_progress()
         ],
         "experiment_runtime": _runtime_chart(),
+        "stage4_eval_best_f1": _stage4_eval_chart(),
     }
 
 
@@ -410,8 +419,12 @@ def _artifacts() -> list[dict[str, str]]:
             "path": "experiments/results/plan_b_stage4/experiment_ledger.csv",
         },
         {
+            "title": "Stage 4 evaluation metrics",
+            "path": "experiments/results/plan_b_stage4/exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json",
+        },
+        {
             "title": "Daily log",
-            "path": "experiments/results/plan_b_stage4/daily_logs/2026-05-16.md",
+            "path": "experiments/results/plan_b_stage4/daily_logs/2026-05-19.md",
         },
     ]
 
@@ -429,6 +442,34 @@ def _runtime_chart() -> list[dict[str, object]]:
                 "value": round(seconds / 60, 2),
                 "unit": "minutes",
                 "note": exp["numbers"],
+            }
+        )
+    return rows
+
+
+def _stage4_eval_chart() -> list[dict[str, object]]:
+    metrics = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
+    best_by_score = metrics.get("best_by_score", {})
+    if not isinstance(best_by_score, dict):
+        return []
+    labels = {
+        "image": "Image-only",
+        "text": "Text-only",
+        "naive_union": "Naive union",
+        "joint": "Stage 4 joint",
+        "max": "Max score",
+    }
+    rows = []
+    for key in ["image", "text", "naive_union", "joint", "max"]:
+        item = best_by_score.get(key, {})
+        if not isinstance(item, dict) or "f1" not in item:
+            continue
+        rows.append(
+            {
+                "label": labels[key],
+                "value": round(float(item["f1"]), 3),
+                "unit": "F1",
+                "note": f"threshold={item.get('threshold')}; P={float(item.get('precision', 0)):.3f}; R={float(item.get('recall', 0)):.3f}",
             }
         )
     return rows

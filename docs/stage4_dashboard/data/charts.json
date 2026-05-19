@@ -26,7 +26,7 @@
     },
     {
       "label": "已完成标注",
-      "value": 0,
+      "value": 1000,
       "unit": "pair-pairs",
       "note": "来自 annotation_sheet_labeled.csv"
     }
@@ -35,22 +35,22 @@
     {
       "label": "重复",
       "key": "duplicate",
-      "value": 0
+      "value": 58
     },
     {
       "label": "近重复",
       "key": "near-duplicate",
-      "value": 0
+      "value": 237
     },
     {
       "label": "非重复",
       "key": "not-duplicate",
-      "value": 0
+      "value": 705
     },
     {
       "label": "未标注",
       "key": "unlabeled",
-      "value": 1000
+      "value": 0
     }
   ],
   "phase_progress": [
@@ -71,13 +71,13 @@
     },
     {
       "label": "人工标注",
-      "value": 0,
-      "status": "active"
+      "value": 100,
+      "status": "done"
     },
     {
       "label": "Stage 4 主评价",
-      "value": 0,
-      "status": "blocked"
+      "value": 70,
+      "status": "active"
     },
     {
       "label": "LLaVA 下游验证",
@@ -103,6 +103,50 @@
       "value": 0.02,
       "unit": "minutes",
       "note": "annotation_rows=1000; audit_rows=200; buckets=very_high:500|high:500; review_sheets=125"
+    },
+    {
+      "label": "exp_stage4_adjudicated_1000_200k_high_joint_20260519",
+      "value": 0.0,
+      "unit": "minutes",
+      "note": "labeled_rows=1000; positives=295; audit_rows=200; agreement_rate=1.0; conflicts=0"
+    },
+    {
+      "label": "exp_stage4_eval_1000_200k_high_joint_20260519",
+      "value": 0.0,
+      "unit": "minutes",
+      "note": "positives=295; image_best_f1=0.626@0.80; joint_best_f1=0.583@0.85; naive_best_f1=0.456@0.60; text_best_f1=0.456@0.60"
+    }
+  ],
+  "stage4_eval_best_f1": [
+    {
+      "label": "Image-only",
+      "value": 0.626,
+      "unit": "F1",
+      "note": "threshold=0.8; P=0.619; R=0.634"
+    },
+    {
+      "label": "Text-only",
+      "value": 0.456,
+      "unit": "F1",
+      "note": "threshold=0.6; P=0.295; R=1.000"
+    },
+    {
+      "label": "Naive union",
+      "value": 0.456,
+      "unit": "F1",
+      "note": "threshold=0.6; P=0.295; R=1.000"
+    },
+    {
+      "label": "Stage 4 joint",
+      "value": 0.583,
+      "unit": "F1",
+      "note": "threshold=0.85; P=0.510; R=0.681"
+    },
+    {
+      "label": "Max score",
+      "value": 0.456,
+      "unit": "F1",
+      "note": "threshold=0.6; P=0.295; R=1.000"
     }
   ]
 }
