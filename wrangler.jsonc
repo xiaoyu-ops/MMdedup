@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mmdedup-stage4-dashboard",
+  "compatibility_date": "2026-05-19",
+  "assets": {
+    "directory": "./docs/stage4_dashboard",
+    "not_found_handling": "404-page"
+  }
+}
