@@ -35,6 +35,7 @@ def main() -> int:
         "plan_requirements": _plan_requirements(),
         "experiments": _experiments(),
         "paper_writing_data": _paper_writing_data(annotation),
+        "plan_data_matrix": _plan_data_matrix(annotation),
         "annotation": annotation,
         "artifacts": _artifacts(),
         "data_exports": _data_exports(),
@@ -508,6 +509,11 @@ def _data_exports() -> list[dict[str, str]]:
             "href": "data/paper_writing_data.json",
             "description": "按论文段落和表格组织的可引用数字、解释和证据文件链接。",
         },
+        {
+            "title": "方案完整数据清单 JSON",
+            "href": "data/plan_data_matrix.json",
+            "description": "对照 MMdedup 修改计划列出的所有实验表格、当前状态、已有来源和缺口。",
+        },
     ]
 
 
@@ -526,6 +532,10 @@ def _write_exports(status: dict, annotation: dict[str, object], charts: dict[str
     )
     (DATA_DIR / "paper_writing_data.json").write_text(
         json.dumps(status["paper_writing_data"], indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    (DATA_DIR / "plan_data_matrix.json").write_text(
+        json.dumps(status["plan_data_matrix"], indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
     ledger = RESULTS / "experiment_ledger.csv"
@@ -634,6 +644,192 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
             ],
         },
     ]
+
+
+def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
+    evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
+    best_by_score = evaluation.get("best_by_score", {})
+    if not isinstance(best_by_score, dict):
+        best_by_score = {}
+    image = best_by_score.get("image", {})
+    text = best_by_score.get("text", {})
+    naive = best_by_score.get("naive_union", {})
+    joint = best_by_score.get("joint", {})
+    prepare = _read_json(SYNC / "cc3m_subset_200k_20260515/prepare_metrics.json")
+    candidates = _read_json(SYNC / "exp_stage4_candidates_200k_manifest_20260516/metrics.json")
+    high_joint = _read_json(SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json")
+    adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
+
+    paper_eval = [_source("主评价 metrics", "data/paper/stage4_eval_metrics.json", "")]
+    threshold_csv = [_source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "")]
+    annotation_sources = [
+        _source("已标注 CSV", "data/paper/stage4_annotation_1000_high_joint_labeled.csv", ""),
+        _source("Adjudicated CSV", "data/paper/stage4_adjudicated_annotations.csv", ""),
+    ]
+    candidate_sources = [
+        _source("200K prepare", "data/paper/cc3m_subset_200k_prepare_metrics.json", ""),
+        _source("candidate metrics", "data/paper/stage4_candidates_200k_metrics.json", ""),
+        _source("high-joint metrics", "data/paper/stage4_candidates_200k_high_joint_metrics.json", ""),
+    ]
+
+    return [
+        {
+            "experiment": "实验 1：跨模态去重模块 Stage 4",
+            "status": "active",
+            "purpose": "核心 novelty：用 image-caption pair 级 joint embedding 做跨模态去重。",
+            "items": [
+                _matrix_item(
+                    "表 1.1 Joint embedding 方式对比",
+                    "partial",
+                    "当前只有 concat/joint 第一版；weighted sum α=0.3/0.5/0.7 未跑",
+                    paper_eval,
+                    "需要补 weighted sum 或在方案中说明本轮只采用 concat。",
+                    "concat vs weighted sum 在 1000 条 ground truth 上的 P/R/F1。",
+                ),
+                _matrix_item(
+                    "表 1.2 τ_cross 阈值扫描",
+                    "complete",
+                    "joint best F1=0.583@0.85",
+                    threshold_csv,
+                    "",
+                    "τ_cross 对 P/R/F1 的影响。",
+                ),
+                _matrix_item(
+                    "表 1.3 最优配置最终性能",
+                    "complete",
+                    f"Stage 4 joint: F1={_score_text(joint)}, {_threshold_note(joint)}",
+                    paper_eval,
+                    "",
+                    "论文主表可引用的 Stage 4 最优配置。",
+                ),
+                _matrix_item(
+                    "表 1.4 与 naive multimodal baseline 对比",
+                    "complete",
+                    f"naive F1={_score_text(naive)}; Stage 4 F1={_score_text(joint)}",
+                    paper_eval,
+                    "Stage 4 打过 naive union，但没打过 image-only，写作需说明。",
+                    "证明跨模态联合处理相对简单拼接/并集的增量价值。",
+                ),
+                _matrix_item(
+                    "表 1.5 计算开销",
+                    "partial",
+                    f"candidate mining={_fmt_runtime(str(candidates.get('elapsed_seconds', '')))}",
+                    candidate_sources,
+                    "缺 GPU peak memory、embedding time、cluster/search 分项、100K end-to-end。",
+                    "100K/200K 图文对上的效率数据。",
+                ),
+            ],
+        },
+        {
+            "experiment": "实验 2：CC3M 真实 Ground Truth 标注",
+            "status": "complete",
+            "purpose": "替换合成数据评估，回应 synthetic benchmark 不被认可的问题。",
+            "items": [
+                _matrix_item(
+                    "表 2.1 数据集来源与采样",
+                    "complete",
+                    f"CC3M pool={_fmt_int(prepare.get('saved_pairs', 200000))}; candidates={_fmt_int(candidates.get('num_candidates', 500000))}; high-joint={_fmt_int(high_joint.get('num_candidates', 129139))}",
+                    candidate_sources,
+                    "",
+                    "CC3M 来源、下载规模、候选挖掘和采样策略。",
+                ),
+                _matrix_item(
+                    "表 2.2 标注汇总",
+                    "complete",
+                    f"labeled={_fmt_int(annotation.get('done', 0))}; audit_rows={_fmt_int(annotation.get('audit_rows', 0))}",
+                    annotation_sources,
+                    "当前 audit 为内部默认完成；若正式写双人一致性，仍需真实合作者抽查。",
+                    "标注数量、标注人、audit/adjudication。",
+                ),
+                _matrix_item(
+                    "表 2.3 标签分布",
+                    "complete",
+                    f"duplicate={annotation.get('counts', {}).get('duplicate', 0)}; near={annotation.get('counts', {}).get('near-duplicate', 0)}; not={annotation.get('counts', {}).get('not-duplicate', 0)}",
+                    annotation_sources,
+                    "",
+                    "三类标签数量与占比。",
+                ),
+                _matrix_item(
+                    "表 2.4 标注一致性指标",
+                    "partial",
+                    f"agreement_rate={_fmt_float(adjudication.get('agreement_rate', 0), 3)}; conflicts={adjudication.get('num_conflicts', 0)}",
+                    [_source("adjudication metrics", "data/paper/stage4_adjudication_metrics.json", "")],
+                    "Cohen's kappa/Fleiss' kappa 还未计算；当前不是严格双盲两人标注。",
+                    "标注质量控制指标。",
+                ),
+            ],
+        },
+        {
+            "experiment": "实验 3：SSCD Baseline 补充",
+            "status": "pending",
+            "purpose": "回应图像 baseline 不够强的问题；在 ImageNet-Expanded 和 CC3M GT 上补 SSCD。",
+            "items": [
+                _matrix_item("表 3.1 SSCD 在 ImageNet-Expanded 上的阈值扫描", "pending", "", [], "需要下载 SSCD 权重并跑 ImageNet-Expanded。", "阈值、dedup rate、P/R/F1、下游 Acc。"),
+                _matrix_item("表 3.2 SSCD 在 CC3M Ground Truth 上的阈值扫描", "pending", "", [], "需要在当前 1000 条 CC3M GT 上跑 SSCD image similarity。", "SSCD 在真实 CC3M GT 上的 P/R/F1。"),
+                _matrix_item("表 3.3 SSCD 与原稿方法对比", "pending", "", [], "需要整合原 Table 5 与 SSCD 新结果。", "更新后的 image baseline 主表。"),
+            ],
+        },
+        {
+            "experiment": "实验 4：MLLM 下游训练验证",
+            "status": "pending",
+            "purpose": "最重要的下游验证：证明去重对 LLaVA-1.5-7B LoRA 训练有实际收益或不伤性能。",
+            "items": [
+                _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "pending", "", [], "需要先生成 raw/image-only/text-only/naive/Stage4 五个 split。", "原始样本数、去重后样本数、去重率。"),
+                _matrix_item("表 4.2 五组训练时间", "pending", "", [], "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。", "训练效率收益。"),
+                _matrix_item("表 4.3 VQAv2 评测结果", "pending", "", [], "需要每组至少一个 seed；理想 2 seeds。", "配置、seed、accuracy。"),
+                _matrix_item("表 4.4 TextVQA 评测结果", "pending", "", [], "时间允许再跑；不允许虚构。", "配置、seed、accuracy。"),
+                _matrix_item("表 4.5 汇总性能表", "pending", "", [], "依赖 A/B/C/D/E 训练和评测完成。", "VQAv2/TextVQA mean ± std。"),
+            ],
+        },
+        {
+            "experiment": "实验 5：阈值敏感性分析",
+            "status": "partial",
+            "purpose": "更新原 Figure 3，展示跨模态阈值和单模态阈值对去重率/性能的影响。",
+            "items": [
+                _matrix_item("表 5.1 各模态阈值 vs 去重率", "partial", "已有 Stage 4 P/R/F1 threshold sweep；缺 dedup-rate 全量扫描", threshold_csv, "需要在 200K/100K 全量上按阈值输出去重率。", "图像、文本、音频、跨模态阈值曲线。"),
+                _matrix_item("表 5.2 各模态最优阈值与去重率", "partial", f"image best={_score_text(image)}@{image.get('threshold')}; joint best={_score_text(joint)}@{joint.get('threshold')}", paper_eval, "缺对应全量去重率和音频。", "最优阈值选择依据。"),
+                _matrix_item("表 5.3 跨模态与单模态阈值组合", "pending", "", [], "需要组合扫描 image/text/cross thresholds。", "联合去重率或相关分析。"),
+            ],
+        },
+        {
+            "experiment": "实验 6：消融研究",
+            "status": "pending",
+            "purpose": "更新原 Table 8，量化 Stage 4 以及各单模态组件贡献。",
+            "items": [
+                _matrix_item("表 6.1 各 ablation 配置去重率", "pending", "", [], "需要 Full/w-o Stage4/w-o Image/w-o Text 等配置跑完。", "Mixed-Test 或 CC3M 上的各组件去重率。"),
+                _matrix_item("表 6.2 各 ablation 配置 MLLM 下游性能", "pending", "", [], "依赖 LLaVA 下游训练。", "VQAv2/TextVQA acc。"),
+                _matrix_item("表 6.3 Stage 4 设计选择对比", "partial", f"concat/joint F1={_score_text(joint)}", paper_eval, "weighted sum α=0.3/0.5/0.7 未跑。", "concat vs weighted sum 的消融。"),
+            ],
+        },
+        {
+            "experiment": "统一实验记录与论文数字一致性",
+            "status": "active",
+            "purpose": "保证摘要、正文、表格、讨论里的数字都能追溯到 source-of-truth。",
+            "items": [
+                _matrix_item("实验 ledger", "complete", "已建立并持续更新", [_source("ledger CSV", "data/experiment_ledger.csv", "")], "", "每个可引用实验一行。"),
+                _matrix_item("论文写作数据入口", "complete", "已上线", [_source("paper writing data", "data/paper_writing_data.json", ""), _source("plan matrix", "data/plan_data_matrix.json", "")], "", "合作者可点击查看当前数字和源文件。"),
+                _matrix_item("论文正文数字替换", "pending", "", [], "需要开始修改 paper/latex/main.tex，并给每个表格绑定 experiment id。", "避免数字不一致。"),
+            ],
+        },
+    ]
+
+
+def _matrix_item(
+    name: str,
+    status: str,
+    current_numbers: str,
+    sources: list[dict[str, str]],
+    gap: str,
+    description: str,
+) -> dict[str, object]:
+    return {
+        "name": name,
+        "status": status,
+        "description": description,
+        "current_numbers": current_numbers,
+        "sources": sources,
+        "gap": gap,
+    }
 
 
 def _copy_paper_source_files() -> None:

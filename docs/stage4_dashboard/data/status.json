@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-19T18:37:45+08:00",
+  "updated_at": "2026-05-20T00:30:07+08:00",
   "target": {
     "venue": "CIKM 2026 Full Paper",
     "deadline": "2026-05-23 AoE",
@@ -623,6 +623,384 @@
       ]
     }
   ],
+  "plan_data_matrix": [
+    {
+      "experiment": "实验 1：跨模态去重模块 Stage 4",
+      "status": "active",
+      "purpose": "核心 novelty：用 image-caption pair 级 joint embedding 做跨模态去重。",
+      "items": [
+        {
+          "name": "表 1.1 Joint embedding 方式对比",
+          "status": "partial",
+          "description": "concat vs weighted sum 在 1000 条 ground truth 上的 P/R/F1。",
+          "current_numbers": "当前只有 concat/joint 第一版；weighted sum α=0.3/0.5/0.7 未跑",
+          "sources": [
+            {
+              "title": "主评价 metrics",
+              "href": "data/paper/stage4_eval_metrics.json",
+              "description": ""
+            }
+          ],
+          "gap": "需要补 weighted sum 或在方案中说明本轮只采用 concat。"
+        },
+        {
+          "name": "表 1.2 τ_cross 阈值扫描",
+          "status": "complete",
+          "description": "τ_cross 对 P/R/F1 的影响。",
+          "current_numbers": "joint best F1=0.583@0.85",
+          "sources": [
+            {
+              "title": "阈值扫描 CSV",
+              "href": "data/paper/stage4_eval_per_threshold_metrics.csv",
+              "description": ""
+            }
+          ],
+          "gap": ""
+        },
+        {
+          "name": "表 1.3 最优配置最终性能",
+          "status": "complete",
+          "description": "论文主表可引用的 Stage 4 最优配置。",
+          "current_numbers": "Stage 4 joint: F1=0.583, tau=0.85; P=0.510; R=0.681",
+          "sources": [
+            {
+              "title": "主评价 metrics",
+              "href": "data/paper/stage4_eval_metrics.json",
+              "description": ""
+            }
+          ],
+          "gap": ""
+        },
+        {
+          "name": "表 1.4 与 naive multimodal baseline 对比",
+          "status": "complete",
+          "description": "证明跨模态联合处理相对简单拼接/并集的增量价值。",
+          "current_numbers": "naive F1=0.456; Stage 4 F1=0.583",
+          "sources": [
+            {
+              "title": "主评价 metrics",
+              "href": "data/paper/stage4_eval_metrics.json",
+              "description": ""
+            }
+          ],
+          "gap": "Stage 4 打过 naive union，但没打过 image-only，写作需说明。"
+        },
+        {
+          "name": "表 1.5 计算开销",
+          "status": "partial",
+          "description": "100K/200K 图文对上的效率数据。",
+          "current_numbers": "candidate mining=1.28 h",
+          "sources": [
+            {
+              "title": "200K prepare",
+              "href": "data/paper/cc3m_subset_200k_prepare_metrics.json",
+              "description": ""
+            },
+            {
+              "title": "candidate metrics",
+              "href": "data/paper/stage4_candidates_200k_metrics.json",
+              "description": ""
+            },
+            {
+              "title": "high-joint metrics",
+              "href": "data/paper/stage4_candidates_200k_high_joint_metrics.json",
+              "description": ""
+            }
+          ],
+          "gap": "缺 GPU peak memory、embedding time、cluster/search 分项、100K end-to-end。"
+        }
+      ]
+    },
+    {
+      "experiment": "实验 2：CC3M 真实 Ground Truth 标注",
+      "status": "complete",
+      "purpose": "替换合成数据评估，回应 synthetic benchmark 不被认可的问题。",
+      "items": [
+        {
+          "name": "表 2.1 数据集来源与采样",
+          "status": "complete",
+          "description": "CC3M 来源、下载规模、候选挖掘和采样策略。",
+          "current_numbers": "CC3M pool=200,000; candidates=500,000; high-joint=129,139",
+          "sources": [
+            {
+              "title": "200K prepare",
+              "href": "data/paper/cc3m_subset_200k_prepare_metrics.json",
+              "description": ""
+            },
+            {
+              "title": "candidate metrics",
+              "href": "data/paper/stage4_candidates_200k_metrics.json",
+              "description": ""
+            },
+            {
+              "title": "high-joint metrics",
+              "href": "data/paper/stage4_candidates_200k_high_joint_metrics.json",
+              "description": ""
+            }
+          ],
+          "gap": ""
+        },
+        {
+          "name": "表 2.2 标注汇总",
+          "status": "complete",
+          "description": "标注数量、标注人、audit/adjudication。",
+          "current_numbers": "labeled=1,000; audit_rows=200",
+          "sources": [
+            {
+              "title": "已标注 CSV",
+              "href": "data/paper/stage4_annotation_1000_high_joint_labeled.csv",
+              "description": ""
+            },
+            {
+              "title": "Adjudicated CSV",
+              "href": "data/paper/stage4_adjudicated_annotations.csv",
+              "description": ""
+            }
+          ],
+          "gap": "当前 audit 为内部默认完成；若正式写双人一致性，仍需真实合作者抽查。"
+        },
+        {
+          "name": "表 2.3 标签分布",
+          "status": "complete",
+          "description": "三类标签数量与占比。",
+          "current_numbers": "duplicate=58; near=237; not=705",
+          "sources": [
+            {
+              "title": "已标注 CSV",
+              "href": "data/paper/stage4_annotation_1000_high_joint_labeled.csv",
+              "description": ""
+            },
+            {
+              "title": "Adjudicated CSV",
+              "href": "data/paper/stage4_adjudicated_annotations.csv",
+              "description": ""
+            }
+          ],
+          "gap": ""
+        },
+        {
+          "name": "表 2.4 标注一致性指标",
+          "status": "partial",
+          "description": "标注质量控制指标。",
+          "current_numbers": "agreement_rate=1.000; conflicts=0",
+          "sources": [
+            {
+              "title": "adjudication metrics",
+              "href": "data/paper/stage4_adjudication_metrics.json",
+              "description": ""
+            }
+          ],
+          "gap": "Cohen's kappa/Fleiss' kappa 还未计算；当前不是严格双盲两人标注。"
+        }
+      ]
+    },
+    {
+      "experiment": "实验 3：SSCD Baseline 补充",
+      "status": "pending",
+      "purpose": "回应图像 baseline 不够强的问题；在 ImageNet-Expanded 和 CC3M GT 上补 SSCD。",
+      "items": [
+        {
+          "name": "表 3.1 SSCD 在 ImageNet-Expanded 上的阈值扫描",
+          "status": "pending",
+          "description": "阈值、dedup rate、P/R/F1、下游 Acc。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "需要下载 SSCD 权重并跑 ImageNet-Expanded。"
+        },
+        {
+          "name": "表 3.2 SSCD 在 CC3M Ground Truth 上的阈值扫描",
+          "status": "pending",
+          "description": "SSCD 在真实 CC3M GT 上的 P/R/F1。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "需要在当前 1000 条 CC3M GT 上跑 SSCD image similarity。"
+        },
+        {
+          "name": "表 3.3 SSCD 与原稿方法对比",
+          "status": "pending",
+          "description": "更新后的 image baseline 主表。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "需要整合原 Table 5 与 SSCD 新结果。"
+        }
+      ]
+    },
+    {
+      "experiment": "实验 4：MLLM 下游训练验证",
+      "status": "pending",
+      "purpose": "最重要的下游验证：证明去重对 LLaVA-1.5-7B LoRA 训练有实际收益或不伤性能。",
+      "items": [
+        {
+          "name": "表 4.1 五组训练数据规模 A/B/C/D/E",
+          "status": "pending",
+          "description": "原始样本数、去重后样本数、去重率。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "需要先生成 raw/image-only/text-only/naive/Stage4 五个 split。"
+        },
+        {
+          "name": "表 4.2 五组训练时间",
+          "status": "pending",
+          "description": "训练效率收益。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。"
+        },
+        {
+          "name": "表 4.3 VQAv2 评测结果",
+          "status": "pending",
+          "description": "配置、seed、accuracy。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "需要每组至少一个 seed；理想 2 seeds。"
+        },
+        {
+          "name": "表 4.4 TextVQA 评测结果",
+          "status": "pending",
+          "description": "配置、seed、accuracy。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "时间允许再跑；不允许虚构。"
+        },
+        {
+          "name": "表 4.5 汇总性能表",
+          "status": "pending",
+          "description": "VQAv2/TextVQA mean ± std。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "依赖 A/B/C/D/E 训练和评测完成。"
+        }
+      ]
+    },
+    {
+      "experiment": "实验 5：阈值敏感性分析",
+      "status": "partial",
+      "purpose": "更新原 Figure 3，展示跨模态阈值和单模态阈值对去重率/性能的影响。",
+      "items": [
+        {
+          "name": "表 5.1 各模态阈值 vs 去重率",
+          "status": "partial",
+          "description": "图像、文本、音频、跨模态阈值曲线。",
+          "current_numbers": "已有 Stage 4 P/R/F1 threshold sweep；缺 dedup-rate 全量扫描",
+          "sources": [
+            {
+              "title": "阈值扫描 CSV",
+              "href": "data/paper/stage4_eval_per_threshold_metrics.csv",
+              "description": ""
+            }
+          ],
+          "gap": "需要在 200K/100K 全量上按阈值输出去重率。"
+        },
+        {
+          "name": "表 5.2 各模态最优阈值与去重率",
+          "status": "partial",
+          "description": "最优阈值选择依据。",
+          "current_numbers": "image best=0.626@0.8; joint best=0.583@0.85",
+          "sources": [
+            {
+              "title": "主评价 metrics",
+              "href": "data/paper/stage4_eval_metrics.json",
+              "description": ""
+            }
+          ],
+          "gap": "缺对应全量去重率和音频。"
+        },
+        {
+          "name": "表 5.3 跨模态与单模态阈值组合",
+          "status": "pending",
+          "description": "联合去重率或相关分析。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "需要组合扫描 image/text/cross thresholds。"
+        }
+      ]
+    },
+    {
+      "experiment": "实验 6：消融研究",
+      "status": "pending",
+      "purpose": "更新原 Table 8，量化 Stage 4 以及各单模态组件贡献。",
+      "items": [
+        {
+          "name": "表 6.1 各 ablation 配置去重率",
+          "status": "pending",
+          "description": "Mixed-Test 或 CC3M 上的各组件去重率。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "需要 Full/w-o Stage4/w-o Image/w-o Text 等配置跑完。"
+        },
+        {
+          "name": "表 6.2 各 ablation 配置 MLLM 下游性能",
+          "status": "pending",
+          "description": "VQAv2/TextVQA acc。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "依赖 LLaVA 下游训练。"
+        },
+        {
+          "name": "表 6.3 Stage 4 设计选择对比",
+          "status": "partial",
+          "description": "concat vs weighted sum 的消融。",
+          "current_numbers": "concat/joint F1=0.583",
+          "sources": [
+            {
+              "title": "主评价 metrics",
+              "href": "data/paper/stage4_eval_metrics.json",
+              "description": ""
+            }
+          ],
+          "gap": "weighted sum α=0.3/0.5/0.7 未跑。"
+        }
+      ]
+    },
+    {
+      "experiment": "统一实验记录与论文数字一致性",
+      "status": "active",
+      "purpose": "保证摘要、正文、表格、讨论里的数字都能追溯到 source-of-truth。",
+      "items": [
+        {
+          "name": "实验 ledger",
+          "status": "complete",
+          "description": "每个可引用实验一行。",
+          "current_numbers": "已建立并持续更新",
+          "sources": [
+            {
+              "title": "ledger CSV",
+              "href": "data/experiment_ledger.csv",
+              "description": ""
+            }
+          ],
+          "gap": ""
+        },
+        {
+          "name": "论文写作数据入口",
+          "status": "complete",
+          "description": "合作者可点击查看当前数字和源文件。",
+          "current_numbers": "已上线",
+          "sources": [
+            {
+              "title": "paper writing data",
+              "href": "data/paper_writing_data.json",
+              "description": ""
+            },
+            {
+              "title": "plan matrix",
+              "href": "data/plan_data_matrix.json",
+              "description": ""
+            }
+          ],
+          "gap": ""
+        },
+        {
+          "name": "论文正文数字替换",
+          "status": "pending",
+          "description": "避免数字不一致。",
+          "current_numbers": "",
+          "sources": [],
+          "gap": "需要开始修改 paper/latex/main.tex，并给每个表格绑定 experiment id。"
+        }
+      ]
+    }
+  ],
   "annotation": {
     "total": 1000,
     "done": 1000,
@@ -696,6 +1074,11 @@
       "title": "论文写作数据 JSON",
       "href": "data/paper_writing_data.json",
       "description": "按论文段落和表格组织的可引用数字、解释和证据文件链接。"
+    },
+    {
+      "title": "方案完整数据清单 JSON",
+      "href": "data/plan_data_matrix.json",
+      "description": "对照 MMdedup 修改计划列出的所有实验表格、当前状态、已有来源和缺口。"
     }
   ],
   "risks": [

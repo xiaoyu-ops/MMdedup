@@ -524,7 +524,8 @@ td code,
 .artifact-list,
 .export-list,
 .requirements-list,
-.paper-data-list {
+.paper-data-list,
+.plan-data-matrix {
   display: grid;
   gap: 10px;
 }
@@ -534,6 +535,7 @@ td code,
 .export-card,
 .requirement,
 .paper-data-card,
+.matrix-group,
 .steps li {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -689,6 +691,47 @@ td code,
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   word-break: break-all;
+}
+
+.matrix-group {
+  display: grid;
+  gap: 12px;
+}
+
+.matrix-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 800;
+}
+
+.matrix-table {
+  min-width: 1060px;
+}
+
+.matrix-table td strong,
+.matrix-table td small {
+  display: block;
+}
+
+.matrix-table td small {
+  margin-top: 5px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.inline-source {
+  display: inline-flex;
+  margin: 0 6px 6px 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .steps {

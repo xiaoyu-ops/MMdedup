@@ -31,6 +31,7 @@ function render(data) {
   renderAnnotation(data.annotation);
   renderExperiments(data.experiments);
   renderPaperData(data.paper_writing_data || []);
+  renderPlanDataMatrix(data.plan_data_matrix || []);
   renderRequirements(data.plan_requirements);
   renderRisks(data.risks);
   renderNextSteps(data.next_steps);
@@ -214,6 +215,62 @@ function renderPaperData(sections) {
     });
     node.append(links);
     root.append(node);
+  });
+}
+
+function renderPlanDataMatrix(groups) {
+  const root = document.getElementById("planDataMatrix");
+  root.innerHTML = "";
+  groups.forEach((group) => {
+    const section = el("article", "matrix-group");
+    const head = el("div", "matrix-head");
+    head.append(el("div", "", group.experiment));
+    head.append(el("span", `pill ${group.status}`, statusText(group.status)));
+    section.append(head);
+    section.append(el("p", "paper-data-purpose", group.purpose));
+
+    const table = document.createElement("table");
+    table.className = "matrix-table";
+    const thead = document.createElement("thead");
+    const header = document.createElement("tr");
+    ["数据 / 表格", "当前状态", "已有数字", "来源 / 缺口"].forEach((title) => {
+      header.append(el("th", "", title));
+    });
+    thead.append(header);
+    table.append(thead);
+
+    const tbody = document.createElement("tbody");
+    group.items.forEach((item) => {
+      const tr = document.createElement("tr");
+      const name = document.createElement("td");
+      name.append(el("strong", "", item.name));
+      if (item.description) name.append(el("small", "", item.description));
+      tr.append(name);
+      const status = document.createElement("td");
+      status.append(el("span", `pill ${item.status}`, statusText(item.status)));
+      tr.append(status);
+      const numbers = document.createElement("td");
+      numbers.textContent = item.current_numbers || "待生成";
+      tr.append(numbers);
+      const sources = document.createElement("td");
+      if (item.sources && item.sources.length) {
+        item.sources.forEach((source) => {
+          const link = el("a", "inline-source", source.title);
+          link.href = source.href;
+          link.target = "_blank";
+          link.rel = "noopener";
+          sources.append(link);
+        });
+      }
+      if (item.gap) sources.append(el("small", "", item.gap));
+      tr.append(sources);
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    const wrap = el("div", "table-wrap");
+    wrap.append(table);
+    section.append(wrap);
+    root.append(section);
   });
 }
 
