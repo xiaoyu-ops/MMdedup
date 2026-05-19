@@ -34,6 +34,7 @@ def main() -> int:
         "charts": charts,
         "plan_requirements": _plan_requirements(),
         "experiments": _experiments(),
+        "paper_writing_data": _paper_writing_data(annotation),
         "annotation": annotation,
         "artifacts": _artifacts(),
         "data_exports": _data_exports(),
@@ -502,6 +503,11 @@ def _data_exports() -> list[dict[str, str]]:
             "href": "data/experiment_ledger.csv",
             "description": "source-of-truth 实验台账快照。",
         },
+        {
+            "title": "论文写作数据 JSON",
+            "href": "data/paper_writing_data.json",
+            "description": "按论文段落和表格组织的可引用数字、解释和证据文件链接。",
+        },
     ]
 
 
@@ -518,9 +524,163 @@ def _write_exports(status: dict, annotation: dict[str, object], charts: dict[str
         json.dumps(annotation, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    (DATA_DIR / "paper_writing_data.json").write_text(
+        json.dumps(status["paper_writing_data"], indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
     ledger = RESULTS / "experiment_ledger.csv"
     if ledger.exists():
         shutil.copyfile(ledger, DATA_DIR / "experiment_ledger.csv")
+    _copy_paper_source_files()
+
+
+def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]]:
+    prepare = _read_json(SYNC / "cc3m_subset_200k_20260515/prepare_metrics.json")
+    validation = _read_json(SYNC / "cc3m_subset_200k_20260515/validation_summary.json")
+    candidates = _read_json(SYNC / "exp_stage4_candidates_200k_manifest_20260516/metrics.json")
+    high_joint = _read_json(SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json")
+    annotation_metrics = _read_json(SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516/metrics.json")
+    adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
+    evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
+    best_by_score = evaluation.get("best_by_score", {})
+    if not isinstance(best_by_score, dict):
+        best_by_score = {}
+
+    image = best_by_score.get("image", {})
+    text = best_by_score.get("text", {})
+    naive = best_by_score.get("naive_union", {})
+    joint = best_by_score.get("joint", {})
+
+    return [
+        {
+            "title": "CC3M 数据池与候选挖掘",
+            "status": "complete",
+            "paper_use": "用于论文 Dataset / Ground-truth Construction 段落，说明我们不是随机抽 pair-pairs，而是先在 200K CC3M 图文对中挖掘候选。",
+            "key_numbers": [
+                {"label": "CC3M pool", "value": _fmt_int(prepare.get("saved_pairs", 200000)), "note": "已准备 image-caption pairs"},
+                {"label": "候选 pair-pairs", "value": _fmt_int(candidates.get("num_candidates", 500000)), "note": "image/text/joint top-k 初筛"},
+                {"label": "High-joint pool", "value": _fmt_int(high_joint.get("num_candidates", 129139)), "note": "joint >= 0.80 且 image >= 0.60"},
+                {"label": "候选挖掘耗时", "value": _fmt_runtime(str(candidates.get("elapsed_seconds", ""))), "note": "Windows RTX 3090"},
+            ],
+            "sources": [
+                _source("200K 数据准备 metrics", "data/paper/cc3m_subset_200k_prepare_metrics.json", "下载/准备 CC3M 200K 的源记录。"),
+                _source("200K 数据验证 summary", "data/paper/cc3m_subset_200k_validation_summary.json", "jpg/txt/manifest 验证记录。"),
+                _source("500K 候选挖掘 metrics", "data/paper/stage4_candidates_200k_metrics.json", "候选挖掘规模、signals、top_k、runtime。"),
+                _source("High-joint 筛选 metrics", "data/paper/stage4_candidates_200k_high_joint_metrics.json", "high-joint/high-image 过滤条件和保留数量。"),
+            ],
+        },
+        {
+            "title": "人工标注与 Ground Truth",
+            "status": "complete",
+            "paper_use": "用于论文 Annotation Protocol / Ground Truth Dataset 段落，说明标注规模、正负例数量、标签定义和 audit 状态。",
+            "key_numbers": [
+                {"label": "标注总数", "value": _fmt_int(annotation.get("done", 0)), "note": "已完成 pair-pairs"},
+                {"label": "正例", "value": _fmt_int(annotation.get("positives", 0)), "note": "duplicate + near-duplicate"},
+                {"label": "负例", "value": _fmt_int(annotation.get("counts", {}).get("not-duplicate", 0)), "note": "not-duplicate"},
+                {"label": "Audit 一致率", "value": _fmt_float(adjudication.get("agreement_rate", 0), 3), "note": "当前内部默认 audit run"},
+            ],
+            "sources": [
+                _source("标注表 metrics", "data/paper/stage4_annotation_1000_high_joint_metrics.json", "1000 条标注表和 200 条 audit rows 的生成记录。"),
+                _source("已标注 CSV", "data/paper/stage4_annotation_1000_high_joint_labeled.csv", "人工标注后的原始 CSV，可查看每条 pair-pair 标签。"),
+                _source("Adjudicated labels CSV", "data/paper/stage4_adjudicated_annotations.csv", "带 final_label 和 adjudication_status 的最终评价标签。"),
+                _source("Adjudication metrics", "data/paper/stage4_adjudication_metrics.json", "audit 数量、一致率、冲突数量。"),
+            ],
+        },
+        {
+            "title": "Stage 4 主评价表",
+            "status": "active",
+            "paper_use": "用于论文 Main Results 表。当前结论是 Stage 4 joint 优于 naive union，但 image-only 在这批候选集上更强，写作时必须如实说明。",
+            "key_numbers": [
+                {"label": "Image-only best F1", "value": _score_text(image), "note": _threshold_note(image)},
+                {"label": "Text-only best F1", "value": _score_text(text), "note": _threshold_note(text)},
+                {"label": "Naive union best F1", "value": _score_text(naive), "note": _threshold_note(naive)},
+                {"label": "Stage 4 joint best F1", "value": _score_text(joint), "note": _threshold_note(joint)},
+            ],
+            "sources": [
+                _source("主评价 metrics JSON", "data/paper/stage4_eval_metrics.json", "各 score 的 best precision/recall/F1。"),
+                _source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "image/text/naive_union/joint/max 的完整 threshold sweep。"),
+                _source("实验 ledger CSV", "data/experiment_ledger.csv", "所有可引用实验的 source-of-truth ledger。"),
+            ],
+        },
+        {
+            "title": "效率与系统开销",
+            "status": "partial",
+            "paper_use": "用于论文 Efficiency / System Overhead 表。已有数据准备和候选挖掘耗时，GPU peak memory 还缺。",
+            "key_numbers": [
+                {"label": "200K 数据准备耗时", "value": _fmt_runtime(str(prepare.get("elapsed_seconds", ""))), "note": "下载/保存 image-caption sidecars"},
+                {"label": "候选挖掘耗时", "value": _fmt_runtime(str(candidates.get("elapsed_seconds", ""))), "note": "500K candidates"},
+                {"label": "Stage 4 评价耗时", "value": _fmt_runtime(str(evaluation.get("elapsed_seconds", ""))), "note": "Mac 上纯指标计算"},
+                {"label": "GPU peak memory", "value": "缺失", "note": "后续 Windows 实验需要记录"},
+            ],
+            "sources": [
+                _source("200K 数据准备 metrics", "data/paper/cc3m_subset_200k_prepare_metrics.json", "数据准备 wall-clock。"),
+                _source("候选挖掘 metrics", "data/paper/stage4_candidates_200k_metrics.json", "候选挖掘 runtime 和配置。"),
+                _source("主评价 metrics JSON", "data/paper/stage4_eval_metrics.json", "评价脚本 runtime。"),
+            ],
+        },
+        {
+            "title": "LLaVA 下游验证",
+            "status": "pending",
+            "paper_use": "用于论文 Downstream Validation 表。当前尚未开始，后续要放 A/B/C/D/E 五组 LoRA 训练日志和 VQAv2/TextVQA 指标。",
+            "key_numbers": [
+                {"label": "Raw A", "value": "待生成", "note": "no dedup"},
+                {"label": "Image-only B", "value": "待生成", "note": "image-only dedup"},
+                {"label": "Naive D", "value": "待生成", "note": "image + text union"},
+                {"label": "Stage 4 E", "value": "待生成", "note": "pair-level cross-modal dedup"},
+            ],
+            "sources": [
+                _source("实验设计规则", "data/plan_requirements.json", "保留 A/B/C/D/E 设计，不默认收缩。"),
+                _source("实验 ledger CSV", "data/experiment_ledger.csv", "训练完成后每组结果必须进入 ledger。"),
+            ],
+        },
+    ]
+
+
+def _copy_paper_source_files() -> None:
+    paper_dir = DATA_DIR / "paper"
+    paper_dir.mkdir(parents=True, exist_ok=True)
+    copies = {
+        SYNC / "cc3m_subset_200k_20260515/prepare_metrics.json": "cc3m_subset_200k_prepare_metrics.json",
+        SYNC / "cc3m_subset_200k_20260515/validation_summary.json": "cc3m_subset_200k_validation_summary.json",
+        SYNC / "exp_stage4_candidates_200k_manifest_20260516/metrics.json": "stage4_candidates_200k_metrics.json",
+        SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json": "stage4_candidates_200k_high_joint_metrics.json",
+        SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516/metrics.json": "stage4_annotation_1000_high_joint_metrics.json",
+        SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv": "stage4_annotation_1000_high_joint_labeled.csv",
+        RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/adjudicated_annotations.csv": "stage4_adjudicated_annotations.csv",
+        RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json": "stage4_adjudication_metrics.json",
+        RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json": "stage4_eval_metrics.json",
+        RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/per_threshold_metrics.csv": "stage4_eval_per_threshold_metrics.csv",
+    }
+    for src, name in copies.items():
+        if src.exists():
+            shutil.copyfile(src, paper_dir / name)
+
+
+def _source(title: str, href: str, description: str) -> dict[str, str]:
+    return {"title": title, "href": href, "description": description}
+
+
+def _fmt_float(value: object, digits: int = 3) -> str:
+    try:
+        return f"{float(value):.{digits}f}"
+    except (TypeError, ValueError):
+        return "n/a"
+
+
+def _score_text(row: object) -> str:
+    if not isinstance(row, dict):
+        return "n/a"
+    return _fmt_float(row.get("f1"), 3)
+
+
+def _threshold_note(row: object) -> str:
+    if not isinstance(row, dict):
+        return "暂无结果"
+    return (
+        f"tau={row.get('threshold')}; "
+        f"P={_fmt_float(row.get('precision'), 3)}; "
+        f"R={_fmt_float(row.get('recall'), 3)}"
+    )
 
 
 def _annotation_percent() -> int:

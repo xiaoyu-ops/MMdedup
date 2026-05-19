@@ -1,0 +1,10 @@
+{
+  "experiment_id": "exp_stage4_candidates_200k_high_joint_20260516",
+  "source": "experiments\\results\\plan_b_stage4\\exp_stage4_candidates_200k_manifest_20260516\\stage4_candidate_pairs.csv",
+  "output": "experiments\\results\\plan_b_stage4\\exp_stage4_candidates_200k_high_joint_20260516\\stage4_candidate_pairs.csv",
+  "min_image": 0.6,
+  "min_text": null,
+  "min_joint": 0.8,
+  "num_candidates_input": 500000,
+  "num_candidates": 129139
+}

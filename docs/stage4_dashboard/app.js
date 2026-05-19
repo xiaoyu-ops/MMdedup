@@ -30,6 +30,7 @@ function render(data) {
   renderPhases(data.phase_progress);
   renderAnnotation(data.annotation);
   renderExperiments(data.experiments);
+  renderPaperData(data.paper_writing_data || []);
   renderRequirements(data.plan_requirements);
   renderRisks(data.risks);
   renderNextSteps(data.next_steps);
@@ -176,6 +177,43 @@ function renderExperiments(experiments) {
       tr.append(td);
     });
     root.append(tr);
+  });
+}
+
+function renderPaperData(sections) {
+  const root = document.getElementById("paperDataList");
+  root.innerHTML = "";
+  sections.forEach((section) => {
+    const node = el("article", "paper-data-card");
+    const head = el("div", "paper-data-head");
+    head.append(el("div", "", section.title));
+    head.append(el("span", `pill ${section.status}`, statusText(section.status)));
+    node.append(head);
+    node.append(el("p", "paper-data-purpose", section.paper_use));
+
+    const facts = el("div", "paper-facts");
+    section.key_numbers.forEach((item) => {
+      const fact = el("div", "paper-fact");
+      fact.append(el("span", "", item.label));
+      fact.append(el("strong", "", String(item.value)));
+      if (item.note) fact.append(el("small", "", item.note));
+      facts.append(fact);
+    });
+    node.append(facts);
+
+    const links = el("div", "paper-links");
+    section.sources.forEach((source) => {
+      const link = el("a", "source-link");
+      link.href = source.href;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.append(el("strong", "", source.title));
+      link.append(el("span", "", source.description));
+      link.append(el("code", "", source.href));
+      links.append(link);
+    });
+    node.append(links);
+    root.append(node);
   });
 }
 
