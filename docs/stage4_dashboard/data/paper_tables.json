@@ -289,8 +289,8 @@
     "paper_location": "论文表：Stage 4 overhead",
     "status": "partial",
     "what_it_answers": "Stage 4 增加了多少计算开销，是否可接受。",
-    "recommended_claim": "Only partial timing can be written now; GPU memory and full Stage 4 component timing are still missing.",
-    "do_not_write": "不要写完整系统开销表已经完成；GPU peak memory 目前没有 source-of-truth。",
+    "recommended_claim": "Only partial timing can be written now; the real LLaVA smoke memory is recorded, while full Stage 4 component timing and full training memory are still missing.",
+    "do_not_write": "不要写完整系统开销表已经完成；LLaVA smoke 的 GPU memory 不能替代完整 Stage 4 embedding/search 或正式训练开销。",
     "table_columns": [
       "指标",
       "当前数字",
@@ -313,7 +313,12 @@
         "已有，但不是 GPU 开销"
       ],
       [
-        "GPU peak memory",
+        "LLaVA smoke GPU peak memory",
+        "5.164 GiB",
+        "已有，工程 smoke"
+      ],
+      [
+        "完整 Stage 4 / 正式训练 GPU peak memory",
         "缺失",
         "必须在 Windows RTX 3090 上记录"
       ],
@@ -338,6 +343,11 @@
         "title": "Evaluation metrics",
         "href": "data/paper/stage4_eval_metrics.json",
         "description": "Evaluation runtime."
+      },
+      {
+        "title": "LLaVA smoke metrics",
+        "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
+        "description": "Real 1-step LLaVA smoke memory/runtime."
       }
     ],
     "gap": "补 Windows 侧 GPU memory、CLIP embedding time、nearest-neighbor/search time、end-to-end throughput。"

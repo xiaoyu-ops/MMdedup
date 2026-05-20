@@ -155,6 +155,8 @@ def _phase_progress() -> list[dict[str, str | int]]:
 
 
 def _plan_requirements() -> list[dict[str, object]]:
+    llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
+    llava_peak_memory = _fmt_gib(llava_smoke.get("gpu_peak_memory_bytes"))
     return [
         {
             "name": "Stage 4 实现",
@@ -229,7 +231,7 @@ def _plan_requirements() -> list[dict[str, object]]:
         },
         {
             "name": "MLLM 下游验证",
-            "status": "pending",
+            "status": "active",
             "required_data": [
                 "raw split A",
                 "image-only split B",
@@ -239,10 +241,17 @@ def _plan_requirements() -> list[dict[str, object]]:
                 "LLaVA LoRA logs 与 VQAv2/TextVQA metrics",
             ],
             "current_outputs": [
-                "尚未开始",
+                "A/B/C/D/E 200K training manifests",
+                "A/B/C/D/E LLaVA JSON data-smoke validated",
+                "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
+                f"smoke final_loss={_fmt_float(llava_smoke.get('final_loss'), 4)}; peak_memory={llava_peak_memory}",
+                "完整 A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成",
             ],
             "evidence": [
-                "AGENTS.md",
+                "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/metrics.json",
+                "experiments/results/plan_b_stage4/exp_llava_stage4_data_smoke_abcde_20260520/metrics.json",
+                "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_real_train_smoke_E_20260520/metrics.json",
+                "experiments/results/plan_b_stage4/experiment_ledger.csv",
             ],
         },
         {
@@ -257,7 +266,8 @@ def _plan_requirements() -> list[dict[str, object]]:
             ],
             "current_outputs": [
                 "已记录 200K candidate mining runtime",
-                "GPU peak memory 尚未记录",
+                f"LLaVA smoke GPU peak memory 已记录：{llava_peak_memory}",
+                "完整 Stage 4 embedding/search 分项与正式训练 peak memory 尚未记录",
             ],
             "evidence": [
                 "experiments/results/plan_b_stage4/experiment_ledger.csv",
@@ -644,6 +654,7 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
     evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
     split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
+    llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
     best_by_score = evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
@@ -712,27 +723,35 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
         {
             "title": "效率与系统开销",
             "status": "partial",
-            "paper_use": "用于论文 Efficiency / System Overhead 表。已有数据准备和候选挖掘耗时，GPU peak memory 还缺。",
+            "paper_use": "用于论文 Efficiency / System Overhead 表。已有数据准备和候选挖掘耗时，也已有真实 LLaVA smoke 的 GPU peak memory；完整 Stage 4 embedding/search 分项与正式训练峰值仍缺。",
             "key_numbers": [
                 {"label": "200K 数据准备耗时", "value": _fmt_runtime(str(prepare.get("elapsed_seconds", ""))), "note": "下载/保存 image-caption sidecars"},
                 {"label": "候选挖掘耗时", "value": _fmt_runtime(str(candidates.get("elapsed_seconds", ""))), "note": "500K candidates"},
                 {"label": "Stage 4 评价耗时", "value": _fmt_runtime(str(evaluation.get("elapsed_seconds", ""))), "note": "Mac 上纯指标计算"},
-                {"label": "GPU peak memory", "value": "缺失", "note": "后续 Windows 实验需要记录"},
+                {"label": "LLaVA smoke peak memory", "value": _fmt_gib(llava_smoke.get("gpu_peak_memory_bytes")), "note": "真实模型 1-step 工程 smoke，不代表完整训练"},
+                {"label": "完整 Stage 4 GPU peak memory", "value": "缺失", "note": "后续 Windows 正式实验需要记录"},
             ],
             "sources": [
                 _source("200K 数据准备 metrics", "data/paper/cc3m_subset_200k_prepare_metrics.json", "数据准备 wall-clock。"),
                 _source("候选挖掘 metrics", "data/paper/stage4_candidates_200k_metrics.json", "候选挖掘 runtime 和配置。"),
                 _source("主评价 metrics JSON", "data/paper/stage4_eval_metrics.json", "评价脚本 runtime。"),
+                _source("LLaVA smoke metrics", "data/paper/llava_stage4_real_train_smoke_E_metrics.json", "真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke 的 runtime 和 GPU peak memory。"),
             ],
         },
         {
             "title": "LLaVA 下游验证",
             "status": "partial",
-            "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
-            "key_numbers": _split_key_numbers(split_metrics),
+            "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke，以及 Stage 4 E 的真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke；完整 A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
+            "key_numbers": _split_key_numbers(split_metrics)
+            + [
+                {"label": "Data smoke", "value": "A/B/C/D/E", "note": "每组检查 32 条，missing_images=0，bad_images=0"},
+                {"label": "Real LLaVA smoke", "value": f"loss={_fmt_float(llava_smoke.get('final_loss'), 4)}", "note": f"steps={llava_smoke.get('steps', 'n/a')}; peak={_fmt_gib(llava_smoke.get('gpu_peak_memory_bytes'))}"},
+            ],
             "sources": [
                 _source("A/B/C/D/E split sizes CSV", "data/paper/stage4_abcde_split_sizes.csv", "200K manifest 上的五组训练数据规模。"),
                 _source("200K 阈值去重率 CSV", "data/paper/stage4_threshold_dedup_rates.csv", "image/text/joint/naive threshold vs dedup rate。"),
+                _source("A/B/C/D/E data smoke metrics", "data/paper/llava_stage4_data_smoke_abcde_metrics.json", "五组 LLaVA JSON 的路径和图片可读性检查。"),
+                _source("LLaVA E real smoke metrics", "data/paper/llava_stage4_real_train_smoke_E_metrics.json", "Stage 4 E 上真实模型 1-step LoRA 训练 smoke。"),
                 _source("实验设计规则", "data/plan_requirements.json", "保留 A/B/C/D/E 设计，不默认收缩。"),
                 _source("实验 ledger CSV", "data/experiment_ledger.csv", "训练完成后每组结果必须进入 ledger。"),
             ],
@@ -748,6 +767,7 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
     evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
     split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
+    llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
     best_by_score = evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
@@ -863,20 +883,22 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
             "paper_location": "论文表：Stage 4 overhead",
             "status": "partial",
             "what_it_answers": "Stage 4 增加了多少计算开销，是否可接受。",
-            "recommended_claim": "Only partial timing can be written now; GPU memory and full Stage 4 component timing are still missing.",
-            "do_not_write": "不要写完整系统开销表已经完成；GPU peak memory 目前没有 source-of-truth。",
+            "recommended_claim": "Only partial timing can be written now; the real LLaVA smoke memory is recorded, while full Stage 4 component timing and full training memory are still missing.",
+            "do_not_write": "不要写完整系统开销表已经完成；LLaVA smoke 的 GPU memory 不能替代完整 Stage 4 embedding/search 或正式训练开销。",
             "table_columns": ["指标", "当前数字", "状态"],
             "rows": [
                 ["CC3M 200K 数据准备 wall-clock", _fmt_runtime(str(prepare.get("elapsed_seconds", ""))), "已有"],
                 ["候选挖掘 wall-clock", _fmt_runtime(str(candidates.get("elapsed_seconds", ""))), "已有"],
                 ["评价脚本 wall-clock", _fmt_runtime(str(evaluation.get("elapsed_seconds", ""))), "已有，但不是 GPU 开销"],
-                ["GPU peak memory", "缺失", "必须在 Windows RTX 3090 上记录"],
+                ["LLaVA smoke GPU peak memory", _fmt_gib(llava_smoke.get("gpu_peak_memory_bytes")), "已有，工程 smoke"],
+                ["完整 Stage 4 / 正式训练 GPU peak memory", "缺失", "必须在 Windows RTX 3090 上记录"],
                 ["Embedding / search 分项耗时", "缺失", "完整系统表需要补"],
             ],
             "evidence": [
                 _source("Prepare metrics", "data/paper/cc3m_subset_200k_prepare_metrics.json", "Data preparation timing."),
                 _source("Candidate mining metrics", "data/paper/stage4_candidates_200k_metrics.json", "Candidate mining timing."),
                 _source("Evaluation metrics", "data/paper/stage4_eval_metrics.json", "Evaluation runtime."),
+                _source("LLaVA smoke metrics", "data/paper/llava_stage4_real_train_smoke_E_metrics.json", "Real 1-step LLaVA smoke memory/runtime."),
             ],
             "gap": "补 Windows 侧 GPU memory、CLIP embedding time、nearest-neighbor/search time、end-to-end throughput。",
         },
@@ -954,11 +976,17 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
     adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
     split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
+    llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
 
     paper_eval = [_source("主评价 metrics", "data/paper/stage4_eval_metrics.json", "")]
     threshold_csv = [_source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "")]
     dedup_rate_csv = [_source("200K 阈值去重率 CSV", "data/paper/stage4_threshold_dedup_rates.csv", "")]
     split_csv = [_source("A/B/C/D/E split sizes CSV", "data/paper/stage4_abcde_split_sizes.csv", "")]
+    llava_smoke_sources = [
+        _source("A/B/C/D/E data smoke metrics", "data/paper/llava_stage4_data_smoke_abcde_metrics.json", ""),
+        _source("LLaVA E real smoke metrics", "data/paper/llava_stage4_real_train_smoke_E_metrics.json", ""),
+        _source("实验 ledger", "data/experiment_ledger.csv", ""),
+    ]
     error_sources = [
         _source("误差分析 metrics", "data/paper/stage4_error_analysis_metrics.json", ""),
         _source("Joint FP examples", "data/paper/stage4_joint_fp_examples.csv", ""),
@@ -1073,11 +1101,12 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
         },
         {
             "experiment": "实验 4：MLLM 下游训练验证",
-            "status": "pending",
+            "status": "active",
             "purpose": "最重要的下游验证：证明去重对 LLaVA-1.5-7B LoRA 训练有实际收益或不伤性能。",
             "items": [
-                _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "complete", _split_summary(split_metrics), split_csv, "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。", "原始样本数、去重后样本数、去重率。"),
-                _matrix_item("表 4.2 五组训练时间", "pending", "", [], "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。", "训练效率收益。"),
+                _matrix_item("表 4.0 LLaVA 训练链路 smoke", "partial", f"A/B/C/D/E data smoke 通过；E real smoke steps={llava_smoke.get('steps', 'n/a')}; final_loss={_fmt_float(llava_smoke.get('final_loss'), 4)}; peak={_fmt_gib(llava_smoke.get('gpu_peak_memory_bytes'))}", llava_smoke_sources, "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。", "验证 Windows 3090 上真实 LLaVA-1.5-7B 4-bit LoRA 训练入口可用。"),
+                _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "complete", _split_summary(split_metrics), split_csv, "训练 manifest 已生成，且 data smoke 已验证；下一步是 Windows 3090 上实际训练和评测。", "原始样本数、去重后样本数、去重率。"),
+                _matrix_item("表 4.2 五组训练时间", "pending", "", [], "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。", "训练效率收益。"),
                 _matrix_item("表 4.3 VQAv2 评测结果", "pending", "", [], "需要每组至少一个 seed；理想 2 seeds。", "配置、seed、accuracy。"),
                 _matrix_item("表 4.4 TextVQA 评测结果", "pending", "", [], "时间允许再跑；不允许虚构。", "配置、seed、accuracy。"),
                 _matrix_item("表 4.5 汇总性能表", "pending", "", [], "依赖 A/B/C/D/E 训练和评测完成。", "VQAv2/TextVQA mean ± std。"),
@@ -1187,6 +1216,8 @@ def _copy_paper_source_files() -> None:
         SPLIT_EXPERIMENT_DIR / "metrics.json": "stage4_split_threshold_metrics.json",
         SPLIT_EXPERIMENT_DIR / "abcde_split_sizes.csv": "stage4_abcde_split_sizes.csv",
         SPLIT_EXPERIMENT_DIR / "threshold_dedup_rates.csv": "stage4_threshold_dedup_rates.csv",
+        RESULTS / "exp_llava_stage4_data_smoke_abcde_20260520/metrics.json": "llava_stage4_data_smoke_abcde_metrics.json",
+        SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json": "llava_stage4_real_train_smoke_E_metrics.json",
     }
     for src, name in copies.items():
         if src.exists():
@@ -1272,6 +1303,13 @@ def _read_json(path: Path) -> dict:
 def _fmt_int(value: object) -> str:
     try:
         return f"{int(value):,}"
+    except (TypeError, ValueError):
+        return "n/a"
+
+
+def _fmt_gib(value: object) -> str:
+    try:
+        return f"{float(value) / (1024**3):.3f} GiB"
     except (TypeError, ValueError):
         return "n/a"
 

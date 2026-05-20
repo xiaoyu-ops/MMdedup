@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-20T23:08:02+08:00",
+  "updated_at": "2026-05-20T23:21:29+08:00",
   "target": {
     "venue": "CIKM 2026 Full Paper",
     "deadline": "2026-05-23 AoE",
@@ -568,7 +568,7 @@
     },
     {
       "name": "MLLM 下游验证",
-      "status": "pending",
+      "status": "active",
       "required_data": [
         "raw split A",
         "image-only split B",
@@ -578,10 +578,17 @@
         "LLaVA LoRA logs 与 VQAv2/TextVQA metrics"
       ],
       "current_outputs": [
-        "尚未开始"
+        "A/B/C/D/E 200K training manifests",
+        "A/B/C/D/E LLaVA JSON data-smoke validated",
+        "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
+        "smoke final_loss=6.7041; peak_memory=5.164 GiB",
+        "完整 A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成"
       ],
       "evidence": [
-        "AGENTS.md"
+        "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/metrics.json",
+        "experiments/results/plan_b_stage4/exp_llava_stage4_data_smoke_abcde_20260520/metrics.json",
+        "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_real_train_smoke_E_20260520/metrics.json",
+        "experiments/results/plan_b_stage4/experiment_ledger.csv"
       ]
     },
     {
@@ -596,7 +603,8 @@
       ],
       "current_outputs": [
         "已记录 200K candidate mining runtime",
-        "GPU peak memory 尚未记录"
+        "LLaVA smoke GPU peak memory 已记录：5.164 GiB",
+        "完整 Stage 4 embedding/search 分项与正式训练 peak memory 尚未记录"
       ],
       "evidence": [
         "experiments/results/plan_b_stage4/experiment_ledger.csv"
@@ -875,7 +883,7 @@
     {
       "title": "效率与系统开销",
       "status": "partial",
-      "paper_use": "用于论文 Efficiency / System Overhead 表。已有数据准备和候选挖掘耗时，GPU peak memory 还缺。",
+      "paper_use": "用于论文 Efficiency / System Overhead 表。已有数据准备和候选挖掘耗时，也已有真实 LLaVA smoke 的 GPU peak memory；完整 Stage 4 embedding/search 分项与正式训练峰值仍缺。",
       "key_numbers": [
         {
           "label": "200K 数据准备耗时",
@@ -893,9 +901,14 @@
           "note": "Mac 上纯指标计算"
         },
         {
-          "label": "GPU peak memory",
+          "label": "LLaVA smoke peak memory",
+          "value": "5.164 GiB",
+          "note": "真实模型 1-step 工程 smoke，不代表完整训练"
+        },
+        {
+          "label": "完整 Stage 4 GPU peak memory",
           "value": "缺失",
-          "note": "后续 Windows 实验需要记录"
+          "note": "后续 Windows 正式实验需要记录"
         }
       ],
       "sources": [
@@ -913,13 +926,18 @@
           "title": "主评价 metrics JSON",
           "href": "data/paper/stage4_eval_metrics.json",
           "description": "评价脚本 runtime。"
+        },
+        {
+          "title": "LLaVA smoke metrics",
+          "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
+          "description": "真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke 的 runtime 和 GPU peak memory。"
         }
       ]
     },
     {
       "title": "LLaVA 下游验证",
       "status": "partial",
-      "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
+      "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke，以及 Stage 4 E 的真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke；完整 A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
       "key_numbers": [
         {
           "label": "Raw A",
@@ -945,6 +963,16 @@
           "label": "Stage 4 E",
           "value": "177,957",
           "note": "dropped=22,043; rate=0.110; joint>=0.85"
+        },
+        {
+          "label": "Data smoke",
+          "value": "A/B/C/D/E",
+          "note": "每组检查 32 条，missing_images=0，bad_images=0"
+        },
+        {
+          "label": "Real LLaVA smoke",
+          "value": "loss=6.7041",
+          "note": "steps=1; peak=5.164 GiB"
         }
       ],
       "sources": [
@@ -957,6 +985,16 @@
           "title": "200K 阈值去重率 CSV",
           "href": "data/paper/stage4_threshold_dedup_rates.csv",
           "description": "image/text/joint/naive threshold vs dedup rate。"
+        },
+        {
+          "title": "A/B/C/D/E data smoke metrics",
+          "href": "data/paper/llava_stage4_data_smoke_abcde_metrics.json",
+          "description": "五组 LLaVA JSON 的路径和图片可读性检查。"
+        },
+        {
+          "title": "LLaVA E real smoke metrics",
+          "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
+          "description": "Stage 4 E 上真实模型 1-step LoRA 训练 smoke。"
         },
         {
           "title": "实验设计规则",
@@ -1262,8 +1300,8 @@
       "paper_location": "论文表：Stage 4 overhead",
       "status": "partial",
       "what_it_answers": "Stage 4 增加了多少计算开销，是否可接受。",
-      "recommended_claim": "Only partial timing can be written now; GPU memory and full Stage 4 component timing are still missing.",
-      "do_not_write": "不要写完整系统开销表已经完成；GPU peak memory 目前没有 source-of-truth。",
+      "recommended_claim": "Only partial timing can be written now; the real LLaVA smoke memory is recorded, while full Stage 4 component timing and full training memory are still missing.",
+      "do_not_write": "不要写完整系统开销表已经完成；LLaVA smoke 的 GPU memory 不能替代完整 Stage 4 embedding/search 或正式训练开销。",
       "table_columns": [
         "指标",
         "当前数字",
@@ -1286,7 +1324,12 @@
           "已有，但不是 GPU 开销"
         ],
         [
-          "GPU peak memory",
+          "LLaVA smoke GPU peak memory",
+          "5.164 GiB",
+          "已有，工程 smoke"
+        ],
+        [
+          "完整 Stage 4 / 正式训练 GPU peak memory",
           "缺失",
           "必须在 Windows RTX 3090 上记录"
         ],
@@ -1311,6 +1354,11 @@
           "title": "Evaluation metrics",
           "href": "data/paper/stage4_eval_metrics.json",
           "description": "Evaluation runtime."
+        },
+        {
+          "title": "LLaVA smoke metrics",
+          "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
+          "description": "Real 1-step LLaVA smoke memory/runtime."
         }
       ],
       "gap": "补 Windows 侧 GPU memory、CLIP embedding time、nearest-neighbor/search time、end-to-end throughput。"
@@ -1688,9 +1736,44 @@
     },
     {
       "experiment": "实验 4：MLLM 下游训练验证",
-      "status": "pending",
+      "status": "active",
       "purpose": "最重要的下游验证：证明去重对 LLaVA-1.5-7B LoRA 训练有实际收益或不伤性能。",
       "items": [
+        {
+          "name": "表 4.0 LLaVA 训练链路 smoke",
+          "status": "partial",
+          "data_status": "partial",
+          "paper_table_status": "data_ready_table_missing",
+          "description": "验证 Windows 3090 上真实 LLaVA-1.5-7B 4-bit LoRA 训练入口可用。",
+          "current_numbers": "A/B/C/D/E data smoke 通过；E real smoke steps=1; final_loss=6.7041; peak=5.164 GiB",
+          "existing_data": [
+            "A/B/C/D/E data smoke 通过；E real smoke steps=1",
+            "final_loss=6.7041",
+            "peak=5.164 GiB"
+          ],
+          "missing_data": [
+            "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。"
+          ],
+          "next_action": "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。",
+          "sources": [
+            {
+              "title": "A/B/C/D/E data smoke metrics",
+              "href": "data/paper/llava_stage4_data_smoke_abcde_metrics.json",
+              "description": ""
+            },
+            {
+              "title": "LLaVA E real smoke metrics",
+              "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
+              "description": ""
+            },
+            {
+              "title": "实验 ledger",
+              "href": "data/experiment_ledger.csv",
+              "description": ""
+            }
+          ],
+          "gap": "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。"
+        },
         {
           "name": "表 4.1 五组训练数据规模 A/B/C/D/E",
           "status": "complete",
@@ -1706,7 +1789,7 @@
             "Stage 4 E kept=177,957"
           ],
           "missing_data": [
-            "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。"
+            "训练 manifest 已生成，且 data smoke 已验证；下一步是 Windows 3090 上实际训练和评测。"
           ],
           "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
           "sources": [
@@ -1716,7 +1799,7 @@
               "description": ""
             }
           ],
-          "gap": "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。"
+          "gap": "训练 manifest 已生成，且 data smoke 已验证；下一步是 Windows 3090 上实际训练和评测。"
         },
         {
           "name": "表 4.2 五组训练时间",
@@ -1727,11 +1810,11 @@
           "current_numbers": "",
           "existing_data": [],
           "missing_data": [
-            "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。"
+            "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。"
           ],
-          "next_action": "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。",
+          "next_action": "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。",
           "sources": [],
-          "gap": "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。"
+          "gap": "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。"
         },
         {
           "name": "表 4.3 VQAv2 评测结果",

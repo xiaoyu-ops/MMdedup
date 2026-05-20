@@ -321,9 +321,44 @@
   },
   {
     "experiment": "实验 4：MLLM 下游训练验证",
-    "status": "pending",
+    "status": "active",
     "purpose": "最重要的下游验证：证明去重对 LLaVA-1.5-7B LoRA 训练有实际收益或不伤性能。",
     "items": [
+      {
+        "name": "表 4.0 LLaVA 训练链路 smoke",
+        "status": "partial",
+        "data_status": "partial",
+        "paper_table_status": "data_ready_table_missing",
+        "description": "验证 Windows 3090 上真实 LLaVA-1.5-7B 4-bit LoRA 训练入口可用。",
+        "current_numbers": "A/B/C/D/E data smoke 通过；E real smoke steps=1; final_loss=6.7041; peak=5.164 GiB",
+        "existing_data": [
+          "A/B/C/D/E data smoke 通过；E real smoke steps=1",
+          "final_loss=6.7041",
+          "peak=5.164 GiB"
+        ],
+        "missing_data": [
+          "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。"
+        ],
+        "next_action": "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。",
+        "sources": [
+          {
+            "title": "A/B/C/D/E data smoke metrics",
+            "href": "data/paper/llava_stage4_data_smoke_abcde_metrics.json",
+            "description": ""
+          },
+          {
+            "title": "LLaVA E real smoke metrics",
+            "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
+            "description": ""
+          },
+          {
+            "title": "实验 ledger",
+            "href": "data/experiment_ledger.csv",
+            "description": ""
+          }
+        ],
+        "gap": "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。"
+      },
       {
         "name": "表 4.1 五组训练数据规模 A/B/C/D/E",
         "status": "complete",
@@ -339,7 +374,7 @@
           "Stage 4 E kept=177,957"
         ],
         "missing_data": [
-          "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。"
+          "训练 manifest 已生成，且 data smoke 已验证；下一步是 Windows 3090 上实际训练和评测。"
         ],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
@@ -349,7 +384,7 @@
             "description": ""
           }
         ],
-        "gap": "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。"
+        "gap": "训练 manifest 已生成，且 data smoke 已验证；下一步是 Windows 3090 上实际训练和评测。"
       },
       {
         "name": "表 4.2 五组训练时间",
@@ -360,11 +395,11 @@
         "current_numbers": "",
         "existing_data": [],
         "missing_data": [
-          "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。"
+          "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。"
         ],
-        "next_action": "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。",
+        "next_action": "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。",
         "sources": [],
-        "gap": "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。"
+        "gap": "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。"
       },
       {
         "name": "表 4.3 VQAv2 评测结果",

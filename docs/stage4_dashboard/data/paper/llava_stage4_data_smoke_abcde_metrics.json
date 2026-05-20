@@ -1,0 +1,143 @@
+{
+  "experiment_id": "exp_llava_stage4_data_smoke_abcde_20260520",
+  "splits": {
+    "A_raw": {
+      "experiment_id": "exp_llava_stage4_data_smoke_A_raw_20260520",
+      "train_json": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/llava_json/A_raw.json",
+      "model_id": "llava-hf/llava-1.5-7b-hf",
+      "num_loaded_records": 32,
+      "image_check": {
+        "checked_records": 32,
+        "missing_images": 0,
+        "bad_images": 0,
+        "first_image_size": [
+          800,
+          534
+        ]
+      },
+      "data_only": true,
+      "status": "data_validated",
+      "runtime_seconds": 1.9736473560333252
+    },
+    "B_image_only": {
+      "experiment_id": "exp_llava_stage4_data_smoke_B_image_only_20260520",
+      "train_json": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/llava_json/B_image_only.json",
+      "model_id": "llava-hf/llava-1.5-7b-hf",
+      "num_loaded_records": 32,
+      "image_check": {
+        "checked_records": 32,
+        "missing_images": 0,
+        "bad_images": 0,
+        "first_image_size": [
+          800,
+          534
+        ]
+      },
+      "data_only": true,
+      "status": "data_validated",
+      "runtime_seconds": 1.6950962543487549
+    },
+    "C_text_only": {
+      "experiment_id": "exp_llava_stage4_data_smoke_C_text_only_20260520",
+      "train_json": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/llava_json/C_text_only.json",
+      "model_id": "llava-hf/llava-1.5-7b-hf",
+      "num_loaded_records": 32,
+      "image_check": {
+        "checked_records": 32,
+        "missing_images": 0,
+        "bad_images": 0,
+        "first_image_size": [
+          800,
+          534
+        ]
+      },
+      "data_only": true,
+      "status": "data_validated",
+      "runtime_seconds": 1.0162856578826904
+    },
+    "D_naive_union": {
+      "experiment_id": "exp_llava_stage4_data_smoke_D_naive_union_20260520",
+      "train_json": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/llava_json/D_naive_union.json",
+      "model_id": "llava-hf/llava-1.5-7b-hf",
+      "num_loaded_records": 32,
+      "image_check": {
+        "checked_records": 32,
+        "missing_images": 0,
+        "bad_images": 0,
+        "first_image_size": [
+          800,
+          534
+        ]
+      },
+      "data_only": true,
+      "status": "data_validated",
+      "runtime_seconds": 1.1856889724731445
+    },
+    "E_stage4_joint": {
+      "experiment_id": "exp_llava_stage4_data_smoke_E_stage4_joint_20260520",
+      "train_json": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/llava_json/E_stage4_joint.json",
+      "model_id": "llava-hf/llava-1.5-7b-hf",
+      "num_loaded_records": 32,
+      "image_check": {
+        "checked_records": 32,
+        "missing_images": 0,
+        "bad_images": 0,
+        "first_image_size": [
+          800,
+          534
+        ]
+      },
+      "data_only": true,
+      "status": "data_validated",
+      "runtime_seconds": 1.3589012622833252
+    }
+  },
+  "status": "data_validated",
+  "summary": {
+    "A_raw": {
+      "checked_records": 32,
+      "missing_images": 0,
+      "bad_images": 0,
+      "first_image_size": [
+        800,
+        534
+      ]
+    },
+    "B_image_only": {
+      "checked_records": 32,
+      "missing_images": 0,
+      "bad_images": 0,
+      "first_image_size": [
+        800,
+        534
+      ]
+    },
+    "C_text_only": {
+      "checked_records": 32,
+      "missing_images": 0,
+      "bad_images": 0,
+      "first_image_size": [
+        800,
+        534
+      ]
+    },
+    "D_naive_union": {
+      "checked_records": 32,
+      "missing_images": 0,
+      "bad_images": 0,
+      "first_image_size": [
+        800,
+        534
+      ]
+    },
+    "E_stage4_joint": {
+      "checked_records": 32,
+      "missing_images": 0,
+      "bad_images": 0,
+      "first_image_size": [
+        800,
+        534
+      ]
+    }
+  }
+}

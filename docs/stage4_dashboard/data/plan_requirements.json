@@ -72,7 +72,7 @@
   },
   {
     "name": "MLLM 下游验证",
-    "status": "pending",
+    "status": "active",
     "required_data": [
       "raw split A",
       "image-only split B",
@@ -82,10 +82,17 @@
       "LLaVA LoRA logs 与 VQAv2/TextVQA metrics"
     ],
     "current_outputs": [
-      "尚未开始"
+      "A/B/C/D/E 200K training manifests",
+      "A/B/C/D/E LLaVA JSON data-smoke validated",
+      "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
+      "smoke final_loss=6.7041; peak_memory=5.164 GiB",
+      "完整 A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成"
     ],
     "evidence": [
-      "AGENTS.md"
+      "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/metrics.json",
+      "experiments/results/plan_b_stage4/exp_llava_stage4_data_smoke_abcde_20260520/metrics.json",
+      "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_real_train_smoke_E_20260520/metrics.json",
+      "experiments/results/plan_b_stage4/experiment_ledger.csv"
     ]
   },
   {
@@ -100,7 +107,8 @@
     ],
     "current_outputs": [
       "已记录 200K candidate mining runtime",
-      "GPU peak memory 尚未记录"
+      "LLaVA smoke GPU peak memory 已记录：5.164 GiB",
+      "完整 Stage 4 embedding/search 分项与正式训练 peak memory 尚未记录"
     ],
     "evidence": [
       "experiments/results/plan_b_stage4/experiment_ledger.csv"

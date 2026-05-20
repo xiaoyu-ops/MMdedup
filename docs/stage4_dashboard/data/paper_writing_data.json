@@ -169,7 +169,7 @@
   {
     "title": "效率与系统开销",
     "status": "partial",
-    "paper_use": "用于论文 Efficiency / System Overhead 表。已有数据准备和候选挖掘耗时，GPU peak memory 还缺。",
+    "paper_use": "用于论文 Efficiency / System Overhead 表。已有数据准备和候选挖掘耗时，也已有真实 LLaVA smoke 的 GPU peak memory；完整 Stage 4 embedding/search 分项与正式训练峰值仍缺。",
     "key_numbers": [
       {
         "label": "200K 数据准备耗时",
@@ -187,9 +187,14 @@
         "note": "Mac 上纯指标计算"
       },
       {
-        "label": "GPU peak memory",
+        "label": "LLaVA smoke peak memory",
+        "value": "5.164 GiB",
+        "note": "真实模型 1-step 工程 smoke，不代表完整训练"
+      },
+      {
+        "label": "完整 Stage 4 GPU peak memory",
         "value": "缺失",
-        "note": "后续 Windows 实验需要记录"
+        "note": "后续 Windows 正式实验需要记录"
       }
     ],
     "sources": [
@@ -207,13 +212,18 @@
         "title": "主评价 metrics JSON",
         "href": "data/paper/stage4_eval_metrics.json",
         "description": "评价脚本 runtime。"
+      },
+      {
+        "title": "LLaVA smoke metrics",
+        "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
+        "description": "真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke 的 runtime 和 GPU peak memory。"
       }
     ]
   },
   {
     "title": "LLaVA 下游验证",
     "status": "partial",
-    "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
+    "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke，以及 Stage 4 E 的真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke；完整 A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
     "key_numbers": [
       {
         "label": "Raw A",
@@ -239,6 +249,16 @@
         "label": "Stage 4 E",
         "value": "177,957",
         "note": "dropped=22,043; rate=0.110; joint>=0.85"
+      },
+      {
+        "label": "Data smoke",
+        "value": "A/B/C/D/E",
+        "note": "每组检查 32 条，missing_images=0，bad_images=0"
+      },
+      {
+        "label": "Real LLaVA smoke",
+        "value": "loss=6.7041",
+        "note": "steps=1; peak=5.164 GiB"
       }
     ],
     "sources": [
@@ -251,6 +271,16 @@
         "title": "200K 阈值去重率 CSV",
         "href": "data/paper/stage4_threshold_dedup_rates.csv",
         "description": "image/text/joint/naive threshold vs dedup rate。"
+      },
+      {
+        "title": "A/B/C/D/E data smoke metrics",
+        "href": "data/paper/llava_stage4_data_smoke_abcde_metrics.json",
+        "description": "五组 LLaVA JSON 的路径和图片可读性检查。"
+      },
+      {
+        "title": "LLaVA E real smoke metrics",
+        "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
+        "description": "Stage 4 E 上真实模型 1-step LoRA 训练 smoke。"
       },
       {
         "title": "实验设计规则",

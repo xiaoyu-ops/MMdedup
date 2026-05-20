@@ -450,6 +450,10 @@ Required update rule:
 - After every experiment that updates the ledger, metrics, annotation status, or
   stage progress, rerun:
   `uv run python experiments/scripts/build_stage4_dashboard_data.py`
+- After regenerating the dashboard, run:
+  `uv run python experiments/scripts/check_stage4_dashboard_consistency.py`
+  Stale or contradictory dashboard status is a blocker before reporting an
+  experiment as finished.
 - The dashboard must be updated in real time with the current plan progress.
   Any change to experiment status, required Plan B data, annotation progress,
   paper-facing numbers, source-of-truth files, blockers, or next steps must be
@@ -489,8 +493,10 @@ Required paper-number workflow:
 3. Add / update one row in `experiment_ledger.csv`.
 4. Regenerate the dashboard:
    `uv run python experiments/scripts/build_stage4_dashboard_data.py`
-5. Only then copy the number into the paper table.
-6. In the paper working notes, cite the experiment id next to each table row.
+5. Check dashboard consistency:
+   `uv run python experiments/scripts/check_stage4_dashboard_consistency.py`
+6. Only then copy the number into the paper table.
+7. In the paper working notes, cite the experiment id next to each table row.
 
 ## Current Priority Order
 

@@ -1,0 +1,31 @@
+{
+  "experiment_id": "exp_llava_stage4_real_train_smoke_E_20260520",
+  "train_json": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/llava_json/E_stage4_joint.json",
+  "model_id": "llava-hf/llava-1.5-7b-hf",
+  "num_loaded_records": 1,
+  "image_check": {
+    "checked_records": 1,
+    "missing_images": 0,
+    "bad_images": 0,
+    "first_image_size": [
+      800,
+      534
+    ]
+  },
+  "data_only": false,
+  "status": "trained",
+  "steps": 1,
+  "losses": [
+    6.704123020172119
+  ],
+  "final_loss": 6.704123020172119,
+  "trainable_parameters": {
+    "trainable": 21168128,
+    "total": 3685111808,
+    "percent": 0.5744229511312564
+  },
+  "cuda_available": true,
+  "gpu_name": "NVIDIA GeForce RTX 3090",
+  "gpu_peak_memory_bytes": 5544692224,
+  "runtime_seconds": 53.27251315116882
+}
