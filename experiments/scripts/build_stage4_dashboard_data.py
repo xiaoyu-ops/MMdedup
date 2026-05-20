@@ -16,6 +16,8 @@ SYNC = RESULTS / "windows_sync"
 DASHBOARD = ROOT / "docs/stage4_dashboard"
 DATA_DIR = DASHBOARD / "data"
 OUT = DATA_DIR / "status.json"
+SPLIT_EXPERIMENT_ID = "exp_stage4_training_manifests_200k_20260520"
+SPLIT_EXPERIMENT_DIR = RESULTS / SPLIT_EXPERIMENT_ID
 
 
 def main() -> int:
@@ -292,7 +294,7 @@ def _experiments() -> list[dict[str, str]]:
         "exp_stage4_adjudicated_1000_200k_high_joint_20260519",
         "exp_stage4_eval_1000_200k_high_joint_20260519",
         "exp_stage4_error_analysis_1000_200k_high_joint_20260520",
-        "exp_stage4_split_threshold_200k_20260520",
+        SPLIT_EXPERIMENT_ID,
     ]
     rows = []
     ledger = RESULTS / "experiment_ledger.csv"
@@ -450,7 +452,7 @@ def _artifacts() -> list[dict[str, str]]:
         },
         {
             "title": "A/B/C/D/E split sizes",
-            "path": "experiments/results/plan_b_stage4/exp_stage4_split_threshold_200k_20260520/abcde_split_sizes.csv",
+            "path": f"experiments/results/plan_b_stage4/{SPLIT_EXPERIMENT_ID}/abcde_split_sizes.csv",
         },
     ]
 
@@ -502,7 +504,7 @@ def _stage4_eval_chart() -> list[dict[str, object]]:
 
 
 def _abcde_split_chart() -> list[dict[str, object]]:
-    path = RESULTS / "exp_stage4_split_threshold_200k_20260520/abcde_split_sizes.csv"
+    path = SPLIT_EXPERIMENT_DIR / "abcde_split_sizes.csv"
     if not path.exists():
         return []
     rows = []
@@ -520,7 +522,7 @@ def _abcde_split_chart() -> list[dict[str, object]]:
 
 
 def _threshold_dedup_chart() -> list[dict[str, object]]:
-    path = RESULTS / "exp_stage4_split_threshold_200k_20260520/threshold_dedup_rates.csv"
+    path = SPLIT_EXPERIMENT_DIR / "threshold_dedup_rates.csv"
     if not path.exists():
         return []
     rows = []
@@ -639,7 +641,7 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
     adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
     evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
-    split_metrics = _read_json(RESULTS / "exp_stage4_split_threshold_200k_20260520/metrics.json")
+    split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
     best_by_score = evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
@@ -724,10 +726,10 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
         {
             "title": "LLaVA 下游验证",
             "status": "partial",
-            "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的去重规模估算；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
+            "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
             "key_numbers": _split_key_numbers(split_metrics),
             "sources": [
-                _source("A/B/C/D/E split sizes CSV", "data/paper/stage4_abcde_split_sizes.csv", "200K manifest 上的五组去重规模估算。"),
+                _source("A/B/C/D/E split sizes CSV", "data/paper/stage4_abcde_split_sizes.csv", "200K manifest 上的五组训练数据规模。"),
                 _source("200K 阈值去重率 CSV", "data/paper/stage4_threshold_dedup_rates.csv", "image/text/joint/naive threshold vs dedup rate。"),
                 _source("实验设计规则", "data/plan_requirements.json", "保留 A/B/C/D/E 设计，不默认收缩。"),
                 _source("实验 ledger CSV", "data/experiment_ledger.csv", "训练完成后每组结果必须进入 ledger。"),
@@ -743,7 +745,7 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
     adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
     evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
-    split_metrics = _read_json(RESULTS / "exp_stage4_split_threshold_200k_20260520/metrics.json")
+    split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
     best_by_score = evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
@@ -841,16 +843,16 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
             "paper_location": "论文表：LLaVA 训练数据规模与下游结果",
             "status": "partial",
             "what_it_answers": "原始、单模态、naive union、Stage 4 五组训练数据规模分别是多少，后续 LLaVA 怎么跑。",
-            "recommended_claim": "At this stage, the dashboard only supports reporting estimated split sizes, not downstream performance.",
-            "do_not_write": "不要写 VQAv2/TextVQA 有结果；不要把当前 split size 当成最终训练 manifest。",
+            "recommended_claim": "At this stage, the dashboard supports reporting materialized A/B/C/D/E training manifests, but not downstream performance.",
+            "do_not_write": "不要写 VQAv2/TextVQA 有结果；当前 manifest 可用于启动训练，但训练结果还没有产生。",
             "table_columns": ["组别", "方法", "保留 pairs", "删除 pairs", "去重率", "阈值"],
             "rows": split_rows,
             "evidence": [
-                _source("A/B/C/D/E split sizes", "data/paper/stage4_abcde_split_sizes.csv", "Current 200K split size estimates."),
+                _source("A/B/C/D/E split sizes", "data/paper/stage4_abcde_split_sizes.csv", "Current 200K materialized training split sizes."),
                 _source("Threshold dedup rates", "data/paper/stage4_threshold_dedup_rates.csv", "Threshold vs dedup rate table."),
                 _source("Split metrics", "data/paper/stage4_split_threshold_metrics.json", "Notes and source metrics."),
             ],
-            "gap": "下一步必须在 Windows 3090 上生成真实训练 manifest，并跑 LLaVA LoRA + VQAv2/TextVQA。",
+            "gap": "下一步必须把这 5 份 manifest 交给 Windows 3090 跑 LLaVA LoRA + VQAv2/TextVQA。",
         },
         {
             "id": "efficiency-overhead",
@@ -948,7 +950,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
     high_joint = _read_json(SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json")
     adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
-    split_metrics = _read_json(RESULTS / "exp_stage4_split_threshold_200k_20260520/metrics.json")
+    split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
 
     paper_eval = [_source("主评价 metrics", "data/paper/stage4_eval_metrics.json", "")]
     threshold_csv = [_source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "")]
@@ -1071,7 +1073,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
             "status": "pending",
             "purpose": "最重要的下游验证：证明去重对 LLaVA-1.5-7B LoRA 训练有实际收益或不伤性能。",
             "items": [
-                _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "partial", _split_summary(split_metrics), split_csv, "当前是基于候选图组件的 200K split 规模估算，下一步要输出真实训练 manifest。", "原始样本数、去重后样本数、去重率。"),
+                _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "complete", _split_summary(split_metrics), split_csv, "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。", "原始样本数、去重后样本数、去重率。"),
                 _matrix_item("表 4.2 五组训练时间", "pending", "", [], "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。", "训练效率收益。"),
                 _matrix_item("表 4.3 VQAv2 评测结果", "pending", "", [], "需要每组至少一个 seed；理想 2 seeds。", "配置、seed、accuracy。"),
                 _matrix_item("表 4.4 TextVQA 评测结果", "pending", "", [], "时间允许再跑；不允许虚构。", "配置、seed、accuracy。"),
@@ -1179,9 +1181,9 @@ def _copy_paper_source_files() -> None:
         RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/joint_fn_examples.csv": "stage4_joint_fn_examples.csv",
         RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/image_wins_joint_loses.csv": "stage4_image_wins_joint_loses.csv",
         RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/joint_wins_image_loses.csv": "stage4_joint_wins_image_loses.csv",
-        RESULTS / "exp_stage4_split_threshold_200k_20260520/metrics.json": "stage4_split_threshold_metrics.json",
-        RESULTS / "exp_stage4_split_threshold_200k_20260520/abcde_split_sizes.csv": "stage4_abcde_split_sizes.csv",
-        RESULTS / "exp_stage4_split_threshold_200k_20260520/threshold_dedup_rates.csv": "stage4_threshold_dedup_rates.csv",
+        SPLIT_EXPERIMENT_DIR / "metrics.json": "stage4_split_threshold_metrics.json",
+        SPLIT_EXPERIMENT_DIR / "abcde_split_sizes.csv": "stage4_abcde_split_sizes.csv",
+        SPLIT_EXPERIMENT_DIR / "threshold_dedup_rates.csv": "stage4_threshold_dedup_rates.csv",
     }
     for src, name in copies.items():
         if src.exists():

@@ -213,7 +213,7 @@
   {
     "title": "LLaVA 下游验证",
     "status": "partial",
-    "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的去重规模估算；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
+    "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
     "key_numbers": [
       {
         "label": "Raw A",
@@ -245,7 +245,7 @@
       {
         "title": "A/B/C/D/E split sizes CSV",
         "href": "data/paper/stage4_abcde_split_sizes.csv",
-        "description": "200K manifest 上的五组去重规模估算。"
+        "description": "200K manifest 上的五组训练数据规模。"
       },
       {
         "title": "200K 阈值去重率 CSV",

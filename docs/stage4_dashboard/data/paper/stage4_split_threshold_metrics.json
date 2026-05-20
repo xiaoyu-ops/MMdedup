@@ -60,5 +60,58 @@
   },
   "threshold_rows": 40,
   "note": "Rates are graph-component drop rates over mined candidate edges scoped to the manifest/pair universe, not final LLaVA training results.",
-  "elapsed_seconds": 18.349836111068726
+  "split_manifests_written": true,
+  "split_outputs": {
+    "A": {
+      "name": "raw",
+      "training_manifest": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/A_raw/training_manifest.csv",
+      "keepers": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/A_raw/keepers.txt",
+      "drops": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/A_raw/drops.txt",
+      "duplicate_groups": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/A_raw/duplicate_groups.json",
+      "summary": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/A_raw/summary.json",
+      "kept_pairs": 200000,
+      "dropped_pairs": 0
+    },
+    "B": {
+      "name": "image_only",
+      "training_manifest": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/B_image_only/training_manifest.csv",
+      "keepers": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/B_image_only/keepers.txt",
+      "drops": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/B_image_only/drops.txt",
+      "duplicate_groups": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/B_image_only/duplicate_groups.json",
+      "summary": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/B_image_only/summary.json",
+      "kept_pairs": 171997,
+      "dropped_pairs": 28003
+    },
+    "C": {
+      "name": "text_only",
+      "training_manifest": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/C_text_only/training_manifest.csv",
+      "keepers": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/C_text_only/keepers.txt",
+      "drops": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/C_text_only/drops.txt",
+      "duplicate_groups": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/C_text_only/duplicate_groups.json",
+      "summary": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/C_text_only/summary.json",
+      "kept_pairs": 104395,
+      "dropped_pairs": 95605
+    },
+    "D": {
+      "name": "naive_union",
+      "training_manifest": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/D_naive_union/training_manifest.csv",
+      "keepers": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/D_naive_union/keepers.txt",
+      "drops": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/D_naive_union/drops.txt",
+      "duplicate_groups": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/D_naive_union/duplicate_groups.json",
+      "summary": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/D_naive_union/summary.json",
+      "kept_pairs": 101752,
+      "dropped_pairs": 98248
+    },
+    "E": {
+      "name": "stage4_joint",
+      "training_manifest": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/E_stage4_joint/training_manifest.csv",
+      "keepers": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/E_stage4_joint/keepers.txt",
+      "drops": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/E_stage4_joint/drops.txt",
+      "duplicate_groups": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/E_stage4_joint/duplicate_groups.json",
+      "summary": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/splits/E_stage4_joint/summary.json",
+      "kept_pairs": 177957,
+      "dropped_pairs": 22043
+    }
+  },
+  "elapsed_seconds": 23.253952026367188
 }

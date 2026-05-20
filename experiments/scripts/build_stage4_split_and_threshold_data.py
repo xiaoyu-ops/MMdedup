@@ -43,6 +43,12 @@ class DSU:
         roots = {self.find(node) for node in self.parent}
         return len(self.parent) - len(roots)
 
+    def components(self) -> Dict[str, List[str]]:
+        output: Dict[str, List[str]] = {}
+        for node in self.parent:
+            output.setdefault(self.find(node), []).append(node)
+        return output
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -56,6 +62,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--text-threshold", type=float, default=0.60)
     parser.add_argument("--joint-threshold", type=float, default=0.85)
     parser.add_argument("--pair-id-prefix", default="cc3m_")
+    parser.add_argument(
+        "--write-split-manifests",
+        action="store_true",
+        help="Write A/B/C/D/E training_manifest.csv, keepers.txt, drops.txt, and duplicate_groups.json.",
+    )
     return parser.parse_args()
 
 
@@ -73,9 +84,15 @@ def main() -> int:
             scoped_rows, skipped_edges = filter_edges_to_pair_ids(rows, set(pair_ids))
             threshold_rows = build_threshold_rows(scoped_rows, pair_ids, thresholds)
             split_rows = build_split_rows(scoped_rows, pair_ids, args)
+            split_outputs = {}
+            if args.write_split_manifests:
+                manifest_rows = read_manifest_rows(args.manifest_csv) if args.manifest_csv else {}
+                split_outputs = write_split_manifests(scoped_rows, pair_ids, manifest_rows, args)
             write_csv(threshold_rows, args.output_dir / "threshold_dedup_rates.csv")
             write_csv(split_rows, args.output_dir / "abcde_split_sizes.csv")
             metrics = summarize(threshold_rows, split_rows, len(rows), len(pair_ids))
+            metrics["split_manifests_written"] = bool(args.write_split_manifests)
+            metrics["split_outputs"] = split_outputs
             metrics["elapsed_seconds"] = time.time() - started
             config = {
                 "experiment_id": args.experiment_id,
@@ -89,6 +106,7 @@ def main() -> int:
                 "candidate_edges_total": len(rows),
                 "candidate_edges_in_manifest": len(scoped_rows),
                 "candidate_edges_skipped": skipped_edges,
+                "write_split_manifests": bool(args.write_split_manifests),
                 "note": "Dedup rates are computed as graph-component drops over mined candidate edges scoped to the manifest/pair universe.",
             }
             (args.output_dir / "config.yaml").write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
@@ -104,6 +122,7 @@ def main() -> int:
                     "metrics": str(args.output_dir / "metrics.json"),
                     "threshold_dedup_rates": str(args.output_dir / "threshold_dedup_rates.csv"),
                     "abcde_split_sizes": str(args.output_dir / "abcde_split_sizes.csv"),
+                    "split_outputs": split_outputs,
                     "stdout": str(stdout_path),
                     "stderr": str(stderr_path),
                 },
@@ -116,6 +135,16 @@ def main() -> int:
 def read_candidate_edges(path: Path) -> List[Dict[str, str]]:
     with path.open("r", encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle))
+
+
+def read_manifest_rows(path: Path | None) -> Dict[str, Dict[str, str]]:
+    if path is None:
+        return {}
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if "pair_id" not in (reader.fieldnames or []):
+            raise ValueError(f"manifest_csv must contain a pair_id column: {path}")
+        return {row["pair_id"]: row for row in reader}
 
 
 def infer_pair_ids(rows: Sequence[Dict[str, str]], num_pairs: int, prefix: str, manifest_csv: Path | None) -> List[str]:
@@ -211,6 +240,126 @@ def build_split_rows(rows: Sequence[Dict[str, str]], pair_ids: Sequence[str], ar
             }
         )
     return output
+
+
+def split_configs(args: argparse.Namespace) -> List[Tuple[str, str, str, Sequence[Tuple[str, float]], str]]:
+    return [
+        ("A", "raw", "原始数据，不去重", [], "all"),
+        ("B", "image_only", "仅图像去重", [("image_similarity", args.image_threshold)], "all"),
+        ("C", "text_only", "仅文本去重", [("text_similarity", args.text_threshold)], "all"),
+        (
+            "D",
+            "naive_union",
+            "图像 + 文本独立去重并集",
+            [("image_similarity", args.image_threshold), ("text_similarity", args.text_threshold)],
+            "any",
+        ),
+        ("E", "stage4_joint", "Stage 4 跨模态联合去重", [("joint_similarity", args.joint_threshold)], "all"),
+    ]
+
+
+def write_split_manifests(
+    rows: Sequence[Dict[str, str]],
+    pair_ids: Sequence[str],
+    manifest_rows: Dict[str, Dict[str, str]],
+    args: argparse.Namespace,
+) -> Dict[str, Dict[str, object]]:
+    pair_order = {pair_id: idx for idx, pair_id in enumerate(pair_ids)}
+    outputs: Dict[str, Dict[str, object]] = {}
+    for split, name, desc, checks, mode in split_configs(args):
+        split_dir = args.output_dir / "splits" / f"{split}_{name}"
+        split_dir.mkdir(parents=True, exist_ok=True)
+        components, selected_edges = graph_components(rows, pair_ids, checks, mode=mode)
+        keepers, drops, groups = choose_component_outputs(components, pair_order)
+        write_pair_ids(split_dir / "keepers.txt", keepers)
+        write_pair_ids(split_dir / "drops.txt", drops)
+        write_training_manifest(split_dir / "training_manifest.csv", keepers, manifest_rows)
+        (split_dir / "duplicate_groups.json").write_text(json.dumps(groups, indent=2, ensure_ascii=False), encoding="utf-8")
+        summary = {
+            "split": split,
+            "name": name,
+            "description": desc,
+            "raw_pairs": len(pair_ids),
+            "kept_pairs": len(keepers),
+            "dropped_pairs": len(drops),
+            "dedup_rate": len(drops) / len(pair_ids) if pair_ids else 0.0,
+            "selected_candidate_edges": selected_edges,
+            "threshold": threshold_label_for(name, args),
+            "keeper_rule": "first pair_id by manifest order within each connected component",
+            "note": (
+                "Training manifest materialized from mined candidate graph components. "
+                "For final Stage 4 quality tie-breaking, rerun with alignment/quality scores if available."
+            ),
+        }
+        (split_dir / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+        outputs[split] = {
+            "name": name,
+            "training_manifest": str(split_dir / "training_manifest.csv"),
+            "keepers": str(split_dir / "keepers.txt"),
+            "drops": str(split_dir / "drops.txt"),
+            "duplicate_groups": str(split_dir / "duplicate_groups.json"),
+            "summary": str(split_dir / "summary.json"),
+            "kept_pairs": len(keepers),
+            "dropped_pairs": len(drops),
+        }
+    return outputs
+
+
+def graph_components(
+    rows: Sequence[Dict[str, str]],
+    pair_ids: Sequence[str],
+    checks: Sequence[Tuple[str, float]],
+    mode: str,
+) -> Tuple[Dict[str, List[str]], int]:
+    dsu = DSU(pair_ids)
+    edges = 0
+    if not checks:
+        return {pair_id: [pair_id] for pair_id in pair_ids}, edges
+    for row in rows:
+        results = [float(row[column]) >= threshold for column, threshold in checks]
+        selected = any(results) if mode == "any" else all(results)
+        if not selected:
+            continue
+        edges += 1
+        dsu.union(row["pair_id_a"], row["pair_id_b"])
+    return dsu.components(), edges
+
+
+def choose_component_outputs(
+    components: Dict[str, List[str]],
+    pair_order: Dict[str, int],
+) -> Tuple[List[str], List[str], List[Dict[str, object]]]:
+    keepers: List[str] = []
+    drops: List[str] = []
+    groups: List[Dict[str, object]] = []
+    for members in components.values():
+        ordered = sorted(members, key=lambda pair_id: (pair_order.get(pair_id, 10**18), pair_id))
+        keeper = ordered[0]
+        duplicate_ids = ordered[1:]
+        keepers.append(keeper)
+        drops.extend(duplicate_ids)
+        if duplicate_ids:
+            groups.append({"keeper": keeper, "duplicates": duplicate_ids})
+    return sorted(keepers, key=lambda pair_id: (pair_order.get(pair_id, 10**18), pair_id)), sorted(
+        drops, key=lambda pair_id: (pair_order.get(pair_id, 10**18), pair_id)
+    ), sorted(groups, key=lambda item: (pair_order.get(str(item["keeper"]), 10**18), str(item["keeper"])))
+
+
+def write_pair_ids(path: Path, pair_ids: Sequence[str]) -> None:
+    path.write_text("\n".join(pair_ids) + ("\n" if pair_ids else ""), encoding="utf-8")
+
+
+def write_training_manifest(path: Path, keepers: Sequence[str], manifest_rows: Dict[str, Dict[str, str]]) -> None:
+    if manifest_rows:
+        first_row = next(iter(manifest_rows.values()))
+        fieldnames = list(first_row.keys())
+    else:
+        fieldnames = ["pair_id"]
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for pair_id in keepers:
+            writer.writerow(manifest_rows.get(pair_id, {"pair_id": pair_id}))
 
 
 def threshold_label_for(name: str, args: argparse.Namespace) -> str:

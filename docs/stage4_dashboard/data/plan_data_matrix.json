@@ -326,8 +326,8 @@
     "items": [
       {
         "name": "表 4.1 五组训练数据规模 A/B/C/D/E",
-        "status": "partial",
-        "data_status": "partial",
+        "status": "complete",
+        "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "原始样本数、去重后样本数、去重率。",
         "current_numbers": "Raw A kept=200,000; Image-only B kept=171,997; Text-only C kept=104,395; Naive union D kept=101,752; Stage 4 E kept=177,957",
@@ -339,9 +339,9 @@
           "Stage 4 E kept=177,957"
         ],
         "missing_data": [
-          "当前是基于候选图组件的 200K split 规模估算，下一步要输出真实训练 manifest。"
+          "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。"
         ],
-        "next_action": "当前是基于候选图组件的 200K split 规模估算，下一步要输出真实训练 manifest。",
+        "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
           {
             "title": "A/B/C/D/E split sizes CSV",
@@ -349,7 +349,7 @@
             "description": ""
           }
         ],
-        "gap": "当前是基于候选图组件的 200K split 规模估算，下一步要输出真实训练 manifest。"
+        "gap": "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。"
       },
       {
         "name": "表 4.2 五组训练时间",

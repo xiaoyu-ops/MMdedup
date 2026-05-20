@@ -207,8 +207,8 @@
     "paper_location": "论文表：LLaVA 训练数据规模与下游结果",
     "status": "partial",
     "what_it_answers": "原始、单模态、naive union、Stage 4 五组训练数据规模分别是多少，后续 LLaVA 怎么跑。",
-    "recommended_claim": "At this stage, the dashboard only supports reporting estimated split sizes, not downstream performance.",
-    "do_not_write": "不要写 VQAv2/TextVQA 有结果；不要把当前 split size 当成最终训练 manifest。",
+    "recommended_claim": "At this stage, the dashboard supports reporting materialized A/B/C/D/E training manifests, but not downstream performance.",
+    "do_not_write": "不要写 VQAv2/TextVQA 有结果；当前 manifest 可用于启动训练，但训练结果还没有产生。",
     "table_columns": [
       "组别",
       "方法",
@@ -263,7 +263,7 @@
       {
         "title": "A/B/C/D/E split sizes",
         "href": "data/paper/stage4_abcde_split_sizes.csv",
-        "description": "Current 200K split size estimates."
+        "description": "Current 200K materialized training split sizes."
       },
       {
         "title": "Threshold dedup rates",
@@ -276,7 +276,7 @@
         "description": "Notes and source metrics."
       }
     ],
-    "gap": "下一步必须在 Windows 3090 上生成真实训练 manifest，并跑 LLaVA LoRA + VQAv2/TextVQA。"
+    "gap": "下一步必须把这 5 份 manifest 交给 Windows 3090 跑 LLaVA LoRA + VQAv2/TextVQA。"
   },
   {
     "id": "efficiency-overhead",

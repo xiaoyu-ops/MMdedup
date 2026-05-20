@@ -123,8 +123,8 @@
       "note": "joint_fp=193; joint_fn=94; image_fp=115; image_fn=108; image_correct_joint_wrong=142; joint_correct_image_wrong=78; joint_fp_caption_equal_rate=0.425"
     },
     {
-      "label": "exp_stage4_split_threshold_200k_20260520",
-      "value": 0.3,
+      "label": "exp_stage4_training_manifests_200k_20260520",
+      "value": 0.39,
       "unit": "minutes",
       "note": "A kept=200000; B kept=171997 rate=0.140; C kept=104395 rate=0.478; D kept=101752 rate=0.491; E kept=177957 rate=0.110"
     }

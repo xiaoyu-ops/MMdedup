@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-20T15:29:14+08:00",
+  "updated_at": "2026-05-20T15:53:38+08:00",
   "target": {
     "venue": "CIKM 2026 Full Paper",
     "deadline": "2026-05-23 AoE",
@@ -191,8 +191,8 @@
         "note": "joint_fp=193; joint_fn=94; image_fp=115; image_fn=108; image_correct_joint_wrong=142; joint_correct_image_wrong=78; joint_fp_caption_equal_rate=0.425"
       },
       {
-        "label": "exp_stage4_split_threshold_200k_20260520",
-        "value": 0.3,
+        "label": "exp_stage4_training_manifests_200k_20260520",
+        "value": 0.39,
         "unit": "minutes",
         "note": "A kept=200000; B kept=171997 rate=0.140; C kept=104395 rate=0.478; D kept=101752 rate=0.491; E kept=177957 rate=0.110"
       }
@@ -674,12 +674,12 @@
       "notes": "Error analysis for explaining why image-only currently beats joint on high-joint GT and where Stage 4 still improves"
     },
     {
-      "id": "exp_stage4_split_threshold_200k_20260520",
+      "id": "exp_stage4_training_manifests_200k_20260520",
       "dataset": "WeiChow/cc3m 200K manifest candidate graph",
       "hardware": "Darwin arm64 Python 3.13.12",
-      "runtime": "18.3 s",
+      "runtime": "23.3 s",
       "numbers": "A kept=200000; B kept=171997 rate=0.140; C kept=104395 rate=0.478; D kept=101752 rate=0.491; E kept=177957 rate=0.110",
-      "notes": "200K manifest-scoped A/B/C/D/E split-size and threshold dedup-rate estimates; graph-component rates over mined candidate edges, not final LLaVA results"
+      "notes": "Materialized A/B/C/D/E training manifests from 200K candidate graph; keeper rule is first pair_id by manifest order within each connected component; downstream LLaVA results not produced yet"
     }
   ],
   "paper_writing_data": [
@@ -897,7 +897,7 @@
     {
       "title": "LLaVA 下游验证",
       "status": "partial",
-      "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的去重规模估算；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
+      "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
       "key_numbers": [
         {
           "label": "Raw A",
@@ -929,7 +929,7 @@
         {
           "title": "A/B/C/D/E split sizes CSV",
           "href": "data/paper/stage4_abcde_split_sizes.csv",
-          "description": "200K manifest 上的五组去重规模估算。"
+          "description": "200K manifest 上的五组训练数据规模。"
         },
         {
           "title": "200K 阈值去重率 CSV",
@@ -1158,8 +1158,8 @@
       "paper_location": "论文表：LLaVA 训练数据规模与下游结果",
       "status": "partial",
       "what_it_answers": "原始、单模态、naive union、Stage 4 五组训练数据规模分别是多少，后续 LLaVA 怎么跑。",
-      "recommended_claim": "At this stage, the dashboard only supports reporting estimated split sizes, not downstream performance.",
-      "do_not_write": "不要写 VQAv2/TextVQA 有结果；不要把当前 split size 当成最终训练 manifest。",
+      "recommended_claim": "At this stage, the dashboard supports reporting materialized A/B/C/D/E training manifests, but not downstream performance.",
+      "do_not_write": "不要写 VQAv2/TextVQA 有结果；当前 manifest 可用于启动训练，但训练结果还没有产生。",
       "table_columns": [
         "组别",
         "方法",
@@ -1214,7 +1214,7 @@
         {
           "title": "A/B/C/D/E split sizes",
           "href": "data/paper/stage4_abcde_split_sizes.csv",
-          "description": "Current 200K split size estimates."
+          "description": "Current 200K materialized training split sizes."
         },
         {
           "title": "Threshold dedup rates",
@@ -1227,7 +1227,7 @@
           "description": "Notes and source metrics."
         }
       ],
-      "gap": "下一步必须在 Windows 3090 上生成真实训练 manifest，并跑 LLaVA LoRA + VQAv2/TextVQA。"
+      "gap": "下一步必须把这 5 份 manifest 交给 Windows 3090 跑 LLaVA LoRA + VQAv2/TextVQA。"
     },
     {
       "id": "efficiency-overhead",
@@ -1666,8 +1666,8 @@
       "items": [
         {
           "name": "表 4.1 五组训练数据规模 A/B/C/D/E",
-          "status": "partial",
-          "data_status": "partial",
+          "status": "complete",
+          "data_status": "complete",
           "paper_table_status": "data_ready_table_missing",
           "description": "原始样本数、去重后样本数、去重率。",
           "current_numbers": "Raw A kept=200,000; Image-only B kept=171,997; Text-only C kept=104,395; Naive union D kept=101,752; Stage 4 E kept=177,957",
@@ -1679,9 +1679,9 @@
             "Stage 4 E kept=177,957"
           ],
           "missing_data": [
-            "当前是基于候选图组件的 200K split 规模估算，下一步要输出真实训练 manifest。"
+            "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。"
           ],
-          "next_action": "当前是基于候选图组件的 200K split 规模估算，下一步要输出真实训练 manifest。",
+          "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
           "sources": [
             {
               "title": "A/B/C/D/E split sizes CSV",
@@ -1689,7 +1689,7 @@
               "description": ""
             }
           ],
-          "gap": "当前是基于候选图组件的 200K split 规模估算，下一步要输出真实训练 manifest。"
+          "gap": "训练 manifest 已生成；下一步是 Windows 3090 上实际训练和评测。"
         },
         {
           "name": "表 4.2 五组训练时间",
@@ -2148,7 +2148,7 @@
     },
     {
       "title": "A/B/C/D/E split sizes",
-      "path": "experiments/results/plan_b_stage4/exp_stage4_split_threshold_200k_20260520/abcde_split_sizes.csv"
+      "path": "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/abcde_split_sizes.csv"
     }
   ],
   "data_exports": [
