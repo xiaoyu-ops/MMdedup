@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-20T22:49:28+08:00",
+  "updated_at": "2026-05-20T23:08:02+08:00",
   "target": {
     "venue": "CIKM 2026 Full Paper",
     "deadline": "2026-05-23 AoE",
@@ -56,14 +56,14 @@
     {
       "name": "Stage 4 主评价",
       "status": "active",
-      "percent": 70,
-      "detail": "已完成第一版 P/R/F1：joint 优于 naive_union，但尚未超过 image-only，需要误差分析。"
+      "percent": 90,
+      "detail": "已完成 P/R/F1 主表、阈值扫描和误差分析；joint 优于 naive_union，但尚未超过 image-only，写作需谨慎。"
     },
     {
       "name": "LLaVA 下游验证",
-      "status": "pending",
-      "percent": 0,
-      "detail": "阈值确定后继续准备 A/B/C/D/E 五组数据并运行 LoRA。"
+      "status": "active",
+      "percent": 20,
+      "detail": "A/B/C/D/E 数据入口已验证，真实 LLaVA-1.5-7B 4-bit LoRA 已完成 1 step smoke；完整训练和 VQAv2/TextVQA 尚未完成。"
     }
   ],
   "charts": {
@@ -144,13 +144,13 @@
       },
       {
         "label": "Stage 4 主评价",
-        "value": 70,
+        "value": 90,
         "status": "active"
       },
       {
         "label": "LLaVA 下游验证",
-        "value": 0,
-        "status": "pending"
+        "value": 20,
+        "status": "active"
       }
     ],
     "experiment_runtime": [

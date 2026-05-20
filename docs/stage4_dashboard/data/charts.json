@@ -76,13 +76,13 @@
     },
     {
       "label": "Stage 4 主评价",
-      "value": 70,
+      "value": 90,
       "status": "active"
     },
     {
       "label": "LLaVA 下游验证",
-      "value": 0,
-      "status": "pending"
+      "value": 20,
+      "status": "active"
     }
   ],
   "experiment_runtime": [

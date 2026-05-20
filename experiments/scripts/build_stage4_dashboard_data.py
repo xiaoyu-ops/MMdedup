@@ -142,14 +142,14 @@ def _phase_progress() -> list[dict[str, str | int]]:
         {
             "name": "Stage 4 主评价",
             "status": "active",
-            "percent": 70,
-            "detail": "已完成第一版 P/R/F1：joint 优于 naive_union，但尚未超过 image-only，需要误差分析。",
+            "percent": 90,
+            "detail": "已完成 P/R/F1 主表、阈值扫描和误差分析；joint 优于 naive_union，但尚未超过 image-only，写作需谨慎。",
         },
         {
             "name": "LLaVA 下游验证",
-            "status": "pending",
-            "percent": 0,
-            "detail": "阈值确定后继续准备 A/B/C/D/E 五组数据并运行 LoRA。",
+            "status": "active",
+            "percent": 20,
+            "detail": "A/B/C/D/E 数据入口已验证，真实 LLaVA-1.5-7B 4-bit LoRA 已完成 1 step smoke；完整训练和 VQAv2/TextVQA 尚未完成。",
         },
     ]
 
