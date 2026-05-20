@@ -584,6 +584,37 @@ td code,
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.usage-card,
+.json-card,
+.json-field {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fbfcff;
+}
+
+.usage-card strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.usage-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 13px;
+}
+
+.guide-table {
+  min-width: 780px;
+}
+
 .requirement-head {
   display: flex;
   justify-content: space-between;
@@ -796,6 +827,52 @@ td code,
   text-decoration: none;
   font-size: 12px;
   font-weight: 700;
+}
+
+.viewer-root {
+  display: grid;
+  gap: 12px;
+}
+
+.viewer-table-wrap table {
+  min-width: 980px;
+}
+
+.viewer-table-wrap td {
+  max-width: 360px;
+  word-break: break-word;
+}
+
+.json-object,
+.json-list {
+  display: grid;
+  gap: 10px;
+}
+
+.json-field {
+  display: grid;
+  gap: 8px;
+}
+
+.json-field > strong,
+.json-card > strong {
+  color: var(--ink);
+}
+
+.json-scalar {
+  color: var(--muted);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.raw-pre {
+  overflow: auto;
+  margin: 0;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #111827;
+  color: #f9fafb;
 }
 
 .steps {

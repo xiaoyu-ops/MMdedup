@@ -20,6 +20,10 @@ function formatNumber(value) {
   return Number(value || 0).toLocaleString("en-US");
 }
 
+function viewUrl(href, title = "") {
+  return `viewer.html?file=${encodeURIComponent(href)}&title=${encodeURIComponent(title)}`;
+}
+
 function render(data) {
   document.getElementById("claim").textContent = data.target.claim;
   document.getElementById("targetVenue").textContent = data.target.venue;
@@ -222,11 +226,11 @@ function renderPaperData(sections) {
     const links = el("div", "paper-links");
     section.sources.forEach((source) => {
       const link = el("a", "source-link");
-      link.href = source.href;
+      link.href = viewUrl(source.href, source.title);
       link.target = "_blank";
       link.rel = "noopener";
       link.append(el("strong", "", source.title));
-      link.append(el("span", "", source.description));
+      link.append(el("span", "", source.description || "点击查看可视化数据表。"));
       link.append(el("code", "", source.href));
       links.append(link);
     });
@@ -280,7 +284,7 @@ function renderPlanDataMatrix(groups) {
         const sourceWrap = el("div", "matrix-sources");
         item.sources.forEach((source) => {
           const link = el("a", "inline-source", source.title);
-          link.href = source.href;
+          link.href = viewUrl(source.href, source.title);
           link.target = "_blank";
           link.rel = "noopener";
           sourceWrap.append(link);
@@ -411,8 +415,9 @@ function renderExports(exports) {
   root.innerHTML = "";
   exports.forEach((entry) => {
     const node = el("a", "export-card");
-    node.href = entry.href;
-    node.download = "";
+    node.href = viewUrl(entry.href, entry.title);
+    node.target = "_blank";
+    node.rel = "noopener";
     node.append(el("strong", "", entry.title));
     node.append(el("p", "", entry.description));
     node.append(el("code", "", entry.href));
