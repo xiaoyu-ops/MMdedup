@@ -100,7 +100,7 @@
   {
     "title": "Stage 4 主评价表",
     "status": "active",
-    "paper_use": "用于论文 Main Results 表。当前结论是 Stage 4 joint 优于 naive union，但 image-only 在这批候选集上更强，写作时必须如实说明。",
+    "paper_use": "用于论文 Main Results 表。当前结论是 Stage 4 joint 优于 naive union，但 image-only 在这批候选集上更强；误差分析显示 joint false positives 中约 42.5% 是 caption 完全相同的模板型样本。",
     "key_numbers": [
       {
         "label": "Image-only best F1",
@@ -121,6 +121,16 @@
         "label": "Stage 4 joint best F1",
         "value": "0.583",
         "note": "tau=0.85; P=0.510; R=0.681"
+      },
+      {
+        "label": "Joint false positives",
+        "value": "193",
+        "note": "caption_equal_rate=0.425"
+      },
+      {
+        "label": "Image correct / joint wrong",
+        "value": "142",
+        "note": "解释 image-only 当前更强的样本池证据"
       }
     ],
     "sources": [
@@ -133,6 +143,21 @@
         "title": "阈值扫描 CSV",
         "href": "data/paper/stage4_eval_per_threshold_metrics.csv",
         "description": "image/text/naive_union/joint/max 的完整 threshold sweep。"
+      },
+      {
+        "title": "误差分析 metrics JSON",
+        "href": "data/paper/stage4_error_analysis_metrics.json",
+        "description": "joint/image 的 FP/FN 和互胜样本统计。"
+      },
+      {
+        "title": "Joint FP examples CSV",
+        "href": "data/paper/stage4_joint_fp_examples.csv",
+        "description": "Stage 4 false positive 样例。"
+      },
+      {
+        "title": "Image wins / joint loses CSV",
+        "href": "data/paper/stage4_image_wins_joint_loses.csv",
+        "description": "image-only 正确但 joint 错误的样例。"
       },
       {
         "title": "实验 ledger CSV",
@@ -187,31 +212,46 @@
   },
   {
     "title": "LLaVA 下游验证",
-    "status": "pending",
-    "paper_use": "用于论文 Downstream Validation 表。当前尚未开始，后续要放 A/B/C/D/E 五组 LoRA 训练日志和 VQAv2/TextVQA 指标。",
+    "status": "partial",
+    "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的去重规模估算；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
     "key_numbers": [
       {
         "label": "Raw A",
-        "value": "待生成",
-        "note": "no dedup"
+        "value": "200,000",
+        "note": "dropped=0; rate=0.000; n/a"
       },
       {
         "label": "Image-only B",
-        "value": "待生成",
-        "note": "image-only dedup"
+        "value": "171,997",
+        "note": "dropped=28,003; rate=0.140; image>=0.8"
       },
       {
-        "label": "Naive D",
-        "value": "待生成",
-        "note": "image + text union"
+        "label": "Text-only C",
+        "value": "104,395",
+        "note": "dropped=95,605; rate=0.478; text>=0.6"
+      },
+      {
+        "label": "Naive union D",
+        "value": "101,752",
+        "note": "dropped=98,248; rate=0.491; image>=0.8 OR text>=0.6"
       },
       {
         "label": "Stage 4 E",
-        "value": "待生成",
-        "note": "pair-level cross-modal dedup"
+        "value": "177,957",
+        "note": "dropped=22,043; rate=0.110; joint>=0.85"
       }
     ],
     "sources": [
+      {
+        "title": "A/B/C/D/E split sizes CSV",
+        "href": "data/paper/stage4_abcde_split_sizes.csv",
+        "description": "200K manifest 上的五组去重规模估算。"
+      },
+      {
+        "title": "200K 阈值去重率 CSV",
+        "href": "data/paper/stage4_threshold_dedup_rates.csv",
+        "description": "image/text/joint/naive threshold vs dedup rate。"
+      },
       {
         "title": "实验设计规则",
         "href": "data/plan_requirements.json",

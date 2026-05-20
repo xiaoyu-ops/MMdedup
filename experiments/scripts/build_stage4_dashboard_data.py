@@ -53,14 +53,14 @@ def main() -> int:
             {
                 "level": "medium",
                 "title": "LLaVA 下游验证尚未开始",
-                "detail": "A/B/C/D/E 五组 LoRA 训练需要在标注和 Stage 4 阈值选择之后继续推进。",
+                "detail": "A/B/C/D/E 五组 200K split 规模已估算，但 LoRA 训练与 VQAv2/TextVQA 指标尚未产生。",
             },
         ],
         "next_steps": [
-            "基于当前 1000 条结果做误差分析：找出 image-only 赢在哪里、joint 误杀/漏检在哪里。",
-            "固定 Stage 4 候选阈值，并准备用于 A/B/C/D/E 的训练数据划分。",
+            "基于误差分析决定论文如何解释：joint 优于 naive union，但 image-only 在当前 high-joint GT 上更强。",
+            "把 A/B/C/D/E 200K split 从图组件估算推进到真实训练 manifest 文件。",
             "将 Windows 端 embedding cache 和后续 split 结果同步回 Mac source-of-truth。",
-            "确定阈值后准备 A/B/C/D/E 五组 LLaVA 训练数据划分。",
+            "准备 A/B/C/D/E 五组 LLaVA LoRA 训练配置并记录 GPU/driver/CUDA 信息。",
         ],
     }
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -279,6 +279,8 @@ def _experiments() -> list[dict[str, str]]:
         "exp_stage4_annotation_1000_200k_high_joint_20260516",
         "exp_stage4_adjudicated_1000_200k_high_joint_20260519",
         "exp_stage4_eval_1000_200k_high_joint_20260519",
+        "exp_stage4_error_analysis_1000_200k_high_joint_20260520",
+        "exp_stage4_split_threshold_200k_20260520",
     ]
     rows = []
     ledger = RESULTS / "experiment_ledger.csv"
@@ -366,6 +368,8 @@ def _charts(annotation: dict[str, object]) -> dict[str, list[dict[str, object]]]
         ],
         "experiment_runtime": _runtime_chart(),
         "stage4_eval_best_f1": _stage4_eval_chart(),
+        "stage4_abcde_split_sizes": _abcde_split_chart(),
+        "threshold_dedup_rates": _threshold_dedup_chart(),
     }
 
 
@@ -428,6 +432,14 @@ def _artifacts() -> list[dict[str, str]]:
             "title": "Daily log",
             "path": "experiments/results/plan_b_stage4/daily_logs/2026-05-19.md",
         },
+        {
+            "title": "Stage 4 error analysis",
+            "path": "experiments/results/plan_b_stage4/exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json",
+        },
+        {
+            "title": "A/B/C/D/E split sizes",
+            "path": "experiments/results/plan_b_stage4/exp_stage4_split_threshold_200k_20260520/abcde_split_sizes.csv",
+        },
     ]
 
 
@@ -474,6 +486,45 @@ def _stage4_eval_chart() -> list[dict[str, object]]:
                 "note": f"threshold={item.get('threshold')}; P={float(item.get('precision', 0)):.3f}; R={float(item.get('recall', 0)):.3f}",
             }
         )
+    return rows
+
+
+def _abcde_split_chart() -> list[dict[str, object]]:
+    path = RESULTS / "exp_stage4_split_threshold_200k_20260520/abcde_split_sizes.csv"
+    if not path.exists():
+        return []
+    rows = []
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            rows.append(
+                {
+                    "label": f"{row['split']} {row['name']}",
+                    "value": int(row["kept_pairs"]),
+                    "unit": "kept pairs",
+                    "note": f"dropped={_fmt_int(row['dropped_pairs'])}; rate={float(row['dedup_rate']):.3f}; {row['threshold']}",
+                }
+            )
+    return rows
+
+
+def _threshold_dedup_chart() -> list[dict[str, object]]:
+    path = RESULTS / "exp_stage4_split_threshold_200k_20260520/threshold_dedup_rates.csv"
+    if not path.exists():
+        return []
+    rows = []
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            if row["score"] not in {"image", "text", "joint", "naive_union"}:
+                continue
+            rows.append(
+                {
+                    "label": row["score"],
+                    "threshold": float(row["threshold"]),
+                    "value": float(row["dedup_rate"]),
+                    "unit": "dedup rate",
+                    "note": f"dropped={_fmt_int(row['dropped_pairs'])}; edges={_fmt_int(row['selected_candidate_edges'])}",
+                }
+            )
     return rows
 
 
@@ -552,6 +603,8 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
     annotation_metrics = _read_json(SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516/metrics.json")
     adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
     evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
+    error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
+    split_metrics = _read_json(RESULTS / "exp_stage4_split_threshold_200k_20260520/metrics.json")
     best_by_score = evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
@@ -599,16 +652,21 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
         {
             "title": "Stage 4 主评价表",
             "status": "active",
-            "paper_use": "用于论文 Main Results 表。当前结论是 Stage 4 joint 优于 naive union，但 image-only 在这批候选集上更强，写作时必须如实说明。",
+            "paper_use": "用于论文 Main Results 表。当前结论是 Stage 4 joint 优于 naive union，但 image-only 在这批候选集上更强；误差分析显示 joint false positives 中约 42.5% 是 caption 完全相同的模板型样本。",
             "key_numbers": [
                 {"label": "Image-only best F1", "value": _score_text(image), "note": _threshold_note(image)},
                 {"label": "Text-only best F1", "value": _score_text(text), "note": _threshold_note(text)},
                 {"label": "Naive union best F1", "value": _score_text(naive), "note": _threshold_note(naive)},
                 {"label": "Stage 4 joint best F1", "value": _score_text(joint), "note": _threshold_note(joint)},
+                {"label": "Joint false positives", "value": _fmt_int(error_analysis.get("joint_false_positives")), "note": f"caption_equal_rate={_fmt_float(error_analysis.get('joint_fp_caption_equal_rate'), 3)}"},
+                {"label": "Image correct / joint wrong", "value": _fmt_int(error_analysis.get("image_correct_joint_wrong")), "note": "解释 image-only 当前更强的样本池证据"},
             ],
             "sources": [
                 _source("主评价 metrics JSON", "data/paper/stage4_eval_metrics.json", "各 score 的 best precision/recall/F1。"),
                 _source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "image/text/naive_union/joint/max 的完整 threshold sweep。"),
+                _source("误差分析 metrics JSON", "data/paper/stage4_error_analysis_metrics.json", "joint/image 的 FP/FN 和互胜样本统计。"),
+                _source("Joint FP examples CSV", "data/paper/stage4_joint_fp_examples.csv", "Stage 4 false positive 样例。"),
+                _source("Image wins / joint loses CSV", "data/paper/stage4_image_wins_joint_loses.csv", "image-only 正确但 joint 错误的样例。"),
                 _source("实验 ledger CSV", "data/experiment_ledger.csv", "所有可引用实验的 source-of-truth ledger。"),
             ],
         },
@@ -630,15 +688,12 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
         },
         {
             "title": "LLaVA 下游验证",
-            "status": "pending",
-            "paper_use": "用于论文 Downstream Validation 表。当前尚未开始，后续要放 A/B/C/D/E 五组 LoRA 训练日志和 VQAv2/TextVQA 指标。",
-            "key_numbers": [
-                {"label": "Raw A", "value": "待生成", "note": "no dedup"},
-                {"label": "Image-only B", "value": "待生成", "note": "image-only dedup"},
-                {"label": "Naive D", "value": "待生成", "note": "image + text union"},
-                {"label": "Stage 4 E", "value": "待生成", "note": "pair-level cross-modal dedup"},
-            ],
+            "status": "partial",
+            "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的去重规模估算；LoRA 训练日志和 VQAv2/TextVQA 指标仍未开始。",
+            "key_numbers": _split_key_numbers(split_metrics),
             "sources": [
+                _source("A/B/C/D/E split sizes CSV", "data/paper/stage4_abcde_split_sizes.csv", "200K manifest 上的五组去重规模估算。"),
+                _source("200K 阈值去重率 CSV", "data/paper/stage4_threshold_dedup_rates.csv", "image/text/joint/naive threshold vs dedup rate。"),
                 _source("实验设计规则", "data/plan_requirements.json", "保留 A/B/C/D/E 设计，不默认收缩。"),
                 _source("实验 ledger CSV", "data/experiment_ledger.csv", "训练完成后每组结果必须进入 ledger。"),
             ],
@@ -659,9 +714,18 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
     candidates = _read_json(SYNC / "exp_stage4_candidates_200k_manifest_20260516/metrics.json")
     high_joint = _read_json(SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json")
     adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
+    error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
+    split_metrics = _read_json(RESULTS / "exp_stage4_split_threshold_200k_20260520/metrics.json")
 
     paper_eval = [_source("主评价 metrics", "data/paper/stage4_eval_metrics.json", "")]
     threshold_csv = [_source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "")]
+    dedup_rate_csv = [_source("200K 阈值去重率 CSV", "data/paper/stage4_threshold_dedup_rates.csv", "")]
+    split_csv = [_source("A/B/C/D/E split sizes CSV", "data/paper/stage4_abcde_split_sizes.csv", "")]
+    error_sources = [
+        _source("误差分析 metrics", "data/paper/stage4_error_analysis_metrics.json", ""),
+        _source("Joint FP examples", "data/paper/stage4_joint_fp_examples.csv", ""),
+        _source("Image wins joint loses", "data/paper/stage4_image_wins_joint_loses.csv", ""),
+    ]
     annotation_sources = [
         _source("已标注 CSV", "data/paper/stage4_annotation_1000_high_joint_labeled.csv", ""),
         _source("Adjudicated CSV", "data/paper/stage4_adjudicated_annotations.csv", ""),
@@ -705,8 +769,8 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
                 _matrix_item(
                     "表 1.4 与 naive multimodal baseline 对比",
                     "complete",
-                    f"naive F1={_score_text(naive)}; Stage 4 F1={_score_text(joint)}",
-                    paper_eval,
+                    f"naive F1={_score_text(naive)}; Stage 4 F1={_score_text(joint)}; joint_fp_caption_equal_rate={_fmt_float(error_analysis.get('joint_fp_caption_equal_rate'), 3)}",
+                    paper_eval + error_sources,
                     "Stage 4 打过 naive union，但没打过 image-only，写作需说明。",
                     "证明跨模态联合处理相对简单拼接/并集的增量价值。",
                 ),
@@ -774,7 +838,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
             "status": "pending",
             "purpose": "最重要的下游验证：证明去重对 LLaVA-1.5-7B LoRA 训练有实际收益或不伤性能。",
             "items": [
-                _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "pending", "", [], "需要先生成 raw/image-only/text-only/naive/Stage4 五个 split。", "原始样本数、去重后样本数、去重率。"),
+                _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "partial", _split_summary(split_metrics), split_csv, "当前是基于候选图组件的 200K split 规模估算，下一步要输出真实训练 manifest。", "原始样本数、去重后样本数、去重率。"),
                 _matrix_item("表 4.2 五组训练时间", "pending", "", [], "需要 Windows 3090 上记录 GPU-hour 和 wall-clock。", "训练效率收益。"),
                 _matrix_item("表 4.3 VQAv2 评测结果", "pending", "", [], "需要每组至少一个 seed；理想 2 seeds。", "配置、seed、accuracy。"),
                 _matrix_item("表 4.4 TextVQA 评测结果", "pending", "", [], "时间允许再跑；不允许虚构。", "配置、seed、accuracy。"),
@@ -786,8 +850,8 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
             "status": "partial",
             "purpose": "更新原 Figure 3，展示跨模态阈值和单模态阈值对去重率/性能的影响。",
             "items": [
-                _matrix_item("表 5.1 各模态阈值 vs 去重率", "partial", "已有 Stage 4 P/R/F1 threshold sweep；缺 dedup-rate 全量扫描", threshold_csv, "需要在 200K/100K 全量上按阈值输出去重率。", "图像、文本、音频、跨模态阈值曲线。"),
-                _matrix_item("表 5.2 各模态最优阈值与去重率", "partial", f"image best={_score_text(image)}@{image.get('threshold')}; joint best={_score_text(joint)}@{joint.get('threshold')}", paper_eval, "缺对应全量去重率和音频。", "最优阈值选择依据。"),
+                _matrix_item("表 5.1 各模态阈值 vs 去重率", "complete", "已完成 200K manifest 上 image/text/joint/naive threshold vs dedup-rate", dedup_rate_csv, "音频不属于当前 CIKM Plan B 主线，暂不补。", "图像、文本、音频、跨模态阈值曲线。"),
+                _matrix_item("表 5.2 各模态最优阈值与去重率", "complete", f"image best={_score_text(image)}@{image.get('threshold')}; joint best={_score_text(joint)}@{joint.get('threshold')}", paper_eval + dedup_rate_csv, "音频不属于当前 CIKM Plan B 主线，暂不补。", "最优阈值选择依据。"),
                 _matrix_item("表 5.3 跨模态与单模态阈值组合", "pending", "", [], "需要组合扫描 image/text/cross thresholds。", "联合去重率或相关分析。"),
             ],
         },
@@ -846,6 +910,14 @@ def _copy_paper_source_files() -> None:
         RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json": "stage4_adjudication_metrics.json",
         RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json": "stage4_eval_metrics.json",
         RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/per_threshold_metrics.csv": "stage4_eval_per_threshold_metrics.csv",
+        RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json": "stage4_error_analysis_metrics.json",
+        RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/joint_fp_examples.csv": "stage4_joint_fp_examples.csv",
+        RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/joint_fn_examples.csv": "stage4_joint_fn_examples.csv",
+        RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/image_wins_joint_loses.csv": "stage4_image_wins_joint_loses.csv",
+        RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/joint_wins_image_loses.csv": "stage4_joint_wins_image_loses.csv",
+        RESULTS / "exp_stage4_split_threshold_200k_20260520/metrics.json": "stage4_split_threshold_metrics.json",
+        RESULTS / "exp_stage4_split_threshold_200k_20260520/abcde_split_sizes.csv": "stage4_abcde_split_sizes.csv",
+        RESULTS / "exp_stage4_split_threshold_200k_20260520/threshold_dedup_rates.csv": "stage4_threshold_dedup_rates.csv",
     }
     for src, name in copies.items():
         if src.exists():
@@ -877,6 +949,41 @@ def _threshold_note(row: object) -> str:
         f"P={_fmt_float(row.get('precision'), 3)}; "
         f"R={_fmt_float(row.get('recall'), 3)}"
     )
+
+
+def _split_key_numbers(metrics: dict[str, object]) -> list[dict[str, str]]:
+    splits = metrics.get("best_known_split_sizes", {})
+    if not isinstance(splits, dict) or not splits:
+        return [
+            {"label": "Raw A", "value": "待生成", "note": "no dedup"},
+            {"label": "Image-only B", "value": "待生成", "note": "image-only dedup"},
+            {"label": "Naive D", "value": "待生成", "note": "image + text union"},
+            {"label": "Stage 4 E", "value": "待生成", "note": "pair-level cross-modal dedup"},
+        ]
+    labels = {
+        "A": "Raw A",
+        "B": "Image-only B",
+        "C": "Text-only C",
+        "D": "Naive union D",
+        "E": "Stage 4 E",
+    }
+    rows = []
+    for key in ["A", "B", "C", "D", "E"]:
+        row = splits.get(key, {})
+        if not isinstance(row, dict):
+            continue
+        rows.append(
+            {
+                "label": labels[key],
+                "value": _fmt_int(row.get("kept_pairs")),
+                "note": f"dropped={_fmt_int(row.get('dropped_pairs'))}; rate={_fmt_float(row.get('dedup_rate'), 3)}; {row.get('threshold', '')}",
+            }
+        )
+    return rows
+
+
+def _split_summary(metrics: dict[str, object]) -> str:
+    return "; ".join(f"{item['label']} kept={item['value']}" for item in _split_key_numbers(metrics))
 
 
 def _annotation_percent() -> int:

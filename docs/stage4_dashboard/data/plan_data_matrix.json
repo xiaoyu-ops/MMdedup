@@ -50,11 +50,26 @@
         "name": "表 1.4 与 naive multimodal baseline 对比",
         "status": "complete",
         "description": "证明跨模态联合处理相对简单拼接/并集的增量价值。",
-        "current_numbers": "naive F1=0.456; Stage 4 F1=0.583",
+        "current_numbers": "naive F1=0.456; Stage 4 F1=0.583; joint_fp_caption_equal_rate=0.425",
         "sources": [
           {
             "title": "主评价 metrics",
             "href": "data/paper/stage4_eval_metrics.json",
+            "description": ""
+          },
+          {
+            "title": "误差分析 metrics",
+            "href": "data/paper/stage4_error_analysis_metrics.json",
+            "description": ""
+          },
+          {
+            "title": "Joint FP examples",
+            "href": "data/paper/stage4_joint_fp_examples.csv",
+            "description": ""
+          },
+          {
+            "title": "Image wins joint loses",
+            "href": "data/paper/stage4_image_wins_joint_loses.csv",
             "description": ""
           }
         ],
@@ -207,11 +222,17 @@
     "items": [
       {
         "name": "表 4.1 五组训练数据规模 A/B/C/D/E",
-        "status": "pending",
+        "status": "partial",
         "description": "原始样本数、去重后样本数、去重率。",
-        "current_numbers": "",
-        "sources": [],
-        "gap": "需要先生成 raw/image-only/text-only/naive/Stage4 五个 split。"
+        "current_numbers": "Raw A kept=200,000; Image-only B kept=171,997; Text-only C kept=104,395; Naive union D kept=101,752; Stage 4 E kept=177,957",
+        "sources": [
+          {
+            "title": "A/B/C/D/E split sizes CSV",
+            "href": "data/paper/stage4_abcde_split_sizes.csv",
+            "description": ""
+          }
+        ],
+        "gap": "当前是基于候选图组件的 200K split 规模估算，下一步要输出真实训练 manifest。"
       },
       {
         "name": "表 4.2 五组训练时间",
@@ -254,21 +275,21 @@
     "items": [
       {
         "name": "表 5.1 各模态阈值 vs 去重率",
-        "status": "partial",
+        "status": "complete",
         "description": "图像、文本、音频、跨模态阈值曲线。",
-        "current_numbers": "已有 Stage 4 P/R/F1 threshold sweep；缺 dedup-rate 全量扫描",
+        "current_numbers": "已完成 200K manifest 上 image/text/joint/naive threshold vs dedup-rate",
         "sources": [
           {
-            "title": "阈值扫描 CSV",
-            "href": "data/paper/stage4_eval_per_threshold_metrics.csv",
+            "title": "200K 阈值去重率 CSV",
+            "href": "data/paper/stage4_threshold_dedup_rates.csv",
             "description": ""
           }
         ],
-        "gap": "需要在 200K/100K 全量上按阈值输出去重率。"
+        "gap": "音频不属于当前 CIKM Plan B 主线，暂不补。"
       },
       {
         "name": "表 5.2 各模态最优阈值与去重率",
-        "status": "partial",
+        "status": "complete",
         "description": "最优阈值选择依据。",
         "current_numbers": "image best=0.626@0.8; joint best=0.583@0.85",
         "sources": [
@@ -276,9 +297,14 @@
             "title": "主评价 metrics",
             "href": "data/paper/stage4_eval_metrics.json",
             "description": ""
+          },
+          {
+            "title": "200K 阈值去重率 CSV",
+            "href": "data/paper/stage4_threshold_dedup_rates.csv",
+            "description": ""
           }
         ],
-        "gap": "缺对应全量去重率和音频。"
+        "gap": "音频不属于当前 CIKM Plan B 主线，暂不补。"
       },
       {
         "name": "表 5.3 跨模态与单模态阈值组合",

@@ -115,6 +115,18 @@
       "value": 0.0,
       "unit": "minutes",
       "note": "positives=295; image_best_f1=0.626@0.80; joint_best_f1=0.583@0.85; naive_best_f1=0.456@0.60; text_best_f1=0.456@0.60"
+    },
+    {
+      "label": "exp_stage4_error_analysis_1000_200k_high_joint_20260520",
+      "value": 0.0,
+      "unit": "minutes",
+      "note": "joint_fp=193; joint_fn=94; image_fp=115; image_fn=108; image_correct_joint_wrong=142; joint_correct_image_wrong=78; joint_fp_caption_equal_rate=0.425"
+    },
+    {
+      "label": "exp_stage4_split_threshold_200k_20260520",
+      "value": 0.3,
+      "unit": "minutes",
+      "note": "A kept=200000; B kept=171997 rate=0.140; C kept=104395 rate=0.478; D kept=101752 rate=0.491; E kept=177957 rate=0.110"
     }
   ],
   "stage4_eval_best_f1": [
@@ -147,6 +159,264 @@
       "value": 0.456,
       "unit": "F1",
       "note": "threshold=0.6; P=0.295; R=1.000"
+    }
+  ],
+  "stage4_abcde_split_sizes": [
+    {
+      "label": "A raw",
+      "value": 200000,
+      "unit": "kept pairs",
+      "note": "dropped=0; rate=0.000; n/a"
+    },
+    {
+      "label": "B image_only",
+      "value": 171997,
+      "unit": "kept pairs",
+      "note": "dropped=28,003; rate=0.140; image>=0.8"
+    },
+    {
+      "label": "C text_only",
+      "value": 104395,
+      "unit": "kept pairs",
+      "note": "dropped=95,605; rate=0.478; text>=0.6"
+    },
+    {
+      "label": "D naive_union",
+      "value": 101752,
+      "unit": "kept pairs",
+      "note": "dropped=98,248; rate=0.491; image>=0.8 OR text>=0.6"
+    },
+    {
+      "label": "E stage4_joint",
+      "value": 177957,
+      "unit": "kept pairs",
+      "note": "dropped=22,043; rate=0.110; joint>=0.85"
+    }
+  ],
+  "threshold_dedup_rates": [
+    {
+      "label": "image",
+      "threshold": 0.6,
+      "value": 0.34505,
+      "unit": "dedup rate",
+      "note": "dropped=69,010; edges=226,526"
+    },
+    {
+      "label": "image",
+      "threshold": 0.65,
+      "value": 0.297955,
+      "unit": "dedup rate",
+      "note": "dropped=59,591; edges=172,607"
+    },
+    {
+      "label": "image",
+      "threshold": 0.7,
+      "value": 0.242825,
+      "unit": "dedup rate",
+      "note": "dropped=48,565; edges=121,696"
+    },
+    {
+      "label": "image",
+      "threshold": 0.75,
+      "value": 0.186655,
+      "unit": "dedup rate",
+      "note": "dropped=37,331; edges=81,681"
+    },
+    {
+      "label": "image",
+      "threshold": 0.8,
+      "value": 0.140015,
+      "unit": "dedup rate",
+      "note": "dropped=28,003; edges=57,625"
+    },
+    {
+      "label": "image",
+      "threshold": 0.85,
+      "value": 0.11102,
+      "unit": "dedup rate",
+      "note": "dropped=22,204; edges=43,785"
+    },
+    {
+      "label": "image",
+      "threshold": 0.9,
+      "value": 0.03956,
+      "unit": "dedup rate",
+      "note": "dropped=7,912; edges=12,348"
+    },
+    {
+      "label": "image",
+      "threshold": 0.95,
+      "value": 0.008185,
+      "unit": "dedup rate",
+      "note": "dropped=1,637; edges=2,249"
+    },
+    {
+      "label": "text",
+      "threshold": 0.6,
+      "value": 0.478025,
+      "unit": "dedup rate",
+      "note": "dropped=95,605; edges=490,866"
+    },
+    {
+      "label": "text",
+      "threshold": 0.65,
+      "value": 0.472085,
+      "unit": "dedup rate",
+      "note": "dropped=94,417; edges=487,238"
+    },
+    {
+      "label": "text",
+      "threshold": 0.7,
+      "value": 0.465005,
+      "unit": "dedup rate",
+      "note": "dropped=93,001; edges=483,035"
+    },
+    {
+      "label": "text",
+      "threshold": 0.75,
+      "value": 0.457725,
+      "unit": "dedup rate",
+      "note": "dropped=91,545; edges=478,752"
+    },
+    {
+      "label": "text",
+      "threshold": 0.8,
+      "value": 0.450725,
+      "unit": "dedup rate",
+      "note": "dropped=90,145; edges=474,556"
+    },
+    {
+      "label": "text",
+      "threshold": 0.85,
+      "value": 0.445495,
+      "unit": "dedup rate",
+      "note": "dropped=89,099; edges=470,852"
+    },
+    {
+      "label": "text",
+      "threshold": 0.9,
+      "value": 0.27721,
+      "unit": "dedup rate",
+      "note": "dropped=55,442; edges=278,084"
+    },
+    {
+      "label": "text",
+      "threshold": 0.95,
+      "value": 0.146085,
+      "unit": "dedup rate",
+      "note": "dropped=29,217; edges=139,458"
+    },
+    {
+      "label": "joint",
+      "threshold": 0.6,
+      "value": 0.47709,
+      "unit": "dedup rate",
+      "note": "dropped=95,418; edges=472,676"
+    },
+    {
+      "label": "joint",
+      "threshold": 0.65,
+      "value": 0.45078,
+      "unit": "dedup rate",
+      "note": "dropped=90,156; edges=423,335"
+    },
+    {
+      "label": "joint",
+      "threshold": 0.7,
+      "value": 0.402135,
+      "unit": "dedup rate",
+      "note": "dropped=80,427; edges=344,153"
+    },
+    {
+      "label": "joint",
+      "threshold": 0.75,
+      "value": 0.323375,
+      "unit": "dedup rate",
+      "note": "dropped=64,675; edges=240,817"
+    },
+    {
+      "label": "joint",
+      "threshold": 0.8,
+      "value": 0.21793,
+      "unit": "dedup rate",
+      "note": "dropped=43,586; edges=129,139"
+    },
+    {
+      "label": "joint",
+      "threshold": 0.85,
+      "value": 0.110215,
+      "unit": "dedup rate",
+      "note": "dropped=22,043; edges=47,272"
+    },
+    {
+      "label": "joint",
+      "threshold": 0.9,
+      "value": 0.04606,
+      "unit": "dedup rate",
+      "note": "dropped=9,212; edges=14,904"
+    },
+    {
+      "label": "joint",
+      "threshold": 0.95,
+      "value": 0.016185,
+      "unit": "dedup rate",
+      "note": "dropped=3,237; edges=4,315"
+    },
+    {
+      "label": "naive_union",
+      "threshold": 0.6,
+      "value": 0.49124,
+      "unit": "dedup rate",
+      "note": "dropped=98,248; edges=500,000"
+    },
+    {
+      "label": "naive_union",
+      "threshold": 0.65,
+      "value": 0.49124,
+      "unit": "dedup rate",
+      "note": "dropped=98,248; edges=500,000"
+    },
+    {
+      "label": "naive_union",
+      "threshold": 0.7,
+      "value": 0.49124,
+      "unit": "dedup rate",
+      "note": "dropped=98,248; edges=500,000"
+    },
+    {
+      "label": "naive_union",
+      "threshold": 0.75,
+      "value": 0.49124,
+      "unit": "dedup rate",
+      "note": "dropped=98,248; edges=500,000"
+    },
+    {
+      "label": "naive_union",
+      "threshold": 0.8,
+      "value": 0.49124,
+      "unit": "dedup rate",
+      "note": "dropped=98,248; edges=500,000"
+    },
+    {
+      "label": "naive_union",
+      "threshold": 0.85,
+      "value": 0.49124,
+      "unit": "dedup rate",
+      "note": "dropped=98,248; edges=500,000"
+    },
+    {
+      "label": "naive_union",
+      "threshold": 0.9,
+      "value": 0.29475,
+      "unit": "dedup rate",
+      "note": "dropped=58,950; edges=285,176"
+    },
+    {
+      "label": "naive_union",
+      "threshold": 0.95,
+      "value": 0.148505,
+      "unit": "dedup rate",
+      "note": "dropped=29,701; edges=140,352"
     }
   ]
 }

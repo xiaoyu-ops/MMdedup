@@ -1,0 +1,6 @@
+split,name,description,raw_pairs,kept_pairs,dropped_pairs,dedup_rate,selected_candidate_edges,threshold
+A,raw,原始数据，不去重,200000,200000,0,0.0,0,n/a
+B,image_only,仅图像去重,200000,171997,28003,0.140015,57625,image>=0.8
+C,text_only,仅文本去重,200000,104395,95605,0.478025,490866,text>=0.6
+D,naive_union,图像 + 文本独立去重并集,200000,101752,98248,0.49124,500000,image>=0.8 OR text>=0.6
+E,stage4_joint,Stage 4 跨模态联合去重,200000,177957,22043,0.110215,47272,joint>=0.85

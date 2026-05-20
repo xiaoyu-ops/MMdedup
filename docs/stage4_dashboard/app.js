@@ -57,10 +57,27 @@ function renderCharts(charts) {
     valueFormatter: (value) => value.toFixed(3),
     fixedMax: 1,
   });
+  renderBarChart("abcdeSplitChart", charts.stage4_abcde_split_sizes || [], {
+    valueFormatter: formatNumber,
+    maxMode: "local",
+  });
+  renderBarChart("thresholdDedupChart", compactThresholdRows(charts.threshold_dedup_rates || []), {
+    valueFormatter: (value) => value.toFixed(3),
+    fixedMax: 0.5,
+  });
   renderBarChart("runtimeChart", charts.experiment_runtime, {
     valueFormatter: (value) => `${value} min`,
     maxMode: "local",
   });
+}
+
+function compactThresholdRows(rows) {
+  return rows
+    .filter((row) => Number(row.threshold) === 0.85 || (row.label === "text" && Number(row.threshold) === 0.6))
+    .map((row) => ({
+      ...row,
+      label: `${row.label} τ=${row.threshold}`,
+    }));
 }
 
 function renderBarChart(rootId, rows, options = {}) {

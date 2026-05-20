@@ -1,0 +1,64 @@
+{
+  "num_pairs": 200000,
+  "num_candidates": 500000,
+  "best_known_split_sizes": {
+    "A": {
+      "split": "A",
+      "name": "raw",
+      "description": "\u539f\u59cb\u6570\u636e\uff0c\u4e0d\u53bb\u91cd",
+      "raw_pairs": 200000,
+      "kept_pairs": 200000,
+      "dropped_pairs": 0,
+      "dedup_rate": 0.0,
+      "selected_candidate_edges": 0,
+      "threshold": "n/a"
+    },
+    "B": {
+      "split": "B",
+      "name": "image_only",
+      "description": "\u4ec5\u56fe\u50cf\u53bb\u91cd",
+      "raw_pairs": 200000,
+      "kept_pairs": 171997,
+      "dropped_pairs": 28003,
+      "dedup_rate": 0.140015,
+      "selected_candidate_edges": 57625,
+      "threshold": "image>=0.8"
+    },
+    "C": {
+      "split": "C",
+      "name": "text_only",
+      "description": "\u4ec5\u6587\u672c\u53bb\u91cd",
+      "raw_pairs": 200000,
+      "kept_pairs": 104395,
+      "dropped_pairs": 95605,
+      "dedup_rate": 0.478025,
+      "selected_candidate_edges": 490866,
+      "threshold": "text>=0.6"
+    },
+    "D": {
+      "split": "D",
+      "name": "naive_union",
+      "description": "\u56fe\u50cf + \u6587\u672c\u72ec\u7acb\u53bb\u91cd\u5e76\u96c6",
+      "raw_pairs": 200000,
+      "kept_pairs": 101752,
+      "dropped_pairs": 98248,
+      "dedup_rate": 0.49124,
+      "selected_candidate_edges": 500000,
+      "threshold": "image>=0.8 OR text>=0.6"
+    },
+    "E": {
+      "split": "E",
+      "name": "stage4_joint",
+      "description": "Stage 4 \u8de8\u6a21\u6001\u8054\u5408\u53bb\u91cd",
+      "raw_pairs": 200000,
+      "kept_pairs": 177957,
+      "dropped_pairs": 22043,
+      "dedup_rate": 0.110215,
+      "selected_candidate_edges": 47272,
+      "threshold": "joint>=0.85"
+    }
+  },
+  "threshold_rows": 40,
+  "note": "Rates are graph-component drop rates over mined candidate edges scoped to the manifest/pair universe, not final LLaVA training results.",
+  "elapsed_seconds": 18.349836111068726
+}
