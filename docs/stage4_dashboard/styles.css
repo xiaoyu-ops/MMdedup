@@ -291,6 +291,17 @@ figcaption {
   color: var(--muted);
 }
 
+.pill.data_ready_table_missing,
+.pill.partial {
+  background: #fff5e8;
+  color: var(--orange);
+}
+
+.pill.missing_data {
+  background: #fdecec;
+  color: var(--red);
+}
+
 .annotation-meter {
   height: 12px;
   overflow: hidden;
@@ -707,7 +718,7 @@ td code,
 }
 
 .matrix-table {
-  min-width: 1060px;
+  min-width: 1280px;
 }
 
 .matrix-table td strong,
@@ -719,6 +730,59 @@ td code,
   margin-top: 5px;
   color: var(--muted);
   line-height: 1.35;
+}
+
+.matrix-summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.matrix-summary-item {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 9px;
+  background: #fff;
+}
+
+.matrix-summary-item span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.matrix-summary-item strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 18px;
+}
+
+.matrix-data-list {
+  display: grid;
+  gap: 5px;
+}
+
+.matrix-data-list span {
+  display: block;
+  border-left: 3px solid var(--line);
+  padding-left: 8px;
+  line-height: 1.35;
+}
+
+.matrix-data-list .empty-data {
+  color: var(--red);
+  border-left-color: var(--red);
+}
+
+.next-action {
+  display: block;
+  margin: 8px 0;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.matrix-sources {
+  margin-top: 8px;
 }
 
 .inline-source {

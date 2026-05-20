@@ -327,6 +327,19 @@ Do not rely on chat history as the only progress record.
 Most final experiments and LLaVA training are expected to run on a Windows
 machine with one RTX 3090 GPU.
 
+Main-experiment rule:
+
+- Main experiments should run on the Windows RTX 3090 machine by default. This
+  includes CC3M-scale candidate mining, Stage 4 full-scale runs, A/B/C/D/E split
+  generation when it depends on Windows-side data, efficiency measurements, and
+  all LLaVA LoRA training/evaluation jobs.
+- The Mac should mainly be used for smoke tests, small deterministic
+  validation, code edits, result inspection, source-of-truth consolidation,
+  dashboard generation, and paper writing.
+- If a paper-facing result is produced on Mac instead of Windows, record the
+  reason in the experiment ledger and daily log, and do not mix its runtime or
+  efficiency numbers with Windows RTX 3090 results.
+
 Current development machine:
 
 - macOS on Apple M5 Pro with 48 GB memory.
@@ -437,6 +450,11 @@ Required update rule:
 - After every experiment that updates the ledger, metrics, annotation status, or
   stage progress, rerun:
   `uv run python experiments/scripts/build_stage4_dashboard_data.py`
+- The dashboard must be updated in real time with the current plan progress.
+  Any change to experiment status, required Plan B data, annotation progress,
+  paper-facing numbers, source-of-truth files, blockers, or next steps must be
+  reflected in `docs/stage4_dashboard/data/` before the work is considered
+  complete for that step.
 - Treat `docs/stage4_dashboard/data/status.json` as the current front-end
   snapshot.
 - The dashboard must expose plan-relevant data through front-end-readable files
@@ -453,6 +471,12 @@ Hard rules:
   logs.
 - Do use the dashboard as the public/project-facing view of the current
   source-of-truth state.
+- Do not report a stage as done to the user if the website/dashboard still shows
+  the old state. First update the source-of-truth files, regenerate dashboard
+  data, and verify that the website-facing files expose the new numbers.
+- When the dashboard is deployed, push or deploy dashboard changes promptly
+  after meaningful progress so collaborators can inspect the same current data
+  from the website.
 - If the dashboard and ledger disagree, update the ledger or metrics first, then
   regenerate the dashboard.
 - If the dashboard is deployed under a domain, deploy the full

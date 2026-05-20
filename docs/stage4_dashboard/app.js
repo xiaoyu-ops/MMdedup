@@ -245,12 +245,13 @@ function renderPlanDataMatrix(groups) {
     head.append(el("span", `pill ${group.status}`, statusText(group.status)));
     section.append(head);
     section.append(el("p", "paper-data-purpose", group.purpose));
+    section.append(renderMatrixSummary(group.items || []));
 
     const table = document.createElement("table");
     table.className = "matrix-table";
     const thead = document.createElement("thead");
     const header = document.createElement("tr");
-    ["数据 / 表格", "当前状态", "已有数字", "来源 / 缺口"].forEach((title) => {
+    ["方案要求的表 / 数据", "数据状态", "论文表状态", "前端可见数据", "缺口 / 下一步 / 来源"].forEach((title) => {
       header.append(el("th", "", title));
     });
     thead.append(header);
@@ -264,22 +265,28 @@ function renderPlanDataMatrix(groups) {
       if (item.description) name.append(el("small", "", item.description));
       tr.append(name);
       const status = document.createElement("td");
-      status.append(el("span", `pill ${item.status}`, statusText(item.status)));
+      status.append(el("span", `pill ${item.data_status || item.status}`, statusText(item.data_status || item.status)));
       tr.append(status);
+      const tableStatus = document.createElement("td");
+      tableStatus.append(el("span", `pill ${item.paper_table_status || "pending"}`, tableStatusText(item.paper_table_status)));
+      tr.append(tableStatus);
       const numbers = document.createElement("td");
-      numbers.textContent = item.current_numbers || "待生成";
+      numbers.append(renderMatrixDataList(item.existing_data, item.current_numbers));
       tr.append(numbers);
       const sources = document.createElement("td");
+      sources.append(renderMatrixDataList(item.missing_data, item.gap, "缺口"));
+      if (item.next_action) sources.append(el("small", "next-action", `下一步：${item.next_action}`));
       if (item.sources && item.sources.length) {
+        const sourceWrap = el("div", "matrix-sources");
         item.sources.forEach((source) => {
           const link = el("a", "inline-source", source.title);
           link.href = source.href;
           link.target = "_blank";
           link.rel = "noopener";
-          sources.append(link);
+          sourceWrap.append(link);
         });
+        sources.append(sourceWrap);
       }
-      if (item.gap) sources.append(el("small", "", item.gap));
       tr.append(sources);
       tbody.append(tr);
     });
@@ -289,6 +296,45 @@ function renderPlanDataMatrix(groups) {
     section.append(wrap);
     root.append(section);
   });
+}
+
+function renderMatrixSummary(items) {
+  const summary = el("div", "matrix-summary");
+  const counts = {
+    total: items.length,
+    complete: items.filter((item) => item.data_status === "complete").length,
+    partial: items.filter((item) => item.data_status === "partial").length,
+    pending: items.filter((item) => item.data_status === "pending").length,
+    tableReady: items.filter((item) => item.paper_table_status === "ready").length,
+    tableMissing: items.filter((item) => item.paper_table_status !== "ready").length,
+  };
+  [
+    ["要求项", counts.total],
+    ["数据已齐", counts.complete],
+    ["数据部分齐", counts.partial],
+    ["缺数据", counts.pending],
+    ["论文表未成稿", counts.tableMissing],
+  ].forEach(([label, value]) => {
+    const item = el("div", "matrix-summary-item");
+    item.append(el("span", "", label));
+    item.append(el("strong", "", String(value)));
+    summary.append(item);
+  });
+  return summary;
+}
+
+function renderMatrixDataList(values, fallback, emptyLabel = "已有数据") {
+  const wrap = el("div", "matrix-data-list");
+  const list = Array.isArray(values) ? values.filter(Boolean) : [];
+  if (!list.length && fallback) list.push(fallback);
+  if (!list.length) {
+    wrap.append(el("span", "empty-data", `${emptyLabel}：暂无`));
+    return wrap;
+  }
+  list.forEach((value) => {
+    wrap.append(el("span", "", value));
+  });
+  return wrap;
 }
 
 function renderRisks(risks) {
@@ -387,6 +433,16 @@ function statusText(status) {
     pending: "待开始",
     partial: "部分完成",
   }[status] || status;
+}
+
+function tableStatusText(status) {
+  return {
+    ready: "表已可用",
+    data_ready_table_missing: "数据可写 / 表未成稿",
+    missing_data: "缺核心数据",
+    partial: "数据部分齐",
+    pending: "待开始",
+  }[status] || "待确认";
 }
 
 function riskLevelText(level) {

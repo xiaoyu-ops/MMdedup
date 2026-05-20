@@ -886,14 +886,45 @@ def _matrix_item(
     gap: str,
     description: str,
 ) -> dict[str, object]:
+    paper_table_status = _paper_table_status(name, status)
+    has_sources = bool(sources)
     return {
         "name": name,
         "status": status,
+        "data_status": status,
+        "paper_table_status": paper_table_status,
         "description": description,
         "current_numbers": current_numbers,
+        "existing_data": _split_matrix_text(current_numbers) if current_numbers else [],
+        "missing_data": _split_matrix_text(gap) if gap else [],
+        "next_action": _next_action_for_matrix_item(name, status, gap, has_sources),
         "sources": sources,
         "gap": gap,
     }
+
+
+def _paper_table_status(name: str, data_status: str) -> str:
+    if not name.startswith("表 "):
+        return "ready" if data_status == "complete" else data_status
+    if data_status == "pending":
+        return "missing_data"
+    return "data_ready_table_missing"
+
+
+def _next_action_for_matrix_item(name: str, status: str, gap: str, has_sources: bool) -> str:
+    if status == "pending":
+        return gap or "先运行对应实验并写入 source-of-truth。"
+    if status == "partial":
+        return gap or "补齐缺失数据后再生成论文表。"
+    if name.startswith("表 "):
+        return "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。"
+    if has_sources:
+        return "保持随实验更新。"
+    return ""
+
+
+def _split_matrix_text(value: str) -> list[str]:
+    return [part.strip() for part in value.split(";") if part.strip()]
 
 
 def _copy_paper_source_files() -> None:
@@ -921,7 +952,10 @@ def _copy_paper_source_files() -> None:
     }
     for src, name in copies.items():
         if src.exists():
-            shutil.copyfile(src, paper_dir / name)
+            dest = paper_dir / name
+            shutil.copyfile(src, dest)
+            if dest.suffix == ".csv":
+                dest.write_text(dest.read_text(encoding="utf-8").replace("\r\n", "\n"), encoding="utf-8")
 
 
 def _source(title: str, href: str, description: str) -> dict[str, str]:
