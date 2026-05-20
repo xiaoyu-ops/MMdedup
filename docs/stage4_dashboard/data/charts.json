@@ -127,6 +127,12 @@
       "value": 0.39,
       "unit": "minutes",
       "note": "A kept=200000; B kept=171997 rate=0.140; C kept=104395 rate=0.478; D kept=101752 rate=0.491; E kept=177957 rate=0.110"
+    },
+    {
+      "label": "exp_llava_stage4_real_train_smoke_E_20260520",
+      "value": 0.89,
+      "unit": "minutes",
+      "note": "real LLaVA-1.5-7B 4-bit LoRA smoke; steps=1; final_loss=6.7041; peak_memory_gb=5.164; trainable_params=21168128"
     }
   ],
   "stage4_eval_best_f1": [

@@ -94,7 +94,7 @@ def main() -> int:
         image_size=args.image_size,
         prompt="LLaVA conversation JSON: human image prompt, assistant caption",
     )
-    write_json(args.output_dir / "config.json", asdict(config))
+    write_config(args.output_dir, asdict(config))
 
     metrics: dict[str, Any] = {
         "experiment_id": args.experiment_id,
@@ -388,6 +388,18 @@ def parse_csv(value: str) -> list[str]:
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def write_config(output_dir: Path, payload: dict[str, Any]) -> None:
+    write_json(output_dir / "config.json", payload)
+    try:
+        import yaml
+    except ImportError:
+        return
+    (output_dir / "config.yaml").write_text(
+        yaml.safe_dump(payload, sort_keys=False, allow_unicode=True),
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":

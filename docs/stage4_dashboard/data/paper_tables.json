@@ -207,8 +207,8 @@
     "paper_location": "论文表：LLaVA 训练数据规模与下游结果",
     "status": "partial",
     "what_it_answers": "原始、单模态、naive union、Stage 4 五组训练数据规模分别是多少，后续 LLaVA 怎么跑。",
-    "recommended_claim": "At this stage, the dashboard supports reporting materialized A/B/C/D/E training manifests, but not downstream performance.",
-    "do_not_write": "不要写 VQAv2/TextVQA 有结果；当前 manifest 可用于启动训练，但训练结果还没有产生。",
+    "recommended_claim": "At this stage, the dashboard supports reporting materialized A/B/C/D/E training manifests and a real LLaVA-1.5 4-bit LoRA smoke test, but not downstream benchmark performance.",
+    "do_not_write": "不要写 VQAv2/TextVQA 有结果；当前 manifest 与真实模型 smoke 可证明训练链路可用，但正式下游结果还没有产生。",
     "table_columns": [
       "组别",
       "方法",
@@ -274,9 +274,14 @@
         "title": "Split metrics",
         "href": "data/paper/stage4_split_threshold_metrics.json",
         "description": "Notes and source metrics."
+      },
+      {
+        "title": "Experiment ledger",
+        "href": "data/experiment_ledger.csv",
+        "description": "Includes data smoke and real LLaVA-1.5 4-bit LoRA smoke records."
       }
     ],
-    "gap": "下一步必须把这 5 份 manifest 交给 Windows 3090 跑 LLaVA LoRA + VQAv2/TextVQA。"
+    "gap": "下一步必须在 Windows 3090 上跑完整 A/B/C/D/E LLaVA LoRA，并产出 VQAv2/TextVQA 指标。"
   },
   {
     "id": "efficiency-overhead",

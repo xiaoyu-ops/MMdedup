@@ -66,15 +66,15 @@ def main() -> int:
             },
             {
                 "level": "medium",
-                "title": "LLaVA 下游验证尚未开始",
-                "detail": "A/B/C/D/E 五组 200K split 规模已估算，但 LoRA 训练与 VQAv2/TextVQA 指标尚未产生。",
+                "title": "LLaVA 正式下游验证尚未完成",
+                "detail": "A/B/C/D/E 五组 200K split 已生成，真实 LLaVA-1.5-7B 4-bit LoRA smoke 已跑通 1 step；但完整 LoRA 训练与 VQAv2/TextVQA 指标尚未产生。",
             },
         ],
         "next_steps": [
             "基于误差分析决定论文如何解释：joint 优于 naive union，但 image-only 在当前 high-joint GT 上更强。",
-            "把 A/B/C/D/E 200K split 从图组件估算推进到真实训练 manifest 文件。",
+            "基于已验证的 Windows WSL2 环境启动 A/B/C/D/E 五组 LLaVA LoRA 正式训练。",
             "将 Windows 端 embedding cache 和后续 split 结果同步回 Mac source-of-truth。",
-            "准备 A/B/C/D/E 五组 LLaVA LoRA 训练配置并记录 GPU/driver/CUDA 信息。",
+            "为每个 LLaVA run 保存 config/metrics/logs，并同步回 Mac source-of-truth。",
         ],
     }
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -295,6 +295,8 @@ def _experiments() -> list[dict[str, str]]:
         "exp_stage4_eval_1000_200k_high_joint_20260519",
         "exp_stage4_error_analysis_1000_200k_high_joint_20260520",
         SPLIT_EXPERIMENT_ID,
+        "exp_llava_stage4_data_smoke_abcde_20260520",
+        "exp_llava_stage4_real_train_smoke_E_20260520",
     ]
     rows = []
     ledger = RESULTS / "experiment_ledger.csv"
@@ -843,16 +845,17 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
             "paper_location": "论文表：LLaVA 训练数据规模与下游结果",
             "status": "partial",
             "what_it_answers": "原始、单模态、naive union、Stage 4 五组训练数据规模分别是多少，后续 LLaVA 怎么跑。",
-            "recommended_claim": "At this stage, the dashboard supports reporting materialized A/B/C/D/E training manifests, but not downstream performance.",
-            "do_not_write": "不要写 VQAv2/TextVQA 有结果；当前 manifest 可用于启动训练，但训练结果还没有产生。",
+            "recommended_claim": "At this stage, the dashboard supports reporting materialized A/B/C/D/E training manifests and a real LLaVA-1.5 4-bit LoRA smoke test, but not downstream benchmark performance.",
+            "do_not_write": "不要写 VQAv2/TextVQA 有结果；当前 manifest 与真实模型 smoke 可证明训练链路可用，但正式下游结果还没有产生。",
             "table_columns": ["组别", "方法", "保留 pairs", "删除 pairs", "去重率", "阈值"],
             "rows": split_rows,
             "evidence": [
                 _source("A/B/C/D/E split sizes", "data/paper/stage4_abcde_split_sizes.csv", "Current 200K materialized training split sizes."),
                 _source("Threshold dedup rates", "data/paper/stage4_threshold_dedup_rates.csv", "Threshold vs dedup rate table."),
                 _source("Split metrics", "data/paper/stage4_split_threshold_metrics.json", "Notes and source metrics."),
+                _source("Experiment ledger", "data/experiment_ledger.csv", "Includes data smoke and real LLaVA-1.5 4-bit LoRA smoke records."),
             ],
-            "gap": "下一步必须把这 5 份 manifest 交给 Windows 3090 跑 LLaVA LoRA + VQAv2/TextVQA。",
+            "gap": "下一步必须在 Windows 3090 上跑完整 A/B/C/D/E LLaVA LoRA，并产出 VQAv2/TextVQA 指标。",
         },
         {
             "id": "efficiency-overhead",
