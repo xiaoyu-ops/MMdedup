@@ -34,6 +34,7 @@ function render(data) {
   renderPhases(data.phase_progress);
   renderAnnotation(data.annotation);
   renderExperiments(data.experiments);
+  renderPaperTables(data.paper_tables || []);
   renderPaperData(data.paper_writing_data || []);
   renderPlanDataMatrix(data.plan_data_matrix || []);
   renderRequirements(data.plan_requirements);
@@ -200,6 +201,77 @@ function renderExperiments(experiments) {
     });
     root.append(tr);
   });
+}
+
+function renderPaperTables(items) {
+  const root = document.getElementById("paperTableWorkbench");
+  root.innerHTML = "";
+  items.forEach((item) => {
+    const card = el("article", "paper-table-card");
+    const head = el("div", "paper-table-card-head");
+    const titleWrap = el("div", "");
+    titleWrap.append(el("small", "", item.paper_location || "论文位置待定"));
+    titleWrap.append(el("h3", "", item.title));
+    head.append(titleWrap);
+    head.append(el("span", `pill ${item.status}`, paperReadyText(item.status)));
+    card.append(head);
+
+    const meta = el("div", "paper-table-meta");
+    meta.append(renderPaperTextBlock("回答的问题", item.what_it_answers));
+    meta.append(renderPaperTextBlock("英文建议写法", item.recommended_claim));
+    meta.append(renderPaperTextBlock("不要这样写", item.do_not_write, "danger"));
+    if (item.gap) meta.append(renderPaperTextBlock("缺口 / 下一步", item.gap, "warning"));
+    card.append(meta);
+
+    card.append(renderPaperTablePreview(item.table_columns || [], item.rows || []));
+
+    const evidence = el("div", "paper-table-evidence");
+    (item.evidence || []).forEach((source) => {
+      const link = el("a", "inline-source", source.title);
+      link.href = viewUrl(source.href, source.title);
+      link.target = "_blank";
+      link.rel = "noopener";
+      evidence.append(link);
+    });
+    if (evidence.childNodes.length) card.append(evidence);
+    root.append(card);
+  });
+}
+
+function renderPaperTextBlock(label, text, tone = "") {
+  const node = el("div", `paper-text-block ${tone}`.trim());
+  node.append(el("span", "", label));
+  node.append(el("p", "", text || "暂无"));
+  return node;
+}
+
+function renderPaperTablePreview(columns, rows) {
+  const wrap = el("div", "table-wrap paper-preview-wrap");
+  const table = document.createElement("table");
+  table.className = "paper-preview-table";
+  if (columns.length) {
+    const thead = document.createElement("thead");
+    const tr = document.createElement("tr");
+    columns.forEach((name) => tr.append(el("th", "", name)));
+    thead.append(tr);
+    table.append(thead);
+  }
+  const tbody = document.createElement("tbody");
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    row.forEach((value) => tr.append(el("td", "", String(value))));
+    tbody.append(tr);
+  });
+  if (!rows.length) {
+    const tr = document.createElement("tr");
+    const td = el("td", "empty-data", "暂无可填行");
+    td.colSpan = Math.max(1, columns.length);
+    tr.append(td);
+    tbody.append(tr);
+  }
+  table.append(tbody);
+  wrap.append(table);
+  return wrap;
 }
 
 function renderPaperData(sections) {
@@ -448,6 +520,16 @@ function tableStatusText(status) {
     partial: "数据部分齐",
     pending: "待开始",
   }[status] || "待确认";
+}
+
+function paperReadyText(status) {
+  return {
+    ready: "可写入论文",
+    ready_with_caution: "可写但需限定",
+    partial: "部分可写",
+    active: "需持续更新",
+    pending: "缺核心数据",
+  }[status] || statusText(status);
 }
 
 function riskLevelText(level) {

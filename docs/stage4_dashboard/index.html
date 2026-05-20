@@ -133,7 +133,19 @@
     <section class="panel">
       <div class="panel-head">
         <h2>论文写作数据</h2>
-        <span>合作者可直接点击查看</span>
+        <span>按论文表格组织，可直接写作</span>
+      </div>
+      <p class="section-note">
+        这里不是原始 JSON 目录，而是把当前 source-of-truth 转成论文视角：
+        每块对应一个 Section / Table / Figure，合作者可以直接看到能写什么、不能写什么、缺什么和证据文件。
+      </p>
+      <div id="paperTableWorkbench" class="paper-table-workbench"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>证据文件入口</h2>
+        <span>原始数据的可视化入口</span>
       </div>
       <div id="paperDataList" class="paper-data-list"></div>
     </section>

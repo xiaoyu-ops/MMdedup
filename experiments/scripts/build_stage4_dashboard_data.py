@@ -35,6 +35,7 @@ def main() -> int:
         "plan_requirements": _plan_requirements(),
         "experiments": _experiments(),
         "paper_writing_data": _paper_writing_data(annotation),
+        "paper_tables": _paper_tables(annotation),
         "plan_data_matrix": _plan_data_matrix(annotation),
         "data_quality_audit": _data_quality_audit(),
         "annotation": annotation,
@@ -542,22 +543,22 @@ def _threshold_dedup_chart() -> list[dict[str, object]]:
 def _data_exports() -> list[dict[str, str]]:
     return [
         {
-            "title": "Dashboard status JSON",
+            "title": "Dashboard 当前状态",
             "href": "data/status.json",
             "description": "Dashboard 使用的完整状态快照。",
         },
         {
-            "title": "图表数据 JSON",
+            "title": "图表数据源",
             "href": "data/charts.json",
             "description": "candidate funnel、标注分布、阶段进度和实验耗时的图表数据。",
         },
         {
-            "title": "方案数据需求 JSON",
+            "title": "方案数据需求",
             "href": "data/plan_requirements.json",
             "description": "每个 Plan B 产物需要的数据、当前产物和证据路径。",
         },
         {
-            "title": "最新标注状态 JSON",
+            "title": "最新标注状态",
             "href": "data/latest_annotation_status.json",
             "description": "当前标签数量、标注进度和输出路径。",
         },
@@ -567,17 +568,22 @@ def _data_exports() -> list[dict[str, str]]:
             "description": "source-of-truth 实验台账快照。",
         },
         {
-            "title": "论文写作数据 JSON",
+            "title": "论文写作证据目录",
             "href": "data/paper_writing_data.json",
             "description": "按论文段落和表格组织的可引用数字、解释和证据文件链接。",
         },
         {
-            "title": "方案完整数据清单 JSON",
+            "title": "论文表格工作台数据源",
+            "href": "data/paper_tables.json",
+            "description": "按论文表/图/段落组织的可直接写作视图，包含推荐表头、可填行、写法和风险。",
+        },
+        {
+            "title": "方案完整数据清单",
             "href": "data/plan_data_matrix.json",
             "description": "对照 MMdedup 修改计划列出的所有实验表格、当前状态、已有来源和缺口。",
         },
         {
-            "title": "数据合理性审核 JSON",
+            "title": "数据合理性审核",
             "href": "data/data_quality_audit.json",
             "description": "当前数据是否适合写进论文、哪些数字必须加限定、哪些还不能作为最终 claim。",
         },
@@ -599,6 +605,10 @@ def _write_exports(status: dict, annotation: dict[str, object], charts: dict[str
     )
     (DATA_DIR / "paper_writing_data.json").write_text(
         json.dumps(status["paper_writing_data"], indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    (DATA_DIR / "paper_tables.json").write_text(
+        json.dumps(status["paper_tables"], indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
     (DATA_DIR / "plan_data_matrix.json").write_text(
@@ -724,6 +734,204 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
             ],
         },
     ]
+
+
+def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
+    prepare = _read_json(SYNC / "cc3m_subset_200k_20260515/prepare_metrics.json")
+    candidates = _read_json(SYNC / "exp_stage4_candidates_200k_manifest_20260516/metrics.json")
+    high_joint = _read_json(SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json")
+    adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
+    evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
+    error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
+    split_metrics = _read_json(RESULTS / "exp_stage4_split_threshold_200k_20260520/metrics.json")
+    best_by_score = evaluation.get("best_by_score", {})
+    if not isinstance(best_by_score, dict):
+        best_by_score = {}
+
+    image = best_by_score.get("image", {})
+    text = best_by_score.get("text", {})
+    naive = best_by_score.get("naive_union", {})
+    joint = best_by_score.get("joint", {})
+    split_rows = _split_table_rows(split_metrics)
+
+    return [
+        {
+            "id": "dataset-ground-truth",
+            "title": "数据集与 Ground Truth 构建",
+            "paper_location": "论文位置：Dataset construction；表：CC3M 候选挖掘与标注统计",
+            "status": "ready",
+            "what_it_answers": "我们用了什么真实数据、为什么不是随机抽样、标注集有多少正负例。",
+            "recommended_claim": (
+                "We construct a real CC3M-based hard-candidate benchmark by first mining likely duplicate "
+                "image-caption pair-pairs from a 200K pool and then manually annotating 1,000 candidate pairs."
+            ),
+            "do_not_write": "不要写 raw CC3M 的自然重复率就是 29.5%；这个比例只属于 high-joint hard-candidate 标注集。",
+            "table_columns": ["项目", "当前数字", "论文写法"],
+            "rows": [
+                ["CC3M 数据池", _fmt_int(prepare.get("saved_pairs", 200000)), "从 CC3M 准备 200K image-caption pairs。"],
+                ["初筛候选 pair-pairs", _fmt_int(candidates.get("num_candidates", 500000)), "人工标注前先挖掘可能重复的候选 pair-pairs。"],
+                ["High-joint 候选池", _fmt_int(high_joint.get("num_candidates", 129139)), "按 joint similarity 和 image similarity 过滤，用于标注采样。"],
+                ["已标注 pair-pairs", _fmt_int(annotation.get("done", 0)), "用于 Stage 4 评价的人工标注样本。"],
+                ["正例数量", _fmt_int(annotation.get("positives", 0)), "duplicate + near-duplicate。"],
+                ["负例数量", _fmt_int(annotation.get("counts", {}).get("not-duplicate", 0)), "not-duplicate。"],
+            ],
+            "evidence": [
+                _source("CC3M 200K prepare", "data/paper/cc3m_subset_200k_prepare_metrics.json", "200K pool preparation metrics."),
+                _source("Candidate mining", "data/paper/stage4_candidates_200k_metrics.json", "500K mined candidate pair-pairs."),
+                _source("High-joint filter", "data/paper/stage4_candidates_200k_high_joint_metrics.json", "Filtered candidate pool for annotation."),
+                _source("Labeled annotations", "data/paper/stage4_annotation_1000_high_joint_labeled.csv", "Human-labeled 1,000 row benchmark."),
+            ],
+            "gap": "如果要正式报告 inter-annotator agreement，需要真实合作者 audit；当前 audit 只是流程占位。",
+        },
+        {
+            "id": "main-stage4-evaluation",
+            "title": "主评价：Stage 4 与 Baselines 对比",
+            "paper_location": "论文表：CC3M hard-candidate benchmark 上的 Precision / Recall / F1",
+            "status": "ready_with_caution",
+            "what_it_answers": "Stage 4 是否比三个单模态拼接/naive union 更合理。",
+            "recommended_claim": (
+                "On the current hard-candidate benchmark, Stage 4 improves over the naive union baseline, "
+                "but image-only remains stronger; the paper should present this honestly and use error analysis to explain why."
+            ),
+            "do_not_write": "不要写 Stage 4 全面超过所有单模态 baseline；当前 image-only F1 更高。",
+            "table_columns": ["方法", "阈值", "Precision", "Recall", "F1", "论文备注"],
+            "rows": [
+                _eval_row("Image-only", image, "当前 GT 上最强 baseline。"),
+                _eval_row("Text-only", text, "在 high-joint 候选集上明显过度预测正例。"),
+                _eval_row("Naive union", naive, "单模态结果并集，代表简单拼接式多模态 baseline。"),
+                _eval_row("Stage 4 joint", joint, "超过 naive union，但未超过 image-only。"),
+            ],
+            "evidence": [
+                _source("Main metrics", "data/paper/stage4_eval_metrics.json", "Best P/R/F1 by score."),
+                _source("Threshold sweep", "data/paper/stage4_eval_per_threshold_metrics.csv", "Complete threshold sweep."),
+                _source("Experiment ledger", "data/experiment_ledger.csv", "Traceable experiment record."),
+            ],
+            "gap": "如果想增强主 claim，下一步不是改口径，而是按预定方案跑 fair operating point / 下游验证。",
+        },
+        {
+            "id": "error-analysis",
+            "title": "误差分析",
+            "paper_location": "论文图/表：Stage 4 失败样例与 image-only 对比",
+            "status": "partial",
+            "what_it_answers": "为什么 Stage 4 没超过 image-only，以及它错在哪里。",
+            "recommended_claim": (
+                "A large fraction of Stage 4 false positives are caption-template cases, suggesting that identical or near-identical "
+                "captions can over-amplify joint similarity even when image-level evidence is weaker."
+            ),
+            "do_not_write": "不要把误差分析写成最终算法失败；这里应写成当前表示选择的边界和后续改进方向。",
+            "table_columns": ["诊断项", "当前数字", "解释"],
+            "rows": [
+                ["Joint false positives", _fmt_int(error_analysis.get("joint_false_positives")), "joint 判为重复但人工标签为负例。"],
+                ["Joint false negatives", _fmt_int(error_analysis.get("joint_false_negatives")), "人工正例中被 joint 阈值漏掉的样本。"],
+                ["Caption 完全相同的 joint FP 比例", _fmt_float(error_analysis.get("joint_fp_caption_equal_rate"), 3), "模板化 caption 是主要 FP 来源之一。"],
+                ["Image 正确 / Joint 错误", _fmt_int(error_analysis.get("image_correct_joint_wrong")), "解释为什么 image-only 当前更强。"],
+                ["Joint 正确 / Image 错误", _fmt_int(error_analysis.get("joint_correct_image_wrong")), "说明跨模态信号确实有增益样本。"],
+            ],
+            "evidence": [
+                _source("Error metrics", "data/paper/stage4_error_analysis_metrics.json", "Aggregated FP/FN diagnostics."),
+                _source("Joint FP examples", "data/paper/stage4_joint_fp_examples.csv", "Concrete false positive rows."),
+                _source("Image wins joint loses", "data/paper/stage4_image_wins_joint_loses.csv", "Cases where image-only is correct and joint is wrong."),
+                _source("Joint wins image loses", "data/paper/stage4_joint_wins_image_loses.csv", "Cases where Stage 4 is correct and image-only is wrong."),
+            ],
+            "gap": "需要抽几组可视化例子放进论文或 appendix，而不是只给统计数。",
+        },
+        {
+            "id": "abcde-downstream",
+            "title": "下游训练 A/B/C/D/E 数据划分",
+            "paper_location": "论文表：LLaVA 训练数据规模与下游结果",
+            "status": "partial",
+            "what_it_answers": "原始、单模态、naive union、Stage 4 五组训练数据规模分别是多少，后续 LLaVA 怎么跑。",
+            "recommended_claim": "At this stage, the dashboard only supports reporting estimated split sizes, not downstream performance.",
+            "do_not_write": "不要写 VQAv2/TextVQA 有结果；不要把当前 split size 当成最终训练 manifest。",
+            "table_columns": ["组别", "方法", "保留 pairs", "删除 pairs", "去重率", "阈值"],
+            "rows": split_rows,
+            "evidence": [
+                _source("A/B/C/D/E split sizes", "data/paper/stage4_abcde_split_sizes.csv", "Current 200K split size estimates."),
+                _source("Threshold dedup rates", "data/paper/stage4_threshold_dedup_rates.csv", "Threshold vs dedup rate table."),
+                _source("Split metrics", "data/paper/stage4_split_threshold_metrics.json", "Notes and source metrics."),
+            ],
+            "gap": "下一步必须在 Windows 3090 上生成真实训练 manifest，并跑 LLaVA LoRA + VQAv2/TextVQA。",
+        },
+        {
+            "id": "efficiency-overhead",
+            "title": "系统效率与 Stage 4 开销",
+            "paper_location": "论文表：Stage 4 overhead",
+            "status": "partial",
+            "what_it_answers": "Stage 4 增加了多少计算开销，是否可接受。",
+            "recommended_claim": "Only partial timing can be written now; GPU memory and full Stage 4 component timing are still missing.",
+            "do_not_write": "不要写完整系统开销表已经完成；GPU peak memory 目前没有 source-of-truth。",
+            "table_columns": ["指标", "当前数字", "状态"],
+            "rows": [
+                ["CC3M 200K 数据准备 wall-clock", _fmt_runtime(str(prepare.get("elapsed_seconds", ""))), "已有"],
+                ["候选挖掘 wall-clock", _fmt_runtime(str(candidates.get("elapsed_seconds", ""))), "已有"],
+                ["评价脚本 wall-clock", _fmt_runtime(str(evaluation.get("elapsed_seconds", ""))), "已有，但不是 GPU 开销"],
+                ["GPU peak memory", "缺失", "必须在 Windows RTX 3090 上记录"],
+                ["Embedding / search 分项耗时", "缺失", "完整系统表需要补"],
+            ],
+            "evidence": [
+                _source("Prepare metrics", "data/paper/cc3m_subset_200k_prepare_metrics.json", "Data preparation timing."),
+                _source("Candidate mining metrics", "data/paper/stage4_candidates_200k_metrics.json", "Candidate mining timing."),
+                _source("Evaluation metrics", "data/paper/stage4_eval_metrics.json", "Evaluation runtime."),
+            ],
+            "gap": "补 Windows 侧 GPU memory、CLIP embedding time、nearest-neighbor/search time、end-to-end throughput。",
+        },
+        {
+            "id": "audit-safety",
+            "title": "论文数字安全与 Claim 控制",
+            "paper_location": "写作检查清单：把数字复制进论文前必须核对",
+            "status": "active",
+            "what_it_answers": "哪些数字现在能写，哪些必须加限定，哪些还不能写。",
+            "recommended_claim": "Use the dashboard as writing view, but use experiment files and ledger as source-of-truth.",
+            "do_not_write": "不要把 dashboard JSON 当 source-of-truth；它只是前端快照。",
+            "table_columns": ["风险点", "当前判断", "必须动作"],
+            "rows": [
+                ["Agreement rate", "不是正式合作者一致性", "真实合作者 audit 前不要报告。"],
+                ["Raw duplicate prevalence", "尚未估计", "不能从 high-joint benchmark 推断。"],
+                ["Stage 4 superiority", "目前只超过 naive union", "必须说明 image-only 在当前 benchmark 更强。"],
+                ["Downstream performance", "缺失", "LLaVA 跑完前不能宣称训练效果。"],
+            ],
+            "evidence": [
+                _source("Data quality audit", "data/data_quality_audit.json", "Current paper-safety audit."),
+                _source("Experiment ledger", "data/experiment_ledger.csv", "Source-of-truth index."),
+            ],
+            "gap": "写论文前逐表核对：每个数字必须有 experiment id。",
+        },
+    ]
+
+
+def _eval_row(name: str, row: object, note: str) -> list[str]:
+    if not isinstance(row, dict):
+        return [name, "n/a", "n/a", "n/a", "n/a", note]
+    return [
+        name,
+        str(row.get("threshold", "n/a")),
+        _fmt_float(row.get("precision"), 3),
+        _fmt_float(row.get("recall"), 3),
+        _fmt_float(row.get("f1"), 3),
+        note,
+    ]
+
+
+def _split_table_rows(metrics: dict[str, object]) -> list[list[str]]:
+    splits = metrics.get("best_known_split_sizes", {})
+    if not isinstance(splits, dict):
+        return []
+    rows = []
+    for key in ["A", "B", "C", "D", "E"]:
+        item = splits.get(key, {})
+        if not isinstance(item, dict):
+            continue
+        rows.append(
+            [
+                key,
+                str(item.get("name", "")),
+                _fmt_int(item.get("kept_pairs")),
+                _fmt_int(item.get("dropped_pairs")),
+                _fmt_float(item.get("dedup_rate"), 3),
+                str(item.get("threshold", "")),
+            ]
+        )
+    return rows
 
 
 def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
