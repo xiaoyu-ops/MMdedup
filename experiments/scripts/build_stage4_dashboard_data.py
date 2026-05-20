@@ -36,6 +36,7 @@ def main() -> int:
         "experiments": _experiments(),
         "paper_writing_data": _paper_writing_data(annotation),
         "plan_data_matrix": _plan_data_matrix(annotation),
+        "data_quality_audit": _data_quality_audit(),
         "annotation": annotation,
         "artifacts": _artifacts(),
         "data_exports": _data_exports(),
@@ -44,6 +45,16 @@ def main() -> int:
                 "level": "high",
                 "title": "Stage 4 尚未超过 image-only",
                 "detail": "当前 1000 条 high-joint 标注集上，joint F1=0.583，naive_union F1=0.456，但 image-only F1=0.626，需要做误差分析并谨慎写作。",
+            },
+            {
+                "level": "high",
+                "title": "Audit agreement 不能当正式合作者一致性",
+                "detail": "当前 agreement_rate=1.0 来自 audit_label 默认填主标签，只能说明流程完成，不能作为真实 inter-annotator agreement。",
+            },
+            {
+                "level": "high",
+                "title": "当前 GT 是 hard-candidate benchmark",
+                "detail": "1000 条标注来自 joint>=0.80 且 image>=0.60 的候选池，不能用来估计原始 CC3M 的重复比例。",
             },
             {
                 "level": "medium",
@@ -565,6 +576,11 @@ def _data_exports() -> list[dict[str, str]]:
             "href": "data/plan_data_matrix.json",
             "description": "对照 MMdedup 修改计划列出的所有实验表格、当前状态、已有来源和缺口。",
         },
+        {
+            "title": "数据合理性审核 JSON",
+            "href": "data/data_quality_audit.json",
+            "description": "当前数据是否适合写进论文、哪些数字必须加限定、哪些还不能作为最终 claim。",
+        },
     ]
 
 
@@ -589,10 +605,19 @@ def _write_exports(status: dict, annotation: dict[str, object], charts: dict[str
         json.dumps(status["plan_data_matrix"], indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    (DATA_DIR / "data_quality_audit.json").write_text(
+        json.dumps(status["data_quality_audit"], indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
     ledger = RESULTS / "experiment_ledger.csv"
     if ledger.exists():
         shutil.copyfile(ledger, DATA_DIR / "experiment_ledger.csv")
     _copy_paper_source_files()
+
+
+def _data_quality_audit() -> dict[str, object]:
+    audit_path = RESULTS / "data_audits/2026-05-20_data_reasonableness_audit.json"
+    return _read_json(audit_path)
 
 
 def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]]:

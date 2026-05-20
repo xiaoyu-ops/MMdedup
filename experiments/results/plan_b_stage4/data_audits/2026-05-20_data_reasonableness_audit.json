@@ -1,0 +1,143 @@
+{
+  "audit_id": "data_reasonableness_audit_20260520",
+  "created_at": "2026-05-20T11:05:00+08:00",
+  "scope": "Plan B Stage 4 current source-of-truth data, dashboard data, annotation labels, evaluation metrics, and A/B/C/D/E split-size estimates.",
+  "overall_assessment": "The current data is internally consistent for engineering progress tracking and preliminary paper planning, but several numbers are not yet safe as final paper claims without qualification.",
+  "hard_consistency_checks": {
+    "manifest_rows": 200000,
+    "manifest_unique_pair_ids": 200000,
+    "candidate_rows": 500000,
+    "candidate_unique_undirected_edges": 500000,
+    "candidate_self_edges": 0,
+    "candidate_edges_outside_manifest": 0,
+    "high_joint_rows": 129139,
+    "high_joint_filter_bad_rows": 0,
+    "annotation_rows": 1000,
+    "annotation_unique_candidate_ids": 1000,
+    "adjudicated_rows": 1000,
+    "split_raw_pairs": 200000,
+    "split_sums_valid": true
+  },
+  "current_key_numbers": {
+    "label_distribution": {
+      "duplicate": 58,
+      "near_duplicate": 237,
+      "not_duplicate": 705,
+      "positive_total": 295
+    },
+    "best_f1_on_current_gt": {
+      "image_only": {
+        "threshold": 0.8,
+        "f1": 0.6265,
+        "precision": 0.6192,
+        "recall": 0.6339
+      },
+      "stage4_joint": {
+        "threshold": 0.85,
+        "f1": 0.5835,
+        "precision": 0.5102,
+        "recall": 0.6814
+      },
+      "text_only": {
+        "threshold": 0.6,
+        "f1": 0.4556,
+        "precision": 0.295,
+        "recall": 1.0
+      },
+      "naive_union": {
+        "threshold": 0.6,
+        "f1": 0.4556,
+        "precision": 0.295,
+        "recall": 1.0
+      }
+    },
+    "abcde_split_estimates": {
+      "A_raw": {
+        "kept": 200000,
+        "dropped": 0,
+        "dedup_rate": 0.0
+      },
+      "B_image_only": {
+        "kept": 171997,
+        "dropped": 28003,
+        "dedup_rate": 0.140015
+      },
+      "C_text_only": {
+        "kept": 104395,
+        "dropped": 95605,
+        "dedup_rate": 0.478025
+      },
+      "D_naive_union": {
+        "kept": 101752,
+        "dropped": 98248,
+        "dedup_rate": 0.49124
+      },
+      "E_stage4_joint": {
+        "kept": 177957,
+        "dropped": 22043,
+        "dedup_rate": 0.110215
+      }
+    }
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "title": "Current audit agreement is not a real collaborator agreement statistic",
+      "detail": "The 200 audit labels are currently defaulted to the primary labels, producing agreement_rate=1.0. This is internally consistent but should not be reported as real inter-annotator agreement.",
+      "action": "Do not write agreement_rate=1.0 as collaborator agreement. Either obtain real collaborator audit labels or state that collaborator audit is pending."
+    },
+    {
+      "severity": "high",
+      "title": "The high-joint ground truth is a hard-candidate evaluation set, not a random CC3M prevalence estimate",
+      "detail": "The labeled 1000 rows are sampled from joint>=0.80 and image>=0.60 candidates. This is appropriate for candidate-level evaluation but cannot estimate duplicate prevalence in raw CC3M.",
+      "action": "Describe the dataset as a mined hard-candidate benchmark. Do not claim 29.5% positives in CC3M overall."
+    },
+    {
+      "severity": "high",
+      "title": "Naive/text baselines at low threshold degenerate into all-positive predictions",
+      "detail": "On the current high-joint labeled set, text-only and naive_union at threshold 0.60 predict all 1000 rows as duplicates, yielding F1=0.4556 from prevalence alone. This is a weak baseline point, not a meaningful operating point.",
+      "action": "When writing results, include threshold behavior and avoid overclaiming that Stage 4 beats a strong naive baseline unless a fair operating point is fixed."
+    },
+    {
+      "severity": "medium",
+      "title": "Stage 4 does not currently beat image-only on the 1000-row labeled set",
+      "detail": "Image-only best F1 is 0.6265 at threshold 0.80, while Stage 4 joint best F1 is 0.5835 at threshold 0.85. This must be discussed honestly.",
+      "action": "Frame Stage 4 as reducing naive multimodal over-deletion and improving over text/naive composition, but do not claim it dominates image-only on this set."
+    },
+    {
+      "severity": "medium",
+      "title": "A/B/C/D/E split sizes are graph-component estimates, not final training manifests",
+      "detail": "The split-size table is computed from candidate graph components over mined candidate edges. It is useful for planning, but final LLaVA training requires concrete manifest files and logs.",
+      "action": "Label Table 4.1 as partial until training manifests are generated."
+    },
+    {
+      "severity": "medium",
+      "title": "Text similarity creates many false positives through repeated captions/templates",
+      "detail": "Stage 4 joint false positives include 82/193 rows with identical captions, about 42.5%. This suggests text/template dominance in part of the joint score.",
+      "action": "Use this in error analysis and consider weighted joint variants or stricter image constraints if time allows."
+    },
+    {
+      "severity": "low",
+      "title": "Manifest pair ids are non-contiguous but internally valid",
+      "detail": "The 200K manifest has 200000 unique pair ids, but the last id is cc3m_206611. Candidate edges are all inside the manifest, so this is not a consistency bug.",
+      "action": "Do not assume pair ids are contiguous. Always use manifest.csv as the pair universe."
+    }
+  ],
+  "paper_safety_labels": {
+    "safe_to_report_with_qualification": [
+      "200K CC3M prepared pairs",
+      "500K mined candidate pair-pairs",
+      "129139 high-joint/high-image candidates",
+      "1000 labeled hard-candidate pair-pairs",
+      "label distribution on the mined hard-candidate benchmark",
+      "Stage 4 vs image/text/naive metrics on the mined hard-candidate benchmark"
+    ],
+    "not_safe_as_final_claim_yet": [
+      "inter-annotator agreement=1.0",
+      "duplicate prevalence in raw CC3M",
+      "A/B/C/D/E final LLaVA training sizes",
+      "downstream VQAv2/TextVQA performance",
+      "GPU peak memory and final efficiency table"
+    ]
+  }
+}
