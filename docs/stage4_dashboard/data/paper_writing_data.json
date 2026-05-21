@@ -223,7 +223,7 @@
   {
     "title": "LLaVA 下游验证",
     "status": "partial",
-    "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke，以及 Stage 4 E 的真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke；完整 A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
+    "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke、Stage 4 E 真实 LLaVA smoke，以及 A/B/C/D/E 五组 512-sample pilot；完整 25K/2000-step A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
     "key_numbers": [
       {
         "label": "Raw A",
@@ -259,6 +259,16 @@
         "label": "Real LLaVA smoke",
         "value": "loss=6.7041",
         "note": "steps=1; peak=5.164 GiB"
+      },
+      {
+        "label": "Pilot 训练",
+        "value": "5/5 complete",
+        "note": "A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625"
+      },
+      {
+        "label": "正式训练队列",
+        "value": "running",
+        "note": "JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle"
       }
     ],
     "sources": [
@@ -281,6 +291,16 @@
         "title": "LLaVA E real smoke metrics",
         "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
         "description": "Stage 4 E 上真实模型 1-step LoRA 训练 smoke。"
+      },
+      {
+        "title": "LLaVA pilot metrics",
+        "href": "data/paper/llava_stage4_pilot_metrics.json",
+        "description": "A/B/C/D/E 五组 512-sample / 20-step pilot 汇总。"
+      },
+      {
+        "title": "LLaVA overnight queue log",
+        "href": "data/paper/llava_stage4_overnight_queue_20260521.log",
+        "description": "Windows 任务计划程序启动的 overnight queue 日志快照。"
       },
       {
         "title": "实验设计规则",

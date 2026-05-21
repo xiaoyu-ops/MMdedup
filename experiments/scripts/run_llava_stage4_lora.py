@@ -40,6 +40,7 @@ class RunConfig:
     target_modules: list[str]
     max_length: int
     image_size: int | None
+    shuffle: bool
     prompt: str
 
 
@@ -62,6 +63,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target-modules", default=DEFAULT_TARGET_MODULES)
     parser.add_argument("--max-length", type=int, default=768)
     parser.add_argument("--image-size", type=int, help="Optional square resize for tiny-model smoke tests.")
+    parser.add_argument("--shuffle", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--data-only", action="store_true", help="Only validate JSON/images and write metrics.")
     return parser.parse_args()
 
@@ -72,8 +74,12 @@ def main() -> int:
     random.seed(args.seed)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
+    log_event("loading_records", path=str(args.train_json), max_samples=args.max_samples)
     records = load_records(args.train_json, args.max_samples)
+    log_event("records_loaded", count=len(records))
+    log_event("validating_images", count=len(records))
     image_check = validate_images(records)
+    log_event("images_validated", **image_check)
     config = RunConfig(
         experiment_id=args.experiment_id,
         model_id=args.model_id,
@@ -92,6 +98,7 @@ def main() -> int:
         target_modules=parse_csv(args.target_modules),
         max_length=args.max_length,
         image_size=args.image_size,
+        shuffle=args.shuffle,
         prompt="LLaVA conversation JSON: human image prompt, assistant caption",
     )
     write_config(args.output_dir, asdict(config))
@@ -167,7 +174,13 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(args.seed)
         torch.cuda.reset_peak_memory_stats()
+    log_event(
+        "training_environment",
+        cuda_available=torch.cuda.is_available(),
+        gpu_name=torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
+    )
 
+    log_event("loading_processor", model_id=args.model_id)
     processor = AutoProcessor.from_pretrained(args.model_id)
     if args.image_size and hasattr(processor, "image_processor"):
         size_value = {"height": args.image_size, "width": args.image_size}
@@ -190,8 +203,11 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
         model_kwargs["quantization_config"] = quantization_config
         model_kwargs["device_map"] = "auto"
 
+    log_event("loading_model", model_id=args.model_id, load_in_4bit=args.load_in_4bit)
     model = LlavaForConditionalGeneration.from_pretrained(args.model_id, **model_kwargs)
+    log_event("model_loaded")
     if args.load_in_4bit:
+        log_event("preparing_kbit_training")
         model = prepare_model_for_kbit_training(model)
     elif torch.cuda.is_available():
         model.to("cuda")
@@ -204,6 +220,7 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
         bias="none",
         task_type="CAUSAL_LM",
     )
+    log_event("attaching_lora", target_modules=config.target_modules, lora_r=args.lora_r)
     model = get_peft_model(model, lora_config)
     model.train()
 
@@ -214,16 +231,27 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
         max_length=args.max_length,
         image_size=args.image_size,
     )
-    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collator)
+    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=args.shuffle, collate_fn=collator)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
 
     losses: list[float] = []
     optimizer.zero_grad(set_to_none=True)
     step = 0
+    log_event(
+        "training_loop_start",
+        records=len(dataset),
+        batch_size=args.batch_size,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        max_steps=args.max_steps,
+        shuffle=args.shuffle,
+    )
     for batch_idx, batch in enumerate(loader):
+        log_event("batch_start", batch_idx=batch_idx)
         batch = move_batch(batch, model)
+        log_event("forward_start", batch_idx=batch_idx)
         outputs = model(**batch)
         loss = outputs.loss / args.gradient_accumulation_steps
+        log_event("backward_start", batch_idx=batch_idx, loss=float(loss.detach().cpu()))
         loss.backward()
         if (batch_idx + 1) % args.gradient_accumulation_steps == 0:
             optimizer.step()
@@ -234,6 +262,7 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
             if step >= args.max_steps:
                 break
 
+    log_event("saving_adapter", output_dir=str(args.output_dir / "adapter"))
     model.save_pretrained(args.output_dir / "adapter")
     processor.save_pretrained(args.output_dir / "processor")
     return {
@@ -400,6 +429,11 @@ def write_config(output_dir: Path, payload: dict[str, Any]) -> None:
         yaml.safe_dump(payload, sort_keys=False, allow_unicode=True),
         encoding="utf-8",
     )
+
+
+def log_event(event: str, **fields: Any) -> None:
+    payload = {"event": event, **fields}
+    print(json.dumps(payload, ensure_ascii=False, default=str), flush=True)
 
 
 if __name__ == "__main__":

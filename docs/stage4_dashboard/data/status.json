@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-20T23:21:29+08:00",
+  "updated_at": "2026-05-21T11:31:47+08:00",
   "target": {
     "venue": "CIKM 2026 Full Paper",
     "deadline": "2026-05-23 AoE",
@@ -62,8 +62,8 @@
     {
       "name": "LLaVA 下游验证",
       "status": "active",
-      "percent": 20,
-      "detail": "A/B/C/D/E 数据入口已验证，真实 LLaVA-1.5-7B 4-bit LoRA 已完成 1 step smoke；完整训练和 VQAv2/TextVQA 尚未完成。"
+      "percent": 45,
+      "detail": "A/B/C/D/E 512-sample pilot 已完成 5/5；JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle；完整 VQAv2/TextVQA 指标尚未完成。"
     }
   ],
   "charts": {
@@ -149,7 +149,7 @@
       },
       {
         "label": "LLaVA 下游验证",
-        "value": 20,
+        "value": 45,
         "status": "active"
       }
     ],
@@ -201,6 +201,36 @@
         "value": 0.89,
         "unit": "minutes",
         "note": "real LLaVA-1.5-7B 4-bit LoRA smoke; steps=1; final_loss=6.7041; peak_memory_gb=5.164; trainable_params=21168128"
+      },
+      {
+        "label": "exp_llava_stage4_pilot_E_stage4_joint_512_20steps_20260521",
+        "value": 2.6,
+        "unit": "minutes",
+        "note": "E Stage 4 joint pilot; samples=512; steps=20; final_loss=2.3625; peak_memory_gb=5.428"
+      },
+      {
+        "label": "exp_llava_stage4_pilot_D_naive_union_512_20steps_20260521",
+        "value": 2.7,
+        "unit": "minutes",
+        "note": "D naive union pilot; samples=512; steps=20; final_loss=2.8424; peak_memory_gb=5.433"
+      },
+      {
+        "label": "exp_llava_stage4_pilot_A_raw_512_20steps_20260521",
+        "value": 2.4,
+        "unit": "minutes",
+        "note": "A raw pilot; samples=512; steps=20; final_loss=2.3875; peak_memory_gb=5.428"
+      },
+      {
+        "label": "exp_llava_stage4_pilot_B_image_only_512_20steps_20260521",
+        "value": 2.5,
+        "unit": "minutes",
+        "note": "B image-only pilot; samples=512; steps=20; final_loss=4.3353; peak_memory_gb=5.429"
+      },
+      {
+        "label": "exp_llava_stage4_pilot_C_text_only_512_20steps_20260521",
+        "value": 2.4,
+        "unit": "minutes",
+        "note": "C text-only pilot; samples=512; steps=20; final_loss=2.5809; peak_memory_gb=5.433"
       }
     ],
     "stage4_eval_best_f1": [
@@ -492,6 +522,38 @@
         "unit": "dedup rate",
         "note": "dropped=29,701; edges=140,352"
       }
+    ],
+    "llava_pilots": [
+      {
+        "label": "A raw",
+        "value": 2.3875,
+        "unit": "final loss",
+        "note": "steps=20; samples=512; peak=5.428 GiB"
+      },
+      {
+        "label": "B image-only",
+        "value": 4.3353,
+        "unit": "final loss",
+        "note": "steps=20; samples=512; peak=5.429 GiB"
+      },
+      {
+        "label": "C text-only",
+        "value": 2.5809,
+        "unit": "final loss",
+        "note": "steps=20; samples=512; peak=5.433 GiB"
+      },
+      {
+        "label": "D naive union",
+        "value": 2.8424,
+        "unit": "final loss",
+        "note": "steps=20; samples=512; peak=5.433 GiB"
+      },
+      {
+        "label": "E Stage 4 joint",
+        "value": 2.3625,
+        "unit": "final loss",
+        "note": "steps=20; samples=512; peak=5.428 GiB"
+      }
     ]
   },
   "plan_requirements": [
@@ -581,13 +643,17 @@
         "A/B/C/D/E 200K training manifests",
         "A/B/C/D/E LLaVA JSON data-smoke validated",
         "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
+        "A/B/C/D/E 512-sample LoRA pilot：5/5 complete",
+        "当前正式训练状态：JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle",
         "smoke final_loss=6.7041; peak_memory=5.164 GiB",
-        "完整 A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成"
+        "完整 25K/2000-step A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成"
       ],
       "evidence": [
         "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/metrics.json",
         "experiments/results/plan_b_stage4/exp_llava_stage4_data_smoke_abcde_20260520/metrics.json",
         "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_real_train_smoke_E_20260520/metrics.json",
+        "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_pilot_E_stage4_joint_512_20steps_20260521/metrics.json",
+        "experiments/results/plan_b_stage4/windows_sync/llava_stage4_overnight_queue_20260521.log",
         "experiments/results/plan_b_stage4/experiment_ledger.csv"
       ]
     },
@@ -710,6 +776,46 @@
       "runtime": "53.3 s",
       "numbers": "real LLaVA-1.5-7B 4-bit LoRA smoke; steps=1; final_loss=6.7041; peak_memory_gb=5.164; trainable_params=21168128",
       "notes": "Engineering smoke only; proves real LLaVA model can load and run one LoRA training step on the Windows RTX 3090 with Stage 4 E data; not a downstream quality result"
+    },
+    {
+      "id": "exp_llava_stage4_pilot_E_stage4_joint_512_20steps_20260521",
+      "dataset": "WeiChow/cc3m 200K E Stage 4 joint LLaVA JSON split pilot sample",
+      "hardware": "Windows 11 WSL2 Ubuntu-24.04 RTX 3090; Python 3.12.3; torch 2.5.1+cu121; transformers 5.8.1; peft 0.19.1; bitsandbytes 0.49.2",
+      "runtime": "2.6 min",
+      "numbers": "E Stage 4 joint pilot; samples=512; steps=20; final_loss=2.3625; peak_memory_gb=5.428",
+      "notes": "Pilot LoRA run only; proves each A/B/C/D/E split can train for 20 optimizer steps on the Windows RTX 3090; not a downstream VQAv2/TextVQA result"
+    },
+    {
+      "id": "exp_llava_stage4_pilot_D_naive_union_512_20steps_20260521",
+      "dataset": "WeiChow/cc3m 200K D naive-union LLaVA JSON split pilot sample",
+      "hardware": "Windows 11 WSL2 Ubuntu-24.04 RTX 3090; Python 3.12.3; torch 2.5.1+cu121; transformers 5.8.1; peft 0.19.1; bitsandbytes 0.49.2",
+      "runtime": "2.7 min",
+      "numbers": "D naive union pilot; samples=512; steps=20; final_loss=2.8424; peak_memory_gb=5.433",
+      "notes": "Pilot LoRA run only; proves each A/B/C/D/E split can train for 20 optimizer steps on the Windows RTX 3090; not a downstream VQAv2/TextVQA result"
+    },
+    {
+      "id": "exp_llava_stage4_pilot_A_raw_512_20steps_20260521",
+      "dataset": "WeiChow/cc3m 200K A raw LLaVA JSON split pilot sample",
+      "hardware": "Windows 11 WSL2 Ubuntu-24.04 RTX 3090; Python 3.12.3; torch 2.5.1+cu121; transformers 5.8.1; peft 0.19.1; bitsandbytes 0.49.2",
+      "runtime": "2.4 min",
+      "numbers": "A raw pilot; samples=512; steps=20; final_loss=2.3875; peak_memory_gb=5.428",
+      "notes": "Pilot LoRA run only; proves each A/B/C/D/E split can train for 20 optimizer steps on the Windows RTX 3090; not a downstream VQAv2/TextVQA result"
+    },
+    {
+      "id": "exp_llava_stage4_pilot_B_image_only_512_20steps_20260521",
+      "dataset": "WeiChow/cc3m 200K B image-only LLaVA JSON split pilot sample",
+      "hardware": "Windows 11 WSL2 Ubuntu-24.04 RTX 3090; Python 3.12.3; torch 2.5.1+cu121; transformers 5.8.1; peft 0.19.1; bitsandbytes 0.49.2",
+      "runtime": "2.5 min",
+      "numbers": "B image-only pilot; samples=512; steps=20; final_loss=4.3353; peak_memory_gb=5.429",
+      "notes": "Pilot LoRA run only; proves each A/B/C/D/E split can train for 20 optimizer steps on the Windows RTX 3090; not a downstream VQAv2/TextVQA result"
+    },
+    {
+      "id": "exp_llava_stage4_pilot_C_text_only_512_20steps_20260521",
+      "dataset": "WeiChow/cc3m 200K C text-only LLaVA JSON split pilot sample",
+      "hardware": "Windows 11 WSL2 Ubuntu-24.04 RTX 3090; Python 3.12.3; torch 2.5.1+cu121; transformers 5.8.1; peft 0.19.1; bitsandbytes 0.49.2",
+      "runtime": "2.4 min",
+      "numbers": "C text-only pilot; samples=512; steps=20; final_loss=2.5809; peak_memory_gb=5.433",
+      "notes": "Pilot LoRA run only; proves each A/B/C/D/E split can train for 20 optimizer steps on the Windows RTX 3090; not a downstream VQAv2/TextVQA result"
     }
   ],
   "paper_writing_data": [
@@ -937,7 +1043,7 @@
     {
       "title": "LLaVA 下游验证",
       "status": "partial",
-      "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke，以及 Stage 4 E 的真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke；完整 A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
+      "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke、Stage 4 E 真实 LLaVA smoke，以及 A/B/C/D/E 五组 512-sample pilot；完整 25K/2000-step A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
       "key_numbers": [
         {
           "label": "Raw A",
@@ -973,6 +1079,16 @@
           "label": "Real LLaVA smoke",
           "value": "loss=6.7041",
           "note": "steps=1; peak=5.164 GiB"
+        },
+        {
+          "label": "Pilot 训练",
+          "value": "5/5 complete",
+          "note": "A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625"
+        },
+        {
+          "label": "正式训练队列",
+          "value": "running",
+          "note": "JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle"
         }
       ],
       "sources": [
@@ -995,6 +1111,16 @@
           "title": "LLaVA E real smoke metrics",
           "href": "data/paper/llava_stage4_real_train_smoke_E_metrics.json",
           "description": "Stage 4 E 上真实模型 1-step LoRA 训练 smoke。"
+        },
+        {
+          "title": "LLaVA pilot metrics",
+          "href": "data/paper/llava_stage4_pilot_metrics.json",
+          "description": "A/B/C/D/E 五组 512-sample / 20-step pilot 汇总。"
+        },
+        {
+          "title": "LLaVA overnight queue log",
+          "href": "data/paper/llava_stage4_overnight_queue_20260521.log",
+          "description": "Windows 任务计划程序启动的 overnight queue 日志快照。"
         },
         {
           "title": "实验设计规则",
@@ -1773,6 +1899,45 @@
             }
           ],
           "gap": "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。"
+        },
+        {
+          "name": "表 4.0b LLaVA A/B/C/D/E pilot",
+          "status": "complete",
+          "data_status": "complete",
+          "paper_table_status": "data_ready_table_missing",
+          "description": "A/B/C/D/E 五组 512-sample / 20-step pilot 训练状态。",
+          "current_numbers": "5/5 pilot complete; A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625; JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle",
+          "existing_data": [
+            "5/5 pilot complete",
+            "A loss=2.3875",
+            "B loss=4.3353",
+            "C loss=2.5809",
+            "D loss=2.8424",
+            "E loss=2.3625",
+            "JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle"
+          ],
+          "missing_data": [
+            "这仍不是 VQAv2/TextVQA 下游性能，只能证明五组 split 均可完成真实 LoRA 训练 pilot。"
+          ],
+          "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
+          "sources": [
+            {
+              "title": "pilot metrics",
+              "href": "data/paper/llava_stage4_pilot_metrics.json",
+              "description": ""
+            },
+            {
+              "title": "queue log",
+              "href": "data/paper/llava_stage4_overnight_queue_20260521.log",
+              "description": ""
+            },
+            {
+              "title": "ledger",
+              "href": "data/experiment_ledger.csv",
+              "description": ""
+            }
+          ],
+          "gap": "这仍不是 VQAv2/TextVQA 下游性能，只能证明五组 split 均可完成真实 LoRA 训练 pilot。"
         },
         {
           "name": "表 4.1 五组训练数据规模 A/B/C/D/E",

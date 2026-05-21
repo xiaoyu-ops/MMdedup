@@ -81,7 +81,7 @@
     },
     {
       "label": "LLaVA 下游验证",
-      "value": 20,
+      "value": 45,
       "status": "active"
     }
   ],
@@ -133,6 +133,36 @@
       "value": 0.89,
       "unit": "minutes",
       "note": "real LLaVA-1.5-7B 4-bit LoRA smoke; steps=1; final_loss=6.7041; peak_memory_gb=5.164; trainable_params=21168128"
+    },
+    {
+      "label": "exp_llava_stage4_pilot_E_stage4_joint_512_20steps_20260521",
+      "value": 2.6,
+      "unit": "minutes",
+      "note": "E Stage 4 joint pilot; samples=512; steps=20; final_loss=2.3625; peak_memory_gb=5.428"
+    },
+    {
+      "label": "exp_llava_stage4_pilot_D_naive_union_512_20steps_20260521",
+      "value": 2.7,
+      "unit": "minutes",
+      "note": "D naive union pilot; samples=512; steps=20; final_loss=2.8424; peak_memory_gb=5.433"
+    },
+    {
+      "label": "exp_llava_stage4_pilot_A_raw_512_20steps_20260521",
+      "value": 2.4,
+      "unit": "minutes",
+      "note": "A raw pilot; samples=512; steps=20; final_loss=2.3875; peak_memory_gb=5.428"
+    },
+    {
+      "label": "exp_llava_stage4_pilot_B_image_only_512_20steps_20260521",
+      "value": 2.5,
+      "unit": "minutes",
+      "note": "B image-only pilot; samples=512; steps=20; final_loss=4.3353; peak_memory_gb=5.429"
+    },
+    {
+      "label": "exp_llava_stage4_pilot_C_text_only_512_20steps_20260521",
+      "value": 2.4,
+      "unit": "minutes",
+      "note": "C text-only pilot; samples=512; steps=20; final_loss=2.5809; peak_memory_gb=5.433"
     }
   ],
   "stage4_eval_best_f1": [
@@ -423,6 +453,38 @@
       "value": 0.148505,
       "unit": "dedup rate",
       "note": "dropped=29,701; edges=140,352"
+    }
+  ],
+  "llava_pilots": [
+    {
+      "label": "A raw",
+      "value": 2.3875,
+      "unit": "final loss",
+      "note": "steps=20; samples=512; peak=5.428 GiB"
+    },
+    {
+      "label": "B image-only",
+      "value": 4.3353,
+      "unit": "final loss",
+      "note": "steps=20; samples=512; peak=5.429 GiB"
+    },
+    {
+      "label": "C text-only",
+      "value": 2.5809,
+      "unit": "final loss",
+      "note": "steps=20; samples=512; peak=5.433 GiB"
+    },
+    {
+      "label": "D naive union",
+      "value": 2.8424,
+      "unit": "final loss",
+      "note": "steps=20; samples=512; peak=5.433 GiB"
+    },
+    {
+      "label": "E Stage 4 joint",
+      "value": 2.3625,
+      "unit": "final loss",
+      "note": "steps=20; samples=512; peak=5.428 GiB"
     }
   ]
 }

@@ -114,6 +114,12 @@ def _summary_cards() -> list[dict[str, str]]:
 
 
 def _phase_progress() -> list[dict[str, str | int]]:
+    llava = _llava_pilot_status()
+    llava_percent = 45 if llava["completed"] >= 5 else 25 + llava["completed"] * 4
+    llava_detail = (
+        f"A/B/C/D/E 512-sample pilot 已完成 {llava['completed']}/5；"
+        f"{llava['current_training']}；完整 VQAv2/TextVQA 指标尚未完成。"
+    )
     return [
         {
             "name": "Stage 4 实现",
@@ -148,8 +154,8 @@ def _phase_progress() -> list[dict[str, str | int]]:
         {
             "name": "LLaVA 下游验证",
             "status": "active",
-            "percent": 20,
-            "detail": "A/B/C/D/E 数据入口已验证，真实 LLaVA-1.5-7B 4-bit LoRA 已完成 1 step smoke；完整训练和 VQAv2/TextVQA 尚未完成。",
+            "percent": llava_percent,
+            "detail": llava_detail,
         },
     ]
 
@@ -157,6 +163,7 @@ def _phase_progress() -> list[dict[str, str | int]]:
 def _plan_requirements() -> list[dict[str, object]]:
     llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
     llava_peak_memory = _fmt_gib(llava_smoke.get("gpu_peak_memory_bytes"))
+    llava = _llava_pilot_status()
     return [
         {
             "name": "Stage 4 实现",
@@ -244,13 +251,17 @@ def _plan_requirements() -> list[dict[str, object]]:
                 "A/B/C/D/E 200K training manifests",
                 "A/B/C/D/E LLaVA JSON data-smoke validated",
                 "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
+                f"A/B/C/D/E 512-sample LoRA pilot：{llava['completed']}/5 complete",
+                f"当前正式训练状态：{llava['current_training']}",
                 f"smoke final_loss={_fmt_float(llava_smoke.get('final_loss'), 4)}; peak_memory={llava_peak_memory}",
-                "完整 A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成",
+                "完整 25K/2000-step A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成",
             ],
             "evidence": [
                 "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/metrics.json",
                 "experiments/results/plan_b_stage4/exp_llava_stage4_data_smoke_abcde_20260520/metrics.json",
                 "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_real_train_smoke_E_20260520/metrics.json",
+                "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_pilot_E_stage4_joint_512_20steps_20260521/metrics.json",
+                "experiments/results/plan_b_stage4/windows_sync/llava_stage4_overnight_queue_20260521.log",
                 "experiments/results/plan_b_stage4/experiment_ledger.csv",
             ],
         },
@@ -307,6 +318,11 @@ def _experiments() -> list[dict[str, str]]:
         SPLIT_EXPERIMENT_ID,
         "exp_llava_stage4_data_smoke_abcde_20260520",
         "exp_llava_stage4_real_train_smoke_E_20260520",
+        "exp_llava_stage4_pilot_E_stage4_joint_512_20steps_20260521",
+        "exp_llava_stage4_pilot_D_naive_union_512_20steps_20260521",
+        "exp_llava_stage4_pilot_A_raw_512_20steps_20260521",
+        "exp_llava_stage4_pilot_B_image_only_512_20steps_20260521",
+        "exp_llava_stage4_pilot_C_text_only_512_20steps_20260521",
     ]
     rows = []
     ledger = RESULTS / "experiment_ledger.csv"
@@ -396,6 +412,7 @@ def _charts(annotation: dict[str, object]) -> dict[str, list[dict[str, object]]]
         "stage4_eval_best_f1": _stage4_eval_chart(),
         "stage4_abcde_split_sizes": _abcde_split_chart(),
         "threshold_dedup_rates": _threshold_dedup_chart(),
+        "llava_pilots": _llava_pilot_chart(),
     }
 
 
@@ -554,6 +571,73 @@ def _threshold_dedup_chart() -> list[dict[str, object]]:
     return rows
 
 
+def _llava_pilot_status() -> dict[str, object]:
+    pilots = [
+        ("A", "raw", "exp_llava_stage4_pilot_A_raw_512_20steps_20260521"),
+        ("B", "image-only", "exp_llava_stage4_pilot_B_image_only_512_20steps_20260521"),
+        ("C", "text-only", "exp_llava_stage4_pilot_C_text_only_512_20steps_20260521"),
+        ("D", "naive union", "exp_llava_stage4_pilot_D_naive_union_512_20steps_20260521"),
+        ("E", "Stage 4 joint", "exp_llava_stage4_pilot_E_stage4_joint_512_20steps_20260521"),
+    ]
+    rows = []
+    for split, name, exp_id in pilots:
+        metrics = _read_json(SYNC / f"{exp_id}/metrics.json")
+        done = metrics.get("status") == "trained" and int(metrics.get("steps") or 0) >= 20
+        rows.append(
+            {
+                "split": split,
+                "name": name,
+                "experiment_id": exp_id,
+                "status": "complete" if done else "missing",
+                "steps": int(metrics.get("steps") or 0),
+                "samples": int(metrics.get("num_loaded_records") or 0),
+                "final_loss": metrics.get("final_loss"),
+                "runtime_seconds": metrics.get("runtime_seconds"),
+                "gpu_peak_gb": (float(metrics.get("gpu_peak_memory_bytes") or 0) / 1024**3)
+                if metrics
+                else None,
+                "metrics_path": str((SYNC / f"{exp_id}/metrics.json").relative_to(ROOT)),
+            }
+        )
+    completed = sum(1 for row in rows if row["status"] == "complete")
+    summary_parts = [
+        f"{row['split']} loss={_fmt_float(row['final_loss'], 4)}"
+        for row in rows
+        if row["status"] == "complete"
+    ]
+    queue_log = SYNC / "llava_stage4_overnight_queue_20260521.log"
+    current_training = "25K/2000-step 正式队列已启动"
+    if queue_log.exists():
+        for line in reversed(queue_log.read_text(encoding="utf-8", errors="replace").splitlines()):
+            if line.startswith("JOB_START") and "train25k" in line:
+                current_training = line.strip()
+                break
+    return {
+        "completed": completed,
+        "total": len(rows),
+        "pilots": rows,
+        "pilot_summary": "; ".join(summary_parts) if summary_parts else "pilot metrics pending",
+        "current_training": current_training,
+        "queue_log": str(queue_log.relative_to(ROOT)),
+    }
+
+
+def _llava_pilot_chart() -> list[dict[str, object]]:
+    rows = []
+    for row in _llava_pilot_status()["pilots"]:
+        rows.append(
+            {
+                "label": f"{row['split']} {row['name']}",
+                "value": round(float(row["final_loss"]), 4)
+                if row.get("final_loss") is not None
+                else None,
+                "unit": "final loss",
+                "note": f"steps={row['steps']}; samples={row['samples']}; peak={_fmt_float(row.get('gpu_peak_gb'), 3)} GiB",
+            }
+        )
+    return rows
+
+
 def _data_exports() -> list[dict[str, str]]:
     return [
         {
@@ -655,6 +739,7 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
     split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
     llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
+    llava = _llava_pilot_status()
     best_by_score = evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
@@ -741,17 +826,21 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
         {
             "title": "LLaVA 下游验证",
             "status": "partial",
-            "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke，以及 Stage 4 E 的真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke；完整 A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
+            "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke、Stage 4 E 真实 LLaVA smoke，以及 A/B/C/D/E 五组 512-sample pilot；完整 25K/2000-step A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
             "key_numbers": _split_key_numbers(split_metrics)
             + [
                 {"label": "Data smoke", "value": "A/B/C/D/E", "note": "每组检查 32 条，missing_images=0，bad_images=0"},
                 {"label": "Real LLaVA smoke", "value": f"loss={_fmt_float(llava_smoke.get('final_loss'), 4)}", "note": f"steps={llava_smoke.get('steps', 'n/a')}; peak={_fmt_gib(llava_smoke.get('gpu_peak_memory_bytes'))}"},
+                {"label": "Pilot 训练", "value": f"{llava['completed']}/5 complete", "note": llava["pilot_summary"]},
+                {"label": "正式训练队列", "value": "running", "note": llava["current_training"]},
             ],
             "sources": [
                 _source("A/B/C/D/E split sizes CSV", "data/paper/stage4_abcde_split_sizes.csv", "200K manifest 上的五组训练数据规模。"),
                 _source("200K 阈值去重率 CSV", "data/paper/stage4_threshold_dedup_rates.csv", "image/text/joint/naive threshold vs dedup rate。"),
                 _source("A/B/C/D/E data smoke metrics", "data/paper/llava_stage4_data_smoke_abcde_metrics.json", "五组 LLaVA JSON 的路径和图片可读性检查。"),
                 _source("LLaVA E real smoke metrics", "data/paper/llava_stage4_real_train_smoke_E_metrics.json", "Stage 4 E 上真实模型 1-step LoRA 训练 smoke。"),
+                _source("LLaVA pilot metrics", "data/paper/llava_stage4_pilot_metrics.json", "A/B/C/D/E 五组 512-sample / 20-step pilot 汇总。"),
+                _source("LLaVA overnight queue log", "data/paper/llava_stage4_overnight_queue_20260521.log", "Windows 任务计划程序启动的 overnight queue 日志快照。"),
                 _source("实验设计规则", "data/plan_requirements.json", "保留 A/B/C/D/E 设计，不默认收缩。"),
                 _source("实验 ledger CSV", "data/experiment_ledger.csv", "训练完成后每组结果必须进入 ledger。"),
             ],
@@ -768,6 +857,7 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
     split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
     llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
+    llava = _llava_pilot_status()
     best_by_score = evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
@@ -977,6 +1067,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
     split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
     llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
+    llava = _llava_pilot_status()
 
     paper_eval = [_source("主评价 metrics", "data/paper/stage4_eval_metrics.json", "")]
     threshold_csv = [_source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "")]
@@ -1105,6 +1196,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
             "purpose": "最重要的下游验证：证明去重对 LLaVA-1.5-7B LoRA 训练有实际收益或不伤性能。",
             "items": [
                 _matrix_item("表 4.0 LLaVA 训练链路 smoke", "partial", f"A/B/C/D/E data smoke 通过；E real smoke steps={llava_smoke.get('steps', 'n/a')}; final_loss={_fmt_float(llava_smoke.get('final_loss'), 4)}; peak={_fmt_gib(llava_smoke.get('gpu_peak_memory_bytes'))}", llava_smoke_sources, "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。", "验证 Windows 3090 上真实 LLaVA-1.5-7B 4-bit LoRA 训练入口可用。"),
+                _matrix_item("表 4.0b LLaVA A/B/C/D/E pilot", "complete", f"{llava['completed']}/5 pilot complete; {llava['pilot_summary']}; {llava['current_training']}", [_source("pilot metrics", "data/paper/llava_stage4_pilot_metrics.json", ""), _source("queue log", "data/paper/llava_stage4_overnight_queue_20260521.log", ""), _source("ledger", "data/experiment_ledger.csv", "")], "这仍不是 VQAv2/TextVQA 下游性能，只能证明五组 split 均可完成真实 LoRA 训练 pilot。", "A/B/C/D/E 五组 512-sample / 20-step pilot 训练状态。"),
                 _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "complete", _split_summary(split_metrics), split_csv, "训练 manifest 已生成，且 data smoke 已验证；下一步是 Windows 3090 上实际训练和评测。", "原始样本数、去重后样本数、去重率。"),
                 _matrix_item("表 4.2 五组训练时间", "pending", "", [], "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。", "训练效率收益。"),
                 _matrix_item("表 4.3 VQAv2 评测结果", "pending", "", [], "需要每组至少一个 seed；理想 2 seeds。", "配置、seed、accuracy。"),
@@ -1218,6 +1310,8 @@ def _copy_paper_source_files() -> None:
         SPLIT_EXPERIMENT_DIR / "threshold_dedup_rates.csv": "stage4_threshold_dedup_rates.csv",
         RESULTS / "exp_llava_stage4_data_smoke_abcde_20260520/metrics.json": "llava_stage4_data_smoke_abcde_metrics.json",
         SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json": "llava_stage4_real_train_smoke_E_metrics.json",
+        SYNC / "llava_stage4_pilot_metrics.json": "llava_stage4_pilot_metrics.json",
+        SYNC / "llava_stage4_overnight_queue_20260521.log": "llava_stage4_overnight_queue_20260521.log",
     }
     for src, name in copies.items():
         if src.exists():

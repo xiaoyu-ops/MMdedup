@@ -360,6 +360,45 @@
         "gap": "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。"
       },
       {
+        "name": "表 4.0b LLaVA A/B/C/D/E pilot",
+        "status": "complete",
+        "data_status": "complete",
+        "paper_table_status": "data_ready_table_missing",
+        "description": "A/B/C/D/E 五组 512-sample / 20-step pilot 训练状态。",
+        "current_numbers": "5/5 pilot complete; A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625; JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle",
+        "existing_data": [
+          "5/5 pilot complete",
+          "A loss=2.3875",
+          "B loss=4.3353",
+          "C loss=2.5809",
+          "D loss=2.8424",
+          "E loss=2.3625",
+          "JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle"
+        ],
+        "missing_data": [
+          "这仍不是 VQAv2/TextVQA 下游性能，只能证明五组 split 均可完成真实 LoRA 训练 pilot。"
+        ],
+        "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
+        "sources": [
+          {
+            "title": "pilot metrics",
+            "href": "data/paper/llava_stage4_pilot_metrics.json",
+            "description": ""
+          },
+          {
+            "title": "queue log",
+            "href": "data/paper/llava_stage4_overnight_queue_20260521.log",
+            "description": ""
+          },
+          {
+            "title": "ledger",
+            "href": "data/experiment_ledger.csv",
+            "description": ""
+          }
+        ],
+        "gap": "这仍不是 VQAv2/TextVQA 下游性能，只能证明五组 split 均可完成真实 LoRA 训练 pilot。"
+      },
+      {
         "name": "表 4.1 五组训练数据规模 A/B/C/D/E",
         "status": "complete",
         "data_status": "complete",
