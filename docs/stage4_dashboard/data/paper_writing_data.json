@@ -268,7 +268,7 @@
       {
         "label": "正式训练队列",
         "value": "running",
-        "note": "JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle"
+        "note": "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 running: step 273/2000; GPU 100%; VRAM 7204/24576 MiB; snapshot 2026-05-21T11:41:13+08:00"
       }
     ],
     "sources": [

@@ -115,7 +115,10 @@ def _summary_cards() -> list[dict[str, str]]:
 
 def _phase_progress() -> list[dict[str, str | int]]:
     llava = _llava_pilot_status()
-    llava_percent = 45 if llava["completed"] >= 5 else 25 + llava["completed"] * 4
+    if llava["completed"] >= 5:
+        llava_percent = 45 + round(float(llava.get("formal_queue_percent") or 0) * 0.35)
+    else:
+        llava_percent = 25 + llava["completed"] * 4
     llava_detail = (
         f"A/B/C/D/E 512-sample pilot 已完成 {llava['completed']}/5；"
         f"{llava['current_training']}；完整 VQAv2/TextVQA 指标尚未完成。"
@@ -612,12 +615,31 @@ def _llava_pilot_status() -> dict[str, object]:
             if line.startswith("JOB_START") and "train25k" in line:
                 current_training = line.strip()
                 break
+    current_status = _read_json(SYNC / "llava_stage4_current_training_status.json")
+    formal_queue_percent = 0.0
+    if current_status:
+        step = int(current_status.get("current_step") or 0)
+        target_steps = int(current_status.get("target_steps") or 0)
+        gpu = current_status.get("gpu", {})
+        if not isinstance(gpu, dict):
+            gpu = {}
+        if target_steps:
+            formal_queue_percent = min(step / (target_steps * 5) * 100, 100)
+        current_training = (
+            f"{current_status.get('experiment_id', 'formal training')} running: "
+            f"step {step}/{target_steps}; "
+            f"GPU {gpu.get('utilization_percent', 'n/a')}%; "
+            f"VRAM {gpu.get('memory_used_mib', 'n/a')}/{gpu.get('memory_total_mib', 'n/a')} MiB; "
+            f"snapshot {current_status.get('updated_at', 'n/a')}"
+        )
     return {
         "completed": completed,
         "total": len(rows),
         "pilots": rows,
         "pilot_summary": "; ".join(summary_parts) if summary_parts else "pilot metrics pending",
         "current_training": current_training,
+        "current_training_status": current_status,
+        "formal_queue_percent": formal_queue_percent,
         "queue_log": str(queue_log.relative_to(ROOT)),
     }
 
@@ -1312,6 +1334,9 @@ def _copy_paper_source_files() -> None:
         SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json": "llava_stage4_real_train_smoke_E_metrics.json",
         SYNC / "llava_stage4_pilot_metrics.json": "llava_stage4_pilot_metrics.json",
         SYNC / "llava_stage4_overnight_queue_20260521.log": "llava_stage4_overnight_queue_20260521.log",
+        SYNC / "llava_stage4_current_training_status.json": "llava_stage4_current_training_status.json",
+        SYNC / "llava_stage4_current_stdout_tail_20260521.log": "llava_stage4_current_stdout_tail_20260521.log",
+        SYNC / "llava_stage4_current_gpu_20260521.log": "llava_stage4_current_gpu_20260521.log",
     }
     for src, name in copies.items():
         if src.exists():

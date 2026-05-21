@@ -1,0 +1,23 @@
+{
+  "status": "running",
+  "experiment_id": "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521",
+  "split": "E",
+  "name": "stage4_joint",
+  "samples": 25000,
+  "target_steps": 2000,
+  "current_step": 273,
+  "current_loss": 5.530549,
+  "progress_percent": 13.65,
+  "updated_at": "2026-05-21T11:41:13+08:00",
+  "gpu": {
+    "timestamp": "2026/05/21 11:41:13.680",
+    "name": "NVIDIA GeForce RTX 3090",
+    "utilization_percent": 100,
+    "memory_used_mib": 7204,
+    "memory_total_mib": 24576,
+    "temperature_c": 77,
+    "power_w": 314.86
+  },
+  "stdout_tail_path": "experiments/results/plan_b_stage4/windows_sync/llava_stage4_current_stdout_tail_20260521.log",
+  "gpu_snapshot_path": "experiments/results/plan_b_stage4/windows_sync/llava_stage4_current_gpu_20260521.log"
+}

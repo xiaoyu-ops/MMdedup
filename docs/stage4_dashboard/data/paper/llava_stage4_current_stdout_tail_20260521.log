@@ -1,0 +1,200 @@
+{"event": "backward_start", "batch_idx": 2123, "loss": 0.47472280263900757}
+{"event": "batch_start", "batch_idx": 2124}
+{"event": "forward_start", "batch_idx": 2124}
+{"event": "backward_start", "batch_idx": 2124, "loss": 0.35253873467445374}
+{"event": "batch_start", "batch_idx": 2125}
+{"event": "forward_start", "batch_idx": 2125}
+{"event": "backward_start", "batch_idx": 2125, "loss": 0.4275895953178406}
+{"event": "batch_start", "batch_idx": 2126}
+{"event": "forward_start", "batch_idx": 2126}
+{"event": "backward_start", "batch_idx": 2126, "loss": 0.336260050535202}
+{"event": "batch_start", "batch_idx": 2127}
+{"event": "forward_start", "batch_idx": 2127}
+{"event": "backward_start", "batch_idx": 2127, "loss": 0.4606993794441223}
+step=266 loss=3.685595
+{"event": "batch_start", "batch_idx": 2128}
+{"event": "forward_start", "batch_idx": 2128}
+{"event": "backward_start", "batch_idx": 2128, "loss": 0.215348020195961}
+{"event": "batch_start", "batch_idx": 2129}
+{"event": "forward_start", "batch_idx": 2129}
+{"event": "backward_start", "batch_idx": 2129, "loss": 0.21885539591312408}
+{"event": "batch_start", "batch_idx": 2130}
+{"event": "forward_start", "batch_idx": 2130}
+{"event": "backward_start", "batch_idx": 2130, "loss": 0.5160349011421204}
+{"event": "batch_start", "batch_idx": 2131}
+{"event": "forward_start", "batch_idx": 2131}
+{"event": "backward_start", "batch_idx": 2131, "loss": 0.21010494232177734}
+{"event": "batch_start", "batch_idx": 2132}
+{"event": "forward_start", "batch_idx": 2132}
+{"event": "backward_start", "batch_idx": 2132, "loss": 0.4593971371650696}
+{"event": "batch_start", "batch_idx": 2133}
+{"event": "forward_start", "batch_idx": 2133}
+{"event": "backward_start", "batch_idx": 2133, "loss": 0.4028206467628479}
+{"event": "batch_start", "batch_idx": 2134}
+{"event": "forward_start", "batch_idx": 2134}
+{"event": "backward_start", "batch_idx": 2134, "loss": 0.18161271512508392}
+{"event": "batch_start", "batch_idx": 2135}
+{"event": "forward_start", "batch_idx": 2135}
+{"event": "backward_start", "batch_idx": 2135, "loss": 0.2967694103717804}
+step=267 loss=2.374155
+{"event": "batch_start", "batch_idx": 2136}
+{"event": "forward_start", "batch_idx": 2136}
+{"event": "backward_start", "batch_idx": 2136, "loss": 0.46981149911880493}
+{"event": "batch_start", "batch_idx": 2137}
+{"event": "forward_start", "batch_idx": 2137}
+{"event": "backward_start", "batch_idx": 2137, "loss": 0.1696031391620636}
+{"event": "batch_start", "batch_idx": 2138}
+{"event": "forward_start", "batch_idx": 2138}
+{"event": "backward_start", "batch_idx": 2138, "loss": 0.29122042655944824}
+{"event": "batch_start", "batch_idx": 2139}
+{"event": "forward_start", "batch_idx": 2139}
+{"event": "backward_start", "batch_idx": 2139, "loss": 0.24387164413928986}
+{"event": "batch_start", "batch_idx": 2140}
+{"event": "forward_start", "batch_idx": 2140}
+{"event": "backward_start", "batch_idx": 2140, "loss": 0.09079217910766602}
+{"event": "batch_start", "batch_idx": 2141}
+{"event": "forward_start", "batch_idx": 2141}
+{"event": "backward_start", "batch_idx": 2141, "loss": 0.5227401852607727}
+{"event": "batch_start", "batch_idx": 2142}
+{"event": "forward_start", "batch_idx": 2142}
+{"event": "backward_start", "batch_idx": 2142, "loss": 0.2612869143486023}
+{"event": "batch_start", "batch_idx": 2143}
+{"event": "forward_start", "batch_idx": 2143}
+{"event": "backward_start", "batch_idx": 2143, "loss": 0.3878340423107147}
+step=268 loss=3.102672
+{"event": "batch_start", "batch_idx": 2144}
+{"event": "forward_start", "batch_idx": 2144}
+{"event": "backward_start", "batch_idx": 2144, "loss": 0.21792510151863098}
+{"event": "batch_start", "batch_idx": 2145}
+{"event": "forward_start", "batch_idx": 2145}
+{"event": "backward_start", "batch_idx": 2145, "loss": 0.22444355487823486}
+{"event": "batch_start", "batch_idx": 2146}
+{"event": "forward_start", "batch_idx": 2146}
+{"event": "backward_start", "batch_idx": 2146, "loss": 0.24056515097618103}
+{"event": "batch_start", "batch_idx": 2147}
+{"event": "forward_start", "batch_idx": 2147}
+{"event": "backward_start", "batch_idx": 2147, "loss": 0.11947901546955109}
+{"event": "batch_start", "batch_idx": 2148}
+{"event": "forward_start", "batch_idx": 2148}
+{"event": "backward_start", "batch_idx": 2148, "loss": 0.3199785649776459}
+{"event": "batch_start", "batch_idx": 2149}
+{"event": "forward_start", "batch_idx": 2149}
+{"event": "backward_start", "batch_idx": 2149, "loss": 0.20908154547214508}
+{"event": "batch_start", "batch_idx": 2150}
+{"event": "forward_start", "batch_idx": 2150}
+{"event": "backward_start", "batch_idx": 2150, "loss": 0.3031301498413086}
+{"event": "batch_start", "batch_idx": 2151}
+{"event": "forward_start", "batch_idx": 2151}
+{"event": "backward_start", "batch_idx": 2151, "loss": 0.16237686574459076}
+step=269 loss=1.299015
+{"event": "batch_start", "batch_idx": 2152}
+{"event": "forward_start", "batch_idx": 2152}
+{"event": "backward_start", "batch_idx": 2152, "loss": 0.23712557554244995}
+{"event": "batch_start", "batch_idx": 2153}
+{"event": "forward_start", "batch_idx": 2153}
+{"event": "backward_start", "batch_idx": 2153, "loss": 0.36132100224494934}
+{"event": "batch_start", "batch_idx": 2154}
+{"event": "forward_start", "batch_idx": 2154}
+{"event": "backward_start", "batch_idx": 2154, "loss": 0.3048416078090668}
+{"event": "batch_start", "batch_idx": 2155}
+{"event": "forward_start", "batch_idx": 2155}
+{"event": "backward_start", "batch_idx": 2155, "loss": 0.21295519173145294}
+{"event": "batch_start", "batch_idx": 2156}
+{"event": "forward_start", "batch_idx": 2156}
+{"event": "backward_start", "batch_idx": 2156, "loss": 0.21147198975086212}
+{"event": "batch_start", "batch_idx": 2157}
+{"event": "forward_start", "batch_idx": 2157}
+{"event": "backward_start", "batch_idx": 2157, "loss": 0.2579697072505951}
+{"event": "batch_start", "batch_idx": 2158}
+{"event": "forward_start", "batch_idx": 2158}
+{"event": "backward_start", "batch_idx": 2158, "loss": 0.42500364780426025}
+{"event": "batch_start", "batch_idx": 2159}
+{"event": "forward_start", "batch_idx": 2159}
+{"event": "backward_start", "batch_idx": 2159, "loss": 0.33900025486946106}
+step=270 loss=2.712002
+{"event": "batch_start", "batch_idx": 2160}
+{"event": "forward_start", "batch_idx": 2160}
+{"event": "backward_start", "batch_idx": 2160, "loss": 0.22497721016407013}
+{"event": "batch_start", "batch_idx": 2161}
+{"event": "forward_start", "batch_idx": 2161}
+{"event": "backward_start", "batch_idx": 2161, "loss": 0.19961729645729065}
+{"event": "batch_start", "batch_idx": 2162}
+{"event": "forward_start", "batch_idx": 2162}
+{"event": "backward_start", "batch_idx": 2162, "loss": 0.3181283175945282}
+{"event": "batch_start", "batch_idx": 2163}
+{"event": "forward_start", "batch_idx": 2163}
+{"event": "backward_start", "batch_idx": 2163, "loss": 0.21031293272972107}
+{"event": "batch_start", "batch_idx": 2164}
+{"event": "forward_start", "batch_idx": 2164}
+{"event": "backward_start", "batch_idx": 2164, "loss": 0.15503229200839996}
+{"event": "batch_start", "batch_idx": 2165}
+{"event": "forward_start", "batch_idx": 2165}
+{"event": "backward_start", "batch_idx": 2165, "loss": 0.33130672574043274}
+{"event": "batch_start", "batch_idx": 2166}
+{"event": "forward_start", "batch_idx": 2166}
+{"event": "backward_start", "batch_idx": 2166, "loss": 0.4378543794155121}
+{"event": "batch_start", "batch_idx": 2167}
+{"event": "forward_start", "batch_idx": 2167}
+{"event": "backward_start", "batch_idx": 2167, "loss": 0.20228956639766693}
+step=271 loss=1.618317
+{"event": "batch_start", "batch_idx": 2168}
+{"event": "forward_start", "batch_idx": 2168}
+{"event": "backward_start", "batch_idx": 2168, "loss": 0.4906282424926758}
+{"event": "batch_start", "batch_idx": 2169}
+{"event": "forward_start", "batch_idx": 2169}
+{"event": "backward_start", "batch_idx": 2169, "loss": 0.3081493079662323}
+{"event": "batch_start", "batch_idx": 2170}
+{"event": "forward_start", "batch_idx": 2170}
+{"event": "backward_start", "batch_idx": 2170, "loss": 0.11674929410219193}
+{"event": "batch_start", "batch_idx": 2171}
+{"event": "forward_start", "batch_idx": 2171}
+{"event": "backward_start", "batch_idx": 2171, "loss": 0.22688966989517212}
+{"event": "batch_start", "batch_idx": 2172}
+{"event": "forward_start", "batch_idx": 2172}
+{"event": "backward_start", "batch_idx": 2172, "loss": 0.28261256217956543}
+{"event": "batch_start", "batch_idx": 2173}
+{"event": "forward_start", "batch_idx": 2173}
+{"event": "backward_start", "batch_idx": 2173, "loss": 0.30059024691581726}
+{"event": "batch_start", "batch_idx": 2174}
+{"event": "forward_start", "batch_idx": 2174}
+{"event": "backward_start", "batch_idx": 2174, "loss": 0.33890143036842346}
+{"event": "batch_start", "batch_idx": 2175}
+{"event": "forward_start", "batch_idx": 2175}
+{"event": "backward_start", "batch_idx": 2175, "loss": 0.4093131124973297}
+step=272 loss=3.274505
+{"event": "batch_start", "batch_idx": 2176}
+{"event": "forward_start", "batch_idx": 2176}
+{"event": "backward_start", "batch_idx": 2176, "loss": 0.35360071063041687}
+{"event": "batch_start", "batch_idx": 2177}
+{"event": "forward_start", "batch_idx": 2177}
+{"event": "backward_start", "batch_idx": 2177, "loss": 0.3026946783065796}
+{"event": "batch_start", "batch_idx": 2178}
+{"event": "forward_start", "batch_idx": 2178}
+{"event": "backward_start", "batch_idx": 2178, "loss": 0.35091474652290344}
+{"event": "batch_start", "batch_idx": 2179}
+{"event": "forward_start", "batch_idx": 2179}
+{"event": "backward_start", "batch_idx": 2179, "loss": 0.3742564022541046}
+{"event": "batch_start", "batch_idx": 2180}
+{"event": "forward_start", "batch_idx": 2180}
+{"event": "backward_start", "batch_idx": 2180, "loss": 0.15276533365249634}
+{"event": "batch_start", "batch_idx": 2181}
+{"event": "forward_start", "batch_idx": 2181}
+{"event": "backward_start", "batch_idx": 2181, "loss": 0.11283126473426819}
+{"event": "batch_start", "batch_idx": 2182}
+{"event": "forward_start", "batch_idx": 2182}
+{"event": "backward_start", "batch_idx": 2182, "loss": 0.45440617203712463}
+{"event": "batch_start", "batch_idx": 2183}
+{"event": "forward_start", "batch_idx": 2183}
+{"event": "backward_start", "batch_idx": 2183, "loss": 0.6913185715675354}
+step=273 loss=5.530549
+{"event": "batch_start", "batch_idx": 2184}
+{"event": "forward_start", "batch_idx": 2184}
+{"event": "backward_start", "batch_idx": 2184, "loss": 0.32687845826148987}
+{"event": "batch_start", "batch_idx": 2185}
+{"event": "forward_start", "batch_idx": 2185}
+{"event": "backward_start", "batch_idx": 2185, "loss": 0.1501268595457077}
+{"event": "batch_start", "batch_idx": 2186}
+{"event": "forward_start", "batch_idx": 2186}
+{"event": "backward_start", "batch_idx": 2186, "loss": 0.3836739659309387}
+{"event": "batch_start", "batch_idx": 2187}
+{"event": "forward_start", "batch_idx": 2187}

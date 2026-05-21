@@ -81,7 +81,7 @@
     },
     {
       "label": "LLaVA 下游验证",
-      "value": 45,
+      "value": 46,
       "status": "active"
     }
   ],
