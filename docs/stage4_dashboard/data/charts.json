@@ -542,10 +542,10 @@
     },
     {
       "label": "E Stage 4 joint rerun",
-      "value": 1.65,
+      "value": 6.85,
       "unit": "progress percent",
       "status": "running",
-      "note": "running; latest_loss=1.8876"
+      "note": "running; latest_loss=2.9821"
     }
   ]
 }

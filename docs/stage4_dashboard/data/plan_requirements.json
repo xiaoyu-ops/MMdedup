@@ -86,8 +86,8 @@
       "A/B/C/D/E LLaVA JSON data-smoke validated",
       "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
       "A/B/C/D/E 512-sample LoRA pilot：5/5 complete",
-      "当前正式训练状态：A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=running step 33/2000",
-      "正式 25K 训练阶段：A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=running step 33/2000",
+      "当前正式训练状态：A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=running step 137/2000",
+      "正式 25K 训练阶段：A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=running step 137/2000",
       "smoke final_loss=6.7041; peak_memory=5.164 GiB",
       "完整 25K/2000-step A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成"
     ],

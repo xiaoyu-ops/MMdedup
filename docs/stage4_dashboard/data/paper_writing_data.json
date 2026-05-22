@@ -268,7 +268,7 @@
       {
         "label": "正式训练队列",
         "value": "running",
-        "note": "A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=running step 33/2000"
+        "note": "A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=running step 137/2000"
       }
     ],
     "sources": [
