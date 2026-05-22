@@ -67,12 +67,12 @@ def main() -> int:
             {
                 "level": "medium",
                 "title": "LLaVA 正式下游验证尚未完成",
-                "detail": "A/B/C/D/E 五组 200K split 已生成，真实 LLaVA-1.5-7B 4-bit LoRA smoke 已跑通 1 step；但完整 LoRA 训练与 VQAv2/TextVQA 指标尚未产生。",
+                "detail": "A/B/C/D 四组 25K/2000-step LoRA 训练已完成；E 原始 run 在 step 1800 失败，当前已启动 E rerun。VQAv2/TextVQA 指标仍未产生。",
             },
         ],
         "next_steps": [
             "基于误差分析决定论文如何解释：joint 优于 naive union，但 image-only 在当前 high-joint GT 上更强。",
-            "基于已验证的 Windows WSL2 环境启动 A/B/C/D/E 五组 LLaVA LoRA 正式训练。",
+            "继续监控 Windows RTX 3090 上的 E 组 LoRA 补跑，完成后同步 metrics 并刷新面板。",
             "将 Windows 端 embedding cache 和后续 split 结果同步回 Mac source-of-truth。",
             "为每个 LLaVA run 保存 config/metrics/logs，并同步回 Mac source-of-truth。",
         ],
@@ -330,6 +330,7 @@ def _experiments() -> list[dict[str, str]]:
         "exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521",
         "exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521",
         "exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521",
+        "exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521",
         "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521",
     ]
     rows = []
@@ -1422,11 +1423,14 @@ def _copy_paper_source_files() -> None:
         SYNC / "llava_stage4_train25k_status.json": "llava_stage4_train25k_status.json",
         SYNC / "exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_A_raw_metrics.json",
         SYNC / "exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_B_image_only_metrics.json",
+        SYNC / "exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_C_text_only_metrics.json",
         SYNC / "exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_D_naive_union_metrics.json",
         SYNC / "llava_stage4_overnight_queue_20260521.log": "llava_stage4_overnight_queue_20260521.log",
+        SYNC / "llava_stage4_E_rerun_20260522.log": "llava_stage4_E_rerun_20260522.log",
         SYNC / "llava_stage4_current_training_status.json": "llava_stage4_current_training_status.json",
         SYNC / "llava_stage4_current_stdout_tail_20260521.log": "llava_stage4_current_stdout_tail_20260521.log",
         SYNC / "llava_stage4_current_gpu_20260521.log": "llava_stage4_current_gpu_20260521.log",
+        SYNC / "llava_stage4_current_gpu_20260522.log": "llava_stage4_current_gpu_20260522.log",
     }
     for src, name in copies.items():
         if src.exists():

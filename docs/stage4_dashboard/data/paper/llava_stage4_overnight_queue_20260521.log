@@ -94,3 +94,26 @@ JOB_START 2026-05-22T03:33:10+08:00 exp_llava_stage4_train25k_B_image_only_25000
 METRICS exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521 status=trained steps=2000 final_loss=0.4427841603755951 peak_gb=5.448
 JOB_END 2026-05-22T09:10:16+08:00 exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521 code=0
 JOB_START 2026-05-22T09:10:16+08:00 exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521 json=C_text_only.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle
+METRICS exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521 status=trained steps=2000 final_loss=3.854309558868408 peak_gb=5.523
+JOB_END 2026-05-22T14:53:44+08:00 exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521 code=0
+QUEUE_END 2026-05-22T14:53:44+08:00
+Fri May 22 14:53:44 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.112                Driver Version: 581.95         CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3090        On  |   00000000:02:00.0  On |                  N/A |
+| 73%   60C    P5             37W /  350W |    1603MiB /  24576MiB |      1%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

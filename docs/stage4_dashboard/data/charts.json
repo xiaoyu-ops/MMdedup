@@ -81,7 +81,7 @@
     },
     {
       "label": "LLaVA 下游验证",
-      "value": 67,
+      "value": 73,
       "status": "active"
     }
   ],
@@ -181,6 +181,12 @@
       "value": 337.2,
       "unit": "minutes",
       "note": "B image-only train25k; samples=25000; steps=2000; final_loss=0.4428; peak_memory_gb=5.448"
+    },
+    {
+      "label": "exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521",
+      "value": 343.2,
+      "unit": "minutes",
+      "note": "C text-only train25k; samples=25000; steps=2000; final_loss=3.8543; peak_memory_gb=5.523"
     }
   ],
   "stage4_eval_best_f1": [
@@ -522,10 +528,10 @@
     },
     {
       "label": "C text-only",
-      "value": 12.25,
+      "value": 100.0,
       "unit": "progress percent",
-      "status": "running",
-      "note": "running; latest_loss=2.4256"
+      "status": "trained",
+      "note": "trained; loss=3.8543; exit=0"
     },
     {
       "label": "D naive union",
@@ -535,11 +541,11 @@
       "note": "trained; loss=3.5730; exit=0"
     },
     {
-      "label": "E Stage 4 joint",
-      "value": 90.0,
+      "label": "E Stage 4 joint rerun",
+      "value": 1.65,
       "unit": "progress percent",
-      "status": "failed",
-      "note": "failed; latest_loss=2.7290; exit=1"
+      "status": "running",
+      "note": "running; latest_loss=1.8876"
     }
   ]
 }

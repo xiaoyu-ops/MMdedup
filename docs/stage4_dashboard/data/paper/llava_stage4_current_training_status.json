@@ -1,23 +1,34 @@
 {
   "status": "running",
-  "experiment_id": "exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521",
-  "split": "C",
-  "name": "text-only",
+  "experiment_id": "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1",
+  "split": "E",
+  "name": "Stage 4 joint rerun",
   "samples": 25000,
   "target_steps": 2000,
-  "current_step": 245,
-  "current_loss": 2.425634,
-  "progress_percent": 12.25,
-  "updated_at": "2026-05-22T09:59:22+08:00",
+  "current_step": 33,
+  "current_loss": 1.88756,
+  "progress_percent": 1.65,
+  "updated_at": "2026-05-22T15:51:27+08:00",
   "gpu": {
-    "timestamp": null,
     "name": "NVIDIA GeForce RTX 3090",
-    "utilization_percent": null,
-    "memory_used_mib": null,
+    "utilization_percent": 100,
+    "memory_used_mib": 13747,
     "memory_total_mib": 24576,
-    "temperature_c": null,
-    "power_w": null
+    "temperature_c": 75,
+    "power_w": 321.5,
+    "snapshot_source": "ssh nvidia-smi 2026-05-22T15:44:55+08:00"
   },
-  "stdout_tail_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521/stdout.log",
-  "gpu_snapshot_path": "experiments/results/plan_b_stage4/windows_sync/llava_stage4_current_gpu_20260521.log"
+  "stdout_tail_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1/stdout.log",
+  "gpu_snapshot_path": "experiments/results/plan_b_stage4/windows_sync/llava_stage4_current_gpu_20260522.log",
+  "warnings": [
+    {
+      "level": "medium",
+      "title": "Detected two simultaneous E rerun directories/process snapshots",
+      "detail": "Two E rerun stdout streams were present during sync. Experiments were not interrupted; monitor GPU stability and keep the successful metrics only.",
+      "experiments": [
+        "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1",
+        "exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522"
+      ]
+    }
+  ]
 }
