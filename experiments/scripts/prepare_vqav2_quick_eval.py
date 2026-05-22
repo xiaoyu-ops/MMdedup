@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import ssl
 import time
 import urllib.request
 import zipfile
@@ -33,6 +34,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--timeout", type=int, default=60)
     parser.add_argument("--retries", type=int, default=3)
+    parser.add_argument(
+        "--verify-ssl",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Verify HTTPS certificates. Disabled by default because some COCO mirrors present mismatched certificates.",
+    )
     return parser.parse_args()
 
 
@@ -45,8 +52,8 @@ def main() -> int:
 
     question_zip = args.cache_dir / "v2_Questions_Val_mscoco.zip"
     annotation_zip = args.cache_dir / "v2_Annotations_Val_mscoco.zip"
-    download_file(QUESTION_ZIP_URL, question_zip, args.timeout, args.retries)
-    download_file(ANNOTATION_ZIP_URL, annotation_zip, args.timeout, args.retries)
+    download_file(QUESTION_ZIP_URL, question_zip, args.timeout, args.retries, verify_ssl=args.verify_ssl)
+    download_file(ANNOTATION_ZIP_URL, annotation_zip, args.timeout, args.retries, verify_ssl=args.verify_ssl)
 
     questions_payload = read_zip_json(question_zip, QUESTION_JSON)
     annotations_payload = read_zip_json(annotation_zip, ANNOTATION_JSON)
@@ -73,7 +80,14 @@ def main() -> int:
             existing_images += 1
         else:
             image_url = IMAGE_URL_TEMPLATE.format(image_id=image_id)
-            ok = download_file(image_url, image_path, args.timeout, args.retries, raise_on_error=False)
+            ok = download_file(
+                image_url,
+                image_path,
+                args.timeout,
+                args.retries,
+                raise_on_error=False,
+                verify_ssl=args.verify_ssl,
+            )
             if not ok:
                 failed_images.append({"question_id": question["question_id"], "image_id": image_id, "url": image_url})
                 continue
@@ -117,6 +131,7 @@ def download_file(
     retries: int,
     *,
     raise_on_error: bool = True,
+    verify_ssl: bool = False,
 ) -> bool:
     if path.exists() and path.stat().st_size > 0:
         return True
@@ -126,7 +141,8 @@ def download_file(
     for attempt in range(1, retries + 1):
         try:
             print(f"DOWNLOAD attempt={attempt} url={url} path={path}", flush=True)
-            with urllib.request.urlopen(url, timeout=timeout) as response, tmp.open("wb") as handle:
+            context = None if verify_ssl else ssl._create_unverified_context()
+            with urllib.request.urlopen(url, timeout=timeout, context=context) as response, tmp.open("wb") as handle:
                 while True:
                     chunk = response.read(1024 * 1024)
                     if not chunk:
