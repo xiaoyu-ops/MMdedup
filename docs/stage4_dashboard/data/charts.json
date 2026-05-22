@@ -81,7 +81,7 @@
     },
     {
       "label": "LLaVA 下游验证",
-      "value": 46,
+      "value": 67,
       "status": "active"
     }
   ],
@@ -163,6 +163,24 @@
       "value": 2.4,
       "unit": "minutes",
       "note": "C text-only pilot; samples=512; steps=20; final_loss=2.5809; peak_memory_gb=5.433"
+    },
+    {
+      "label": "exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521",
+      "value": 351.0,
+      "unit": "minutes",
+      "note": "D naive union train25k; samples=25000; steps=2000; final_loss=3.5730; peak_memory_gb=5.524"
+    },
+    {
+      "label": "exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521",
+      "value": 342.0,
+      "unit": "minutes",
+      "note": "A raw train25k; samples=25000; steps=2000; final_loss=4.2365; peak_memory_gb=5.525"
+    },
+    {
+      "label": "exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521",
+      "value": 337.2,
+      "unit": "minutes",
+      "note": "B image-only train25k; samples=25000; steps=2000; final_loss=0.4428; peak_memory_gb=5.448"
     }
   ],
   "stage4_eval_best_f1": [
@@ -485,6 +503,43 @@
       "value": 2.3625,
       "unit": "final loss",
       "note": "steps=20; samples=512; peak=5.428 GiB"
+    }
+  ],
+  "llava_formal_train25k": [
+    {
+      "label": "A raw",
+      "value": 100.0,
+      "unit": "progress percent",
+      "status": "trained",
+      "note": "trained; loss=4.2365; exit=0"
+    },
+    {
+      "label": "B image-only",
+      "value": 100.0,
+      "unit": "progress percent",
+      "status": "trained",
+      "note": "trained; loss=0.4428; exit=0"
+    },
+    {
+      "label": "C text-only",
+      "value": 12.25,
+      "unit": "progress percent",
+      "status": "running",
+      "note": "running; latest_loss=2.4256"
+    },
+    {
+      "label": "D naive union",
+      "value": 100.0,
+      "unit": "progress percent",
+      "status": "trained",
+      "note": "trained; loss=3.5730; exit=0"
+    },
+    {
+      "label": "E Stage 4 joint",
+      "value": 90.0,
+      "unit": "progress percent",
+      "status": "failed",
+      "note": "failed; latest_loss=2.7290; exit=1"
     }
   ]
 }

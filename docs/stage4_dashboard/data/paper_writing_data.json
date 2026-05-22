@@ -268,7 +268,7 @@
       {
         "label": "正式训练队列",
         "value": "running",
-        "note": "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 running: step 273/2000; GPU 100%; VRAM 7204/24576 MiB; snapshot 2026-05-21T11:41:13+08:00"
+        "note": "A=done loss=4.2365; B=done loss=0.4428; C=running step 245/2000; D=done loss=3.5730; E=failed at step 1800, rerun pending"
       }
     ],
     "sources": [

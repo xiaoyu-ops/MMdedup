@@ -83,3 +83,14 @@ JOB_START 2026-05-21T10:41:17+08:00 exp_llava_stage4_pilot_C_text_only_512_20ste
 METRICS exp_llava_stage4_pilot_C_text_only_512_20steps_20260521 status=trained steps=20 final_loss=2.5808541774749756 peak_gb=5.433
 JOB_END 2026-05-21T10:43:44+08:00 exp_llava_stage4_pilot_C_text_only_512_20steps_20260521 code=0
 JOB_START 2026-05-21T10:43:44+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 json=E_stage4_joint.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle
+JOB_END 2026-05-21T16:00:00+08:00 exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521 code=1
+JOB_START 2026-05-21T16:00:00+08:00 exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521 json=D_naive_union.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle
+METRICS exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521 status=trained steps=2000 final_loss=3.5729851722717285 peak_gb=5.524
+JOB_END 2026-05-21T21:51:16+08:00 exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521 code=0
+JOB_START 2026-05-21T21:51:16+08:00 exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521 json=A_raw.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle
+METRICS exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521 status=trained steps=2000 final_loss=4.236498832702637 peak_gb=5.525
+JOB_END 2026-05-22T03:33:10+08:00 exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521 code=0
+JOB_START 2026-05-22T03:33:10+08:00 exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521 json=B_image_only.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle
+METRICS exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521 status=trained steps=2000 final_loss=0.4427841603755951 peak_gb=5.448
+JOB_END 2026-05-22T09:10:16+08:00 exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521 code=0
+JOB_START 2026-05-22T09:10:16+08:00 exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521 json=C_text_only.json samples=25000 steps=2000 grad_acc=8 shuffle=--shuffle

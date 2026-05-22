@@ -256,6 +256,7 @@ def _plan_requirements() -> list[dict[str, object]]:
                 "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
                 f"A/B/C/D/E 512-sample LoRA pilot：{llava['completed']}/5 complete",
                 f"当前正式训练状态：{llava['current_training']}",
+                f"正式 25K 训练阶段：{llava.get('formal_summary', 'pending')}",
                 f"smoke final_loss={_fmt_float(llava_smoke.get('final_loss'), 4)}; peak_memory={llava_peak_memory}",
                 "完整 25K/2000-step A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成",
             ],
@@ -326,6 +327,10 @@ def _experiments() -> list[dict[str, str]]:
         "exp_llava_stage4_pilot_A_raw_512_20steps_20260521",
         "exp_llava_stage4_pilot_B_image_only_512_20steps_20260521",
         "exp_llava_stage4_pilot_C_text_only_512_20steps_20260521",
+        "exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521",
+        "exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521",
+        "exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521",
+        "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521",
     ]
     rows = []
     ledger = RESULTS / "experiment_ledger.csv"
@@ -416,6 +421,7 @@ def _charts(annotation: dict[str, object]) -> dict[str, list[dict[str, object]]]
         "stage4_abcde_split_sizes": _abcde_split_chart(),
         "threshold_dedup_rates": _threshold_dedup_chart(),
         "llava_pilots": _llava_pilot_chart(),
+        "llava_formal_train25k": _llava_formal_chart(),
     }
 
 
@@ -610,14 +616,20 @@ def _llava_pilot_status() -> dict[str, object]:
     ]
     queue_log = SYNC / "llava_stage4_overnight_queue_20260521.log"
     current_training = "25K/2000-step 正式队列已启动"
+    formal_summary = ""
+    formal_queue_percent = 0.0
     if queue_log.exists():
         for line in reversed(queue_log.read_text(encoding="utf-8", errors="replace").splitlines()):
             if line.startswith("JOB_START") and "train25k" in line:
                 current_training = line.strip()
                 break
+    formal = _llava_formal_status()
+    if formal:
+        formal_summary = _llava_formal_summary(formal)
+        formal_queue_percent = _llava_formal_progress(formal)
+        current_training = formal_summary
     current_status = _read_json(SYNC / "llava_stage4_current_training_status.json")
-    formal_queue_percent = 0.0
-    if current_status:
+    if current_status and not formal:
         step = int(current_status.get("current_step") or 0)
         target_steps = int(current_status.get("target_steps") or 0)
         gpu = current_status.get("gpu", {})
@@ -639,9 +651,54 @@ def _llava_pilot_status() -> dict[str, object]:
         "pilot_summary": "; ".join(summary_parts) if summary_parts else "pilot metrics pending",
         "current_training": current_training,
         "current_training_status": current_status,
+        "formal_summary": formal_summary,
+        "formal_status": formal,
         "formal_queue_percent": formal_queue_percent,
         "queue_log": str(queue_log.relative_to(ROOT)),
     }
+
+
+def _llava_formal_status() -> dict[str, object]:
+    return _read_json(SYNC / "llava_stage4_train25k_status.json")
+
+
+def _llava_formal_summary(formal: dict[str, object]) -> str:
+    runs = formal.get("runs", [])
+    if not isinstance(runs, list):
+        runs = []
+    parts = []
+    for row in runs:
+        if not isinstance(row, dict):
+            continue
+        split = row.get("split", "?")
+        status = row.get("status", "unknown")
+        if status == "trained":
+            parts.append(f"{split}=done loss={_fmt_float(row.get('final_loss'), 4)}")
+        elif status == "running":
+            parts.append(
+                f"{split}=running step {row.get('steps', 0)}/{row.get('target_steps', 2000)}"
+            )
+        elif status == "failed":
+            parts.append(f"{split}=failed at step {row.get('steps', 0)}, rerun pending")
+        else:
+            parts.append(f"{split}={status}")
+    return "; ".join(parts) if parts else "formal 25K status pending"
+
+
+def _llava_formal_progress(formal: dict[str, object]) -> float:
+    runs = formal.get("runs", [])
+    if not isinstance(runs, list) or not runs:
+        return 0.0
+    completed_units = 0.0
+    for row in runs:
+        if not isinstance(row, dict):
+            continue
+        if row.get("status") == "trained":
+            completed_units += 1.0
+        elif row.get("status") == "running":
+            target = float(row.get("target_steps") or 2000)
+            completed_units += min(float(row.get("steps") or 0) / target, 1.0)
+    return round(completed_units * 100 / 5, 2)
 
 
 def _llava_pilot_chart() -> list[dict[str, object]]:
@@ -655,6 +712,35 @@ def _llava_pilot_chart() -> list[dict[str, object]]:
                 else None,
                 "unit": "final loss",
                 "note": f"steps={row['steps']}; samples={row['samples']}; peak={_fmt_float(row.get('gpu_peak_gb'), 3)} GiB",
+            }
+        )
+    return rows
+
+
+def _llava_formal_chart() -> list[dict[str, object]]:
+    formal = _llava_formal_status()
+    runs = formal.get("runs", []) if formal else []
+    if not isinstance(runs, list):
+        return []
+    rows = []
+    for row in runs:
+        if not isinstance(row, dict):
+            continue
+        progress = float(row.get("progress_percent") or 0)
+        note_parts = [str(row.get("status", "unknown"))]
+        if row.get("final_loss") is not None:
+            note_parts.append(f"loss={_fmt_float(row.get('final_loss'), 4)}")
+        elif row.get("latest_loss") is not None:
+            note_parts.append(f"latest_loss={_fmt_float(row.get('latest_loss'), 4)}")
+        if row.get("exit_code"):
+            note_parts.append(f"exit={row.get('exit_code')}")
+        rows.append(
+            {
+                "label": f"{row.get('split')} {row.get('name')}",
+                "value": progress,
+                "unit": "progress percent",
+                "status": row.get("status"),
+                "note": "; ".join(note_parts),
             }
         )
     return rows
@@ -1333,6 +1419,10 @@ def _copy_paper_source_files() -> None:
         RESULTS / "exp_llava_stage4_data_smoke_abcde_20260520/metrics.json": "llava_stage4_data_smoke_abcde_metrics.json",
         SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json": "llava_stage4_real_train_smoke_E_metrics.json",
         SYNC / "llava_stage4_pilot_metrics.json": "llava_stage4_pilot_metrics.json",
+        SYNC / "llava_stage4_train25k_status.json": "llava_stage4_train25k_status.json",
+        SYNC / "exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_A_raw_metrics.json",
+        SYNC / "exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_B_image_only_metrics.json",
+        SYNC / "exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_D_naive_union_metrics.json",
         SYNC / "llava_stage4_overnight_queue_20260521.log": "llava_stage4_overnight_queue_20260521.log",
         SYNC / "llava_stage4_current_training_status.json": "llava_stage4_current_training_status.json",
         SYNC / "llava_stage4_current_stdout_tail_20260521.log": "llava_stage4_current_stdout_tail_20260521.log",

@@ -66,6 +66,10 @@ function renderCharts(charts) {
     valueFormatter: formatNumber,
     maxMode: "local",
   });
+  renderBarChart("llavaFormalChart", charts.llava_formal_train25k || [], {
+    valueFormatter: (value) => `${value.toFixed(1)}%`,
+    maxMode: "fixed100",
+  });
   renderBarChart("thresholdDedupChart", compactThresholdRows(charts.threshold_dedup_rates || []), {
     valueFormatter: (value) => value.toFixed(3),
     fixedMax: 0.5,
