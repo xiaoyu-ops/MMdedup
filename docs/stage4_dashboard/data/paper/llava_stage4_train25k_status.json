@@ -1,6 +1,6 @@
 {
   "status": "formal_training_running",
-  "updated_at": "2026-05-22T16:35:09+08:00",
+  "updated_at": "2026-05-22T20:14:28+08:00",
   "completed": 4,
   "failed": 1,
   "running": 1,
@@ -14,17 +14,17 @@
     "stdout_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1/stdout.log",
     "stderr_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1/stderr.log",
     "status": "running",
-    "steps": 137,
-    "progress_percent": 6.85,
+    "steps": 610,
+    "progress_percent": 30.5,
     "final_loss": null,
-    "latest_loss": 2.982115,
+    "latest_loss": 1.677881,
     "runtime_seconds": null,
     "gpu_peak_gb": null,
     "exit_code": null,
     "metrics_path": null,
     "original_failed_experiment_id": "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521",
     "original_failed_step": 1800,
-    "note": "Original E run failed at step 1800; this row tracks the active rerun attempt."
+    "note": "Original E run failed at step 1800; duplicate rerun was stopped, and this row tracks the single active rerun attempt."
   },
   "original_failed": {
     "split": "E",
@@ -54,48 +54,20 @@
       "stdout_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1/stdout.log",
       "stderr_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1/stderr.log",
       "status": "running",
-      "steps": 137,
-      "progress_percent": 6.85,
+      "steps": 610,
+      "progress_percent": 30.5,
       "final_loss": null,
-      "latest_loss": 2.982115,
+      "latest_loss": 1.677881,
       "runtime_seconds": null,
       "gpu_peak_gb": null,
       "exit_code": null,
       "metrics_path": null,
       "original_failed_experiment_id": "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521",
       "original_failed_step": 1800,
-      "note": "Original E run failed at step 1800; this row tracks the active rerun attempt."
-    },
-    {
-      "split": "E",
-      "name": "Stage 4 joint rerun",
-      "experiment_id": "exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522",
-      "samples": 25000,
-      "target_steps": 2000,
-      "stdout_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522/stdout.log",
-      "stderr_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522/stderr.log",
-      "status": "running",
-      "steps": 122,
-      "progress_percent": 6.1,
-      "final_loss": null,
-      "latest_loss": 2.125142,
-      "runtime_seconds": null,
-      "gpu_peak_gb": null,
-      "exit_code": null,
-      "metrics_path": null
+      "note": "Original E run failed at step 1800; duplicate rerun was stopped, and this row tracks the single active rerun attempt."
     }
   ],
-  "warnings": [
-    {
-      "level": "medium",
-      "title": "Detected two simultaneous E rerun directories/process snapshots",
-      "detail": "Two E rerun stdout streams were present during sync. Experiments were not interrupted; monitor GPU stability and keep the successful metrics only.",
-      "experiments": [
-        "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1",
-        "exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522"
-      ]
-    }
-  ],
+  "warnings": [],
   "runs": [
     {
       "split": "A",
@@ -178,20 +150,29 @@
       "stdout_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1/stdout.log",
       "stderr_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1/stderr.log",
       "status": "running",
-      "steps": 137,
-      "progress_percent": 6.85,
+      "steps": 610,
+      "progress_percent": 30.5,
       "final_loss": null,
-      "latest_loss": 2.982115,
+      "latest_loss": 1.677881,
       "runtime_seconds": null,
       "gpu_peak_gb": null,
       "exit_code": null,
       "metrics_path": null,
       "original_failed_experiment_id": "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521",
       "original_failed_step": 1800,
-      "note": "Original E run failed at step 1800; this row tracks the active rerun attempt."
+      "note": "Original E run failed at step 1800; duplicate rerun was stopped, and this row tracks the single active rerun attempt."
     }
   ],
   "queue_log": "experiments/results/plan_b_stage4/windows_sync/llava_stage4_overnight_queue_20260521.log",
   "rerun_log": "experiments/results/plan_b_stage4/windows_sync/llava_stage4_E_rerun_20260522.log",
-  "dashboard_note": "A/B/C/D formal 25K runs are complete. E original failed near step 1800; E rerun is currently running at step 137/2000 and must finish before downstream comparison is complete."
+  "dashboard_note": "A/B/C/D formal 25K runs are complete. E original failed near step 1800; duplicate E rerun was stopped, and the active E rerun is at step 610/2000.",
+  "resolved_warnings": [
+    {
+      "level": "info",
+      "title": "Duplicate E rerun stopped",
+      "detail": "Duplicate rerun exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522 was stopped around step 543; active rerun exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1 continues.",
+      "stopped_experiment_id": "exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522",
+      "stopped_step": 543
+    }
+  ]
 }

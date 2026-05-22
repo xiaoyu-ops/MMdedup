@@ -5,31 +5,30 @@
   "name": "Stage 4 joint rerun",
   "samples": 25000,
   "target_steps": 2000,
-  "current_step": 137,
-  "current_loss": 2.982115,
-  "progress_percent": 6.85,
-  "updated_at": "2026-05-22T16:35:09+08:00",
+  "current_step": 610,
+  "current_loss": 1.677881,
+  "progress_percent": 30.5,
+  "updated_at": "2026-05-22T20:14:28+08:00",
   "gpu": {
-    "timestamp": "2026/05/22 16:33:07.926",
+    "timestamp": "2026/05/22 20:12:58.257",
     "name": "NVIDIA GeForce RTX 3090",
-    "utilization_percent": 100,
-    "memory_used_mib": 13747,
+    "utilization_percent": 69,
+    "memory_used_mib": 7754,
     "memory_total_mib": 24576,
-    "temperature_c": 75,
-    "power_w": 320.32,
-    "snapshot_source": "ssh nvidia-smi 2026-05-22T16:33:07+08:00"
+    "temperature_c": 73,
+    "power_w": 306.52,
+    "snapshot_source": "ssh nvidia-smi 2026-05-22T20:12:58+08:00"
   },
   "stdout_tail_path": "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1/stdout.log",
   "gpu_snapshot_path": "experiments/results/plan_b_stage4/windows_sync/llava_stage4_current_gpu_20260522.log",
-  "warnings": [
+  "warnings": [],
+  "resolved_warnings": [
     {
-      "level": "medium",
-      "title": "Detected two simultaneous E rerun directories/process snapshots",
-      "detail": "Two E rerun stdout streams were present during sync. Experiments were not interrupted; monitor GPU stability and keep the successful metrics only.",
-      "experiments": [
-        "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1",
-        "exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522"
-      ]
+      "level": "info",
+      "title": "Duplicate E rerun stopped",
+      "detail": "Duplicate rerun exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522 was stopped around step 543; active rerun exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun1 continues.",
+      "stopped_experiment_id": "exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522",
+      "stopped_step": 543
     }
   ]
 }

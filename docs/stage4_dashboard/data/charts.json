@@ -81,7 +81,7 @@
     },
     {
       "label": "LLaVA 下游验证",
-      "value": 73,
+      "value": 75,
       "status": "active"
     }
   ],
@@ -542,10 +542,10 @@
     },
     {
       "label": "E Stage 4 joint rerun",
-      "value": 6.85,
+      "value": 30.5,
       "unit": "progress percent",
       "status": "running",
-      "note": "running; latest_loss=2.9821"
+      "note": "running; latest_loss=1.6779"
     }
   ]
 }
