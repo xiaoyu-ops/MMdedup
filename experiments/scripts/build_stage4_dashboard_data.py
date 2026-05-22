@@ -152,7 +152,7 @@ def _phase_progress() -> list[dict[str, str | int]]:
             "name": "Stage 4 主评价",
             "status": "active",
             "percent": 90,
-            "detail": "已完成 P/R/F1 主表、阈值扫描和误差分析；joint 优于 naive_union，但尚未超过 image-only，写作需谨慎。",
+            "detail": "已完成 P/R/F1 主表、阈值扫描和误差分析；joint 优于 naive_union，但尚未超过 image-only，写作需谨慎。90% 表示去重主评价数据基本完成，但最终论文表述仍需等待 LLaVA 下游结果一起闭环。",
         },
         {
             "name": "LLaVA 下游验证",
