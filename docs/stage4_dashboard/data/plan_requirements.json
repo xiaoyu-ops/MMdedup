@@ -82,17 +82,19 @@
       "LLaVA LoRA logs 与 VQAv2/TextVQA metrics"
     ],
     "current_outputs": [
-      "A/B/C/D/E 200K training manifests",
+      "A/B/C/D/E 200K v2 training manifests",
+      "A/B/C/D/E v2 LLaVA JSON 已生成",
       "A/B/C/D/E LLaVA JSON data-smoke validated",
       "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
       "A/B/C/D/E 512-sample LoRA pilot：5/5 complete",
-      "当前正式训练状态：A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=running step 610/2000",
-      "正式 25K 训练阶段：A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=running step 610/2000",
+      "旧正式训练状态：A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=done loss=1.7374",
+      "旧 VQAv2 quick eval：5/5 complete; A VQAv2=0.0940; B VQAv2=0.0060; C VQAv2=0.0037; D VQAv2=0.0010; E VQAv2=0.0057",
+      "旧 A/B/C/D/E LoRA 与 VQAv2 quick eval 基于旧 split/旧标注链路；3000 fair labels 完成并按 image/text 0.85/0.95 规则生成新 split 后，旧下游结果只能作为诊断记录，不能作为最终论文结论。",
       "smoke final_loss=6.7041; peak_memory=5.164 GiB",
-      "完整 25K/2000-step A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成"
+      "新 v2 split 的完整 25K/2000-step A/B/C/D/E LoRA、VQAv2/TextVQA 仍未重跑"
     ],
     "evidence": [
-      "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/metrics.json",
+      "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_fair_op_v2_20260528/metrics.json",
       "experiments/results/plan_b_stage4/exp_llava_stage4_data_smoke_abcde_20260520/metrics.json",
       "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_real_train_smoke_E_20260520/metrics.json",
       "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_pilot_E_stage4_joint_512_20steps_20260521/metrics.json",

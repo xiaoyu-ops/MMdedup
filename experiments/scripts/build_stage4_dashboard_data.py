@@ -16,8 +16,28 @@ SYNC = RESULTS / "windows_sync"
 DASHBOARD = ROOT / "docs/stage4_dashboard"
 DATA_DIR = DASHBOARD / "data"
 OUT = DATA_DIR / "status.json"
-SPLIT_EXPERIMENT_ID = "exp_stage4_training_manifests_200k_20260520"
+SCORE_ASSISTED_LABELING_RULE = (
+    "During annotation, if both image_similarity and text_similarity are >0.85 and <0.95, "
+    "near-duplicate is acceptable; if both are >0.95, duplicate is acceptable. "
+    "Human visual/caption semantics remain the final label basis."
+)
+SPLIT_EXPERIMENT_ID = "exp_stage4_training_manifests_200k_fair_op_v2_20260528"
 SPLIT_EXPERIMENT_DIR = RESULTS / SPLIT_EXPERIMENT_ID
+OLD_DOWNSTREAM_SPLIT_EXPERIMENT_ID = "exp_stage4_training_manifests_200k_20260520"
+DOWNSTREAM_RERUN_REASON = (
+    "旧 A/B/C/D/E LoRA 与 VQAv2 quick eval 基于旧 split/旧标注链路；"
+    "3000 fair labels 完成并按 image/text 0.85/0.95 规则生成新 split 后，"
+    "旧下游结果只能作为诊断记录，不能作为最终论文结论。"
+)
+FAIR_CANDIDATE_EXPERIMENT_ID = "exp_stage4_fair_score_stratified_candidates_3000_20260523"
+FAIR_CANDIDATE_DIR = RESULTS / FAIR_CANDIDATE_EXPERIMENT_ID
+FAIR_ANNOTATION_EXPERIMENT_ID = "exp_stage4_fair_annotation_3000_20260523"
+FAIR_ANNOTATION_DIR = RESULTS / FAIR_ANNOTATION_EXPERIMENT_ID
+DEV_THRESHOLD_EXPERIMENT_ID = "exp_stage4_threshold_diagnostic_1000_20260523"
+DEV_THRESHOLD_DIR = RESULTS / DEV_THRESHOLD_EXPERIMENT_ID
+FAIR_EVAL_EXPERIMENT_ID = "exp_stage4_fair_eval_3000_20260528"
+FAIR_EVAL_DIR = RESULTS / FAIR_EVAL_EXPERIMENT_ID
+LEGACY_ANNOTATION_DIR = SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516"
 
 
 def main() -> int:
@@ -26,8 +46,8 @@ def main() -> int:
     status = {
         "updated_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds"),
         "target": {
-            "venue": "CIKM 2026 Full Paper",
-            "deadline": "2026-05-23 AoE",
+            "venue": "ICDM 2026",
+            "deadline": "2026-06-06",
             "branch": "codex/plan-b-stage4-pair-dedup",
             "claim": "面向图文训练语料的 image-caption pair 级跨模态去重。",
         },
@@ -46,18 +66,18 @@ def main() -> int:
         "risks": [
             {
                 "level": "high",
-                "title": "Stage 4 尚未超过 image-only",
-                "detail": "当前 1000 条 high-joint 标注集上，joint F1=0.583，naive_union F1=0.456，但 image-only F1=0.626，需要做误差分析并谨慎写作。",
+                "title": "旧 1000 high-joint 标注集只能作为 dev 诊断",
+                "detail": "旧标注集采样偏向 high-joint hard candidates，会影响 Stage 4 / image-only / naive-union 的比较；当前已切到 3000 条 score-space 分层标注任务。",
             },
             {
                 "level": "high",
-                "title": "Audit agreement 不能当正式合作者一致性",
-                "detail": "当前 agreement_rate=1.0 来自 audit_label 默认填主标签，只能说明流程完成，不能作为真实 inter-annotator agreement。",
+                "title": "下游训练需要按新 split 重跑",
+                "detail": DOWNSTREAM_RERUN_REASON,
             },
             {
                 "level": "high",
-                "title": "当前 GT 是 hard-candidate benchmark",
-                "detail": "1000 条标注来自 joint>=0.80 且 image>=0.60 的候选池，不能用来估计原始 CC3M 的重复比例。",
+                "title": "旧 VQAv2 quick eval 暂不作为最终结论",
+                "detail": "A/E VQAv2 quick eval 差距较大，且对应旧 split；写作时只作为失败诊断与工程记录。",
             },
             {
                 "level": "medium",
@@ -66,15 +86,14 @@ def main() -> int:
             },
             {
                 "level": "medium",
-                "title": "LLaVA 正式下游验证尚未完成",
-                "detail": "A/B/C/D 四组 25K/2000-step LoRA 训练已完成；E 原始 run 在 step 1800 失败，当前已启动 E rerun。VQAv2/TextVQA 指标仍未产生。",
+                "title": "旧 VQAv2 quick eval 分数偏低",
+                "detail": "旧 A/B/C/D/E 五组 1,000-sample VQAv2 quick eval 除 raw 外分数明显偏低，且对应旧 split；只保留为训练/评测设置诊断。",
             },
         ],
         "next_steps": [
-            "基于误差分析决定论文如何解释：joint 优于 naive union，但 image-only 在当前 high-joint GT 上更强。",
-            "继续监控 Windows RTX 3090 上的 E 组 LoRA 补跑，完成后同步 metrics 并刷新面板。",
-            "将 Windows 端 embedding cache 和后续 split 结果同步回 Mac source-of-truth。",
-            "为每个 LLaVA run 保存 config/metrics/logs，并同步回 Mac source-of-truth。",
+            "把 3000 fair held-out 主评价表写入论文草稿，并在表注中绑定 experiment id。",
+            "把新 A/B/C/D/E v2 manifests 同步到 Windows RTX 3090 训练环境。",
+            "按新 split 重新运行 LLaVA LoRA 与 VQAv2/TextVQA 下游验证；旧 VQAv2 quick eval 仅作为失败诊断记录。",
         ],
     }
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -87,8 +106,8 @@ def main() -> int:
 def _summary_cards() -> list[dict[str, str]]:
     prepare = _read_json(SYNC / "cc3m_subset_200k_20260515/prepare_metrics.json")
     candidates = _read_json(SYNC / "exp_stage4_candidates_200k_manifest_20260516/metrics.json")
-    high_joint = _read_json(SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json")
-    annotation = _read_json(SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516/metrics.json")
+    fair_candidates = _read_json(FAIR_CANDIDATE_DIR / "metrics.json")
+    annotation = _read_json(FAIR_ANNOTATION_DIR / "metrics.json")
     return [
         {
             "label": "CC3M pool",
@@ -101,27 +120,26 @@ def _summary_cards() -> list[dict[str, str]]:
             "note": "由 image/text/joint CLIP top-k 挖掘得到",
         },
         {
-            "label": "High-joint pool",
-            "value": _fmt_int(high_joint.get("num_candidates", 129139)),
-            "note": "筛选条件：joint >= 0.80 且 image >= 0.60",
+            "label": "公平分层候选",
+            "value": _fmt_int(fair_candidates.get("sampled_rows", 3000)),
+            "note": "按 image/text/joint score-space 分层，不按标签比例强行采样",
         },
         {
             "label": "标注目标",
             "value": _fmt_int(annotation.get("num_annotation_rows", 1000)),
-            "note": f"其中 {_fmt_int(annotation.get('num_audit_rows', 200))} 条用于合作者抽查",
+            "note": f"其中 {_fmt_int(annotation.get('num_audit_rows', 600))} 条用于合作者抽查",
         },
     ]
 
 
 def _phase_progress() -> list[dict[str, str | int]]:
+    annotation = _annotation_status()
     llava = _llava_pilot_status()
-    if llava["completed"] >= 5:
-        llava_percent = 45 + round(float(llava.get("formal_queue_percent") or 0) * 0.35)
-    else:
-        llava_percent = 25 + llava["completed"] * 4
+    vqa = _vqav2_quick_status()
+    llava_percent = 65
     llava_detail = (
-        f"A/B/C/D/E 512-sample pilot 已完成 {llava['completed']}/5；"
-        f"{llava['current_training']}；完整 VQAv2/TextVQA 指标尚未完成。"
+        f"新 A/B/C/D/E v2 manifests 已生成并转换 LLaVA JSON；{DOWNSTREAM_RERUN_REASON} "
+        f"旧记录：pilot {llava['completed']}/5，VQAv2 quick eval {vqa['completed']}/5。"
     )
     return [
         {
@@ -144,15 +162,19 @@ def _phase_progress() -> list[dict[str, str | int]]:
         },
         {
             "name": "人工标注",
-            "status": "done",
+            "status": "done" if annotation["remaining"] == 0 else "active",
             "percent": _annotation_percent(),
-            "detail": "1000 条 high-joint 主标注已完成；其中 295 条为 duplicate 或 near-duplicate。",
+            "detail": (
+                f"新 3000 条 score-space 分层候选已生成 review sheets；"
+                f"当前已标注 {annotation['done']}/{annotation['total']}，"
+                f"其中 {annotation['audit_rows']} 条预留给合作者抽查。"
+            ),
         },
         {
             "name": "Stage 4 主评价",
-            "status": "active",
-            "percent": 90,
-            "detail": "已完成 P/R/F1 主表、阈值扫描和误差分析；joint 优于 naive_union，但尚未超过 image-only，写作需谨慎。90% 表示去重主评价数据基本完成，但最终论文表述仍需等待 LLaVA 下游结果一起闭环。",
+            "status": "done" if _fair_eval_metrics() else "active",
+            "percent": 100 if _fair_eval_metrics() else (55 if annotation["remaining"] else 90),
+            "detail": _stage4_eval_detail(annotation),
         },
         {
             "name": "LLaVA 下游验证",
@@ -167,6 +189,7 @@ def _plan_requirements() -> list[dict[str, object]]:
     llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
     llava_peak_memory = _fmt_gib(llava_smoke.get("gpu_peak_memory_bytes"))
     llava = _llava_pilot_status()
+    vqa = _vqav2_quick_status()
     return [
         {
             "name": "Stage 4 实现",
@@ -251,17 +274,19 @@ def _plan_requirements() -> list[dict[str, object]]:
                 "LLaVA LoRA logs 与 VQAv2/TextVQA metrics",
             ],
             "current_outputs": [
-                "A/B/C/D/E 200K training manifests",
+                "A/B/C/D/E 200K v2 training manifests",
+                "A/B/C/D/E v2 LLaVA JSON 已生成",
                 "A/B/C/D/E LLaVA JSON data-smoke validated",
                 "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
                 f"A/B/C/D/E 512-sample LoRA pilot：{llava['completed']}/5 complete",
-                f"当前正式训练状态：{llava['current_training']}",
-                f"正式 25K 训练阶段：{llava.get('formal_summary', 'pending')}",
+                f"旧正式训练状态：{llava['current_training']}",
+                f"旧 VQAv2 quick eval：{vqa['completed']}/5 complete; {vqa['summary']}",
+                DOWNSTREAM_RERUN_REASON,
                 f"smoke final_loss={_fmt_float(llava_smoke.get('final_loss'), 4)}; peak_memory={llava_peak_memory}",
-                "完整 25K/2000-step A/B/C/D/E LoRA 训练与 VQAv2/TextVQA 指标尚未完成",
+                "新 v2 split 的完整 25K/2000-step A/B/C/D/E LoRA、VQAv2/TextVQA 仍未重跑",
             ],
             "evidence": [
-                "experiments/results/plan_b_stage4/exp_stage4_training_manifests_200k_20260520/metrics.json",
+                f"experiments/results/plan_b_stage4/{SPLIT_EXPERIMENT_ID}/metrics.json",
                 "experiments/results/plan_b_stage4/exp_llava_stage4_data_smoke_abcde_20260520/metrics.json",
                 "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_real_train_smoke_E_20260520/metrics.json",
                 "experiments/results/plan_b_stage4/windows_sync/exp_llava_stage4_pilot_E_stage4_joint_512_20steps_20260521/metrics.json",
@@ -332,6 +357,7 @@ def _experiments() -> list[dict[str, str]]:
         "exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521",
         "exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521",
         "exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260521",
+        FAIR_EVAL_EXPERIMENT_ID,
     ]
     rows = []
     ledger = RESULTS / "experiment_ledger.csv"
@@ -384,7 +410,7 @@ def _charts(annotation: dict[str, object]) -> dict[str, list[dict[str, object]]]
             },
             {
                 "label": "人工标注目标",
-                "value": int(annotation_metrics.get("num_annotation_rows", 1000)),
+                "value": int(annotation.get("total", annotation_metrics.get("num_annotation_rows", 3000))),
                 "unit": "pair-pairs",
                 "note": "当前主标注表规模",
             },
@@ -423,11 +449,14 @@ def _charts(annotation: dict[str, object]) -> dict[str, list[dict[str, object]]]
         "threshold_dedup_rates": _threshold_dedup_chart(),
         "llava_pilots": _llava_pilot_chart(),
         "llava_formal_train25k": _llava_formal_chart(),
+        "vqav2_quick_eval": _vqav2_quick_chart(),
     }
 
 
 def _annotation_status() -> dict[str, object]:
-    source = SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv"
+    source = FAIR_ANNOTATION_DIR / "annotation_sheet.csv"
+    if not source.exists():
+        source = LEGACY_ANNOTATION_DIR / "annotation_sheet.csv"
     labeled = source.with_name("annotation_sheet_labeled.csv")
     path = labeled if labeled.exists() else source
     counts = {label: 0 for label in ["duplicate", "near-duplicate", "not-duplicate", "unlabeled"]}
@@ -445,7 +474,14 @@ def _annotation_status() -> dict[str, object]:
     total = len(rows)
     done = total - counts["unlabeled"]
     positives = counts["duplicate"] + counts["near-duplicate"]
+    task_name = (
+        "ICDM fair score-space 3000 annotation"
+        if source.parent == FAIR_ANNOTATION_DIR
+        else "legacy high-joint 1000 annotation"
+    )
     return {
+        "task": task_name,
+        "experiment_id": source.parent.name,
         "total": total,
         "done": done,
         "remaining": counts["unlabeled"],
@@ -456,30 +492,37 @@ def _annotation_status() -> dict[str, object]:
         "source_csv": str(source.relative_to(ROOT)),
         "labeled_csv": str(labeled.relative_to(ROOT)),
         "review_sheets": str((source.parent / "review_sheets").relative_to(ROOT)),
+        "labeling_policy": "duplicate / near-duplicate / not-duplicate; positives are duplicate + near-duplicate",
+        "score_assisted_labeling_rule": SCORE_ASSISTED_LABELING_RULE,
+        "sampling_policy": "label-agnostic score-space stratified over image/text/joint similarity buckets",
     }
 
 
 def _artifacts() -> list[dict[str, str]]:
     return [
         {
-            "title": "Primary annotation CSV",
-            "path": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet.csv",
+            "title": "Current fair annotation CSV",
+            "path": "experiments/results/plan_b_stage4/exp_stage4_fair_annotation_3000_20260523/annotation_sheet.csv",
         },
         {
-            "title": "Labeled annotation CSV",
+            "title": "Current fair labeled CSV",
+            "path": "experiments/results/plan_b_stage4/exp_stage4_fair_annotation_3000_20260523/annotation_sheet_labeled.csv",
+        },
+        {
+            "title": "Current fair review sheets",
+            "path": "experiments/results/plan_b_stage4/exp_stage4_fair_annotation_3000_20260523/review_sheets/",
+        },
+        {
+            "title": "Legacy dev annotation CSV",
             "path": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv",
-        },
-        {
-            "title": "Review sheets",
-            "path": "experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_1000_200k_high_joint_20260516/review_sheets/",
         },
         {
             "title": "Experiment ledger",
             "path": "experiments/results/plan_b_stage4/experiment_ledger.csv",
         },
         {
-            "title": "Stage 4 evaluation metrics",
-            "path": "experiments/results/plan_b_stage4/exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json",
+            "title": "Dev threshold diagnostic metrics",
+            "path": "experiments/results/plan_b_stage4/exp_stage4_threshold_diagnostic_1000_20260523/metrics.json",
         },
         {
             "title": "Daily log",
@@ -515,8 +558,8 @@ def _runtime_chart() -> list[dict[str, object]]:
 
 
 def _stage4_eval_chart() -> list[dict[str, object]]:
-    metrics = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
-    best_by_score = metrics.get("best_by_score", {})
+    metrics = _fair_eval_metrics() or _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
+    best_by_score = metrics.get("results_by_method") or metrics.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         return []
     labels = {
@@ -536,10 +579,35 @@ def _stage4_eval_chart() -> list[dict[str, object]]:
                 "label": labels[key],
                 "value": round(float(item["f1"]), 3),
                 "unit": "F1",
-                "note": f"threshold={item.get('threshold')}; P={float(item.get('precision', 0)):.3f}; R={float(item.get('recall', 0)):.3f}",
+                "note": _threshold_note(item),
             }
         )
     return rows
+
+
+def _fair_eval_metrics() -> dict[str, object]:
+    return _read_json(FAIR_EVAL_DIR / "metrics.json")
+
+
+def _stage4_eval_detail(annotation: dict[str, object]) -> str:
+    fair_eval = _fair_eval_metrics()
+    if fair_eval:
+        by_method = fair_eval.get("results_by_method", {})
+        if isinstance(by_method, dict):
+            joint = by_method.get("joint", {})
+            naive = by_method.get("naive_union", {})
+            image = by_method.get("image", {})
+            if isinstance(joint, dict) and isinstance(naive, dict) and isinstance(image, dict):
+                return (
+                    "3000 fair held-out 主评价已完成；"
+                    f"Stage 4 joint F1={_fmt_float(joint.get('f1'), 4)}，"
+                    f"naive union F1={_fmt_float(naive.get('f1'), 4)}，"
+                    f"image-only F1={_fmt_float(image.get('f1'), 4)}。"
+                )
+        return "3000 fair held-out 主评价已完成；详见 fair eval metrics。"
+    if annotation["remaining"]:
+        return "旧 1000 high-joint 结果改为 dev/threshold diagnostic；最终 held-out 主评价等待新 3000 公平分层标注完成后重算。"
+    return "旧 1000 high-joint 结果改为 dev/threshold diagnostic；新 3000 公平分层标注已完成，下一步重算 held-out 主评价。"
 
 
 def _abcde_split_chart() -> list[dict[str, object]]:
@@ -702,6 +770,51 @@ def _llava_formal_progress(formal: dict[str, object]) -> float:
     return round(completed_units * 100 / 5, 2)
 
 
+def _vqav2_quick_status() -> dict[str, object]:
+    specs = [
+        ("A", "raw", "A_raw"),
+        ("B", "image-only", "B_image_only"),
+        ("C", "text-only", "C_text_only"),
+        ("D", "naive union", "D_naive_union"),
+        ("E", "Stage 4 joint", "E_stage4_joint"),
+    ]
+    rows = []
+    for split, name, suffix in specs:
+        exp_id = f"exp_llava_stage4_vqa_vqav2_quick_{suffix}_20260522"
+        metrics_path = SYNC / exp_id / "metrics.json"
+        metrics = _read_json(metrics_path)
+        done = metrics.get("status") == "evaluated" and int(metrics.get("num_scored_records") or 0) > 0
+        rows.append(
+            {
+                "split": split,
+                "name": name,
+                "experiment_id": exp_id,
+                "status": "complete" if done else "pending",
+                "vqa_consensus": metrics.get("vqa_consensus"),
+                "exact_match": metrics.get("exact_match"),
+                "num_scored_records": metrics.get("num_scored_records"),
+                "runtime_seconds": metrics.get("runtime_seconds"),
+                "gpu_peak_gb": (float(metrics.get("gpu_peak_memory_bytes") or 0) / 1024**3)
+                if metrics
+                else None,
+                "metrics_path": str(metrics_path.relative_to(ROOT)),
+            }
+        )
+    completed = sum(1 for row in rows if row["status"] == "complete")
+    summary_parts = [
+        f"{row['split']} VQAv2={_fmt_float(row.get('vqa_consensus'), 4)}"
+        for row in rows
+        if row["status"] == "complete"
+    ]
+    return {
+        "completed": completed,
+        "total": len(rows),
+        "rows": rows,
+        "summary": "; ".join(summary_parts) if summary_parts else "VQAv2 quick eval pending",
+        "queue_log": str((SYNC / "llava_stage4_vqa_eval_vqav2_quick_20260522.log").relative_to(ROOT)),
+    }
+
+
 def _llava_pilot_chart() -> list[dict[str, object]]:
     rows = []
     for row in _llava_pilot_status()["pilots"]:
@@ -713,6 +826,22 @@ def _llava_pilot_chart() -> list[dict[str, object]]:
                 else None,
                 "unit": "final loss",
                 "note": f"steps={row['steps']}; samples={row['samples']}; peak={_fmt_float(row.get('gpu_peak_gb'), 3)} GiB",
+            }
+        )
+    return rows
+
+
+def _vqav2_quick_chart() -> list[dict[str, object]]:
+    rows = []
+    for row in _vqav2_quick_status()["rows"]:
+        rows.append(
+            {
+                "label": f"{row['split']} {row['name']}",
+                "value": round(float(row["vqa_consensus"]), 4)
+                if row.get("vqa_consensus") is not None
+                else None,
+                "unit": "VQAv2 quick consensus",
+                "note": f"exact={_fmt_float(row.get('exact_match'), 4)}; n={row.get('num_scored_records', 'n/a')}; status={row.get('status')}",
             }
         )
     return rows
@@ -749,6 +878,21 @@ def _llava_formal_chart() -> list[dict[str, object]]:
 
 def _data_exports() -> list[dict[str, str]]:
     return [
+        {
+            "title": "Stage 4 最终结果报告 PDF",
+            "href": "reports/stage4_final_result_report.pdf",
+            "description": "当前可用于合作者阅读的 PDF 报告；E 和下游指标完成后会重新生成。",
+        },
+        {
+            "title": "Stage 4 最终结果报告 HTML",
+            "href": "reports/stage4_final_result_report.html",
+            "description": "同一份报告的网页版本，便于在线查看。",
+        },
+        {
+            "title": "Stage 4 最终结果报告 Markdown",
+            "href": "reports/stage4_final_result_report.md",
+            "description": "同一份报告的 Markdown 版本，便于后续修改和复制到论文草稿。",
+        },
         {
             "title": "Dashboard 当前状态",
             "href": "data/status.json",
@@ -830,6 +974,7 @@ def _write_exports(status: dict, annotation: dict[str, object], charts: dict[str
     if ledger.exists():
         shutil.copyfile(ledger, DATA_DIR / "experiment_ledger.csv")
     _copy_paper_source_files()
+    _copy_report_files()
 
 
 def _data_quality_audit() -> dict[str, object]:
@@ -844,12 +989,13 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
     high_joint = _read_json(SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json")
     annotation_metrics = _read_json(SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516/metrics.json")
     adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
-    evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
+    evaluation = _fair_eval_metrics() or _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
     split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
     llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
     llava = _llava_pilot_status()
-    best_by_score = evaluation.get("best_by_score", {})
+    vqa = _vqav2_quick_status()
+    best_by_score = evaluation.get("results_by_method") or evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
 
@@ -878,8 +1024,8 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
         },
         {
             "title": "人工标注与 Ground Truth",
-            "status": "complete",
-            "paper_use": "用于论文 Annotation Protocol / Ground Truth Dataset 段落，说明标注规模、正负例数量、标签定义和 audit 状态。",
+            "status": "complete" if annotation.get("remaining", 0) == 0 else "active",
+            "paper_use": "用于论文 Annotation Protocol / Ground Truth Dataset 段落。当前应写成新的 3000 条 score-space 分层标注已完成；旧 1000 条只作为阈值 dev 诊断。",
             "key_numbers": [
                 {"label": "标注总数", "value": _fmt_int(annotation.get("done", 0)), "note": "已完成 pair-pairs"},
                 {"label": "正例", "value": _fmt_int(annotation.get("positives", 0)), "note": "duplicate + near-duplicate"},
@@ -887,6 +1033,10 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
                 {"label": "Audit 一致率", "value": _fmt_float(adjudication.get("agreement_rate", 0), 3), "note": "当前内部默认 audit run"},
             ],
             "sources": [
+                _source("公平分层候选 metrics", "data/paper/stage4_fair_candidates_3000_metrics.json", "3000 条 score-space 分层候选的生成记录。"),
+                _source("公平分层标注表", "data/paper/stage4_fair_annotation_3000_sheet.csv", "原始 3000 条 pair-pairs 标注任务表。"),
+                _source("公平分层已标注 CSV", "data/paper/stage4_fair_annotation_3000_labeled.csv", "已完成主标注并回填前 500 修正后的 3000 条标签。"),
+                _source("公平分层标注 metrics", "data/paper/stage4_fair_annotation_3000_metrics.json", "标注总数、audit 行数、review sheets 状态。"),
                 _source("标注表 metrics", "data/paper/stage4_annotation_1000_high_joint_metrics.json", "1000 条标注表和 200 条 audit rows 的生成记录。"),
                 _source("已标注 CSV", "data/paper/stage4_annotation_1000_high_joint_labeled.csv", "人工标注后的原始 CSV，可查看每条 pair-pair 标签。"),
                 _source("Adjudicated labels CSV", "data/paper/stage4_adjudicated_annotations.csv", "带 final_label 和 adjudication_status 的最终评价标签。"),
@@ -895,8 +1045,8 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
         },
         {
             "title": "Stage 4 主评价表",
-            "status": "active",
-            "paper_use": "用于论文 Main Results 表。当前结论是 Stage 4 joint 优于 naive union，但 image-only 在这批候选集上更强；误差分析显示 joint false positives 中约 42.5% 是 caption 完全相同的模板型样本。",
+            "status": "complete" if _fair_eval_metrics() else "active",
+            "paper_use": "用于论文 Main Results 表。旧 1000 high-joint 结果只作为 dev/threshold diagnostic；当前主表来自新 3000 公平分层 held-out 标注，阈值固定自 dev。",
             "key_numbers": [
                 {"label": "Image-only best F1", "value": _score_text(image), "note": _threshold_note(image)},
                 {"label": "Text-only best F1", "value": _score_text(text), "note": _threshold_note(text)},
@@ -906,6 +1056,10 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
                 {"label": "Image correct / joint wrong", "value": _fmt_int(error_analysis.get("image_correct_joint_wrong")), "note": "解释 image-only 当前更强的样本池证据"},
             ],
             "sources": [
+                _source("Fair held-out eval metrics", "data/paper/stage4_fair_eval_3000_metrics.json", "3000 fair held-out labels 上固定 dev 阈值的 P/R/F1。"),
+                _source("Fair held-out fixed-threshold CSV", "data/paper/stage4_fair_eval_3000_fixed_threshold_metrics.csv", "每个方法的固定阈值、TP/FP/TN/FN、P/R/F1。"),
+                _source("Dev 阈值诊断 metrics", "data/paper/stage4_threshold_diagnostic_1000_metrics.json", "旧 1000 标注上的 image/text/joint/naive-union 阈值诊断。"),
+                _source("Dev naive-union grid", "data/paper/stage4_threshold_diagnostic_1000_naive_union_grid_metrics.csv", "旧阈值过低问题的 grid 诊断。"),
                 _source("主评价 metrics JSON", "data/paper/stage4_eval_metrics.json", "各 score 的 best precision/recall/F1。"),
                 _source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "image/text/naive_union/joint/max 的完整 threshold sweep。"),
                 _source("误差分析 metrics JSON", "data/paper/stage4_error_analysis_metrics.json", "joint/image 的 FP/FN 和互胜样本统计。"),
@@ -934,22 +1088,24 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
         },
         {
             "title": "LLaVA 下游验证",
-            "status": "partial",
-            "paper_use": "用于论文 Downstream Validation 表。当前已有 A/B/C/D/E 在 200K manifest 上的训练 manifest、五组数据 smoke、Stage 4 E 真实 LLaVA smoke，以及 A/B/C/D/E 五组 512-sample pilot；完整 25K/2000-step A/B/C/D/E LoRA 训练日志和 VQAv2/TextVQA 指标仍未完成。",
+            "status": "active",
+            "paper_use": "用于论文 Downstream Validation 表。新 A/B/C/D/E v2 manifests 已按 3000 fair labels 后的规则生成；旧记录中真实 LLaVA smoke 存在但旧 25K/2000-step LoRA 与 VQAv2 quick eval 只能作为诊断记录，正式下游结论需要重训。",
             "key_numbers": _split_key_numbers(split_metrics)
             + [
-                {"label": "Data smoke", "value": "A/B/C/D/E", "note": "每组检查 32 条，missing_images=0，bad_images=0"},
-                {"label": "Real LLaVA smoke", "value": f"loss={_fmt_float(llava_smoke.get('final_loss'), 4)}", "note": f"steps={llava_smoke.get('steps', 'n/a')}; peak={_fmt_gib(llava_smoke.get('gpu_peak_memory_bytes'))}"},
-                {"label": "Pilot 训练", "value": f"{llava['completed']}/5 complete", "note": llava["pilot_summary"]},
-                {"label": "正式训练队列", "value": "running", "note": llava["current_training"]},
+                {"label": "v2 LLaVA JSON", "value": "A/B/C/D/E ready", "note": "已按 /mnt/d/data path-map 导出，待同步 Windows 训练。"},
+                {"label": "旧 Data smoke", "value": "A/B/C/D/E", "note": "旧 split 工程记录；新 v2 建议重新 smoke。"},
+                {"label": "旧 Real LLaVA smoke", "value": f"loss={_fmt_float(llava_smoke.get('final_loss'), 4)}", "note": f"steps={llava_smoke.get('steps', 'n/a')}; peak={_fmt_gib(llava_smoke.get('gpu_peak_memory_bytes'))}"},
+                {"label": "旧 Pilot 训练", "value": f"{llava['completed']}/5 complete", "note": llava["pilot_summary"]},
+                {"label": "旧 VQAv2 quick eval", "value": f"{vqa['completed']}/5 complete", "note": "旧 split 诊断记录；新 v2 需要重跑。"},
             ],
             "sources": [
                 _source("A/B/C/D/E split sizes CSV", "data/paper/stage4_abcde_split_sizes.csv", "200K manifest 上的五组训练数据规模。"),
                 _source("200K 阈值去重率 CSV", "data/paper/stage4_threshold_dedup_rates.csv", "image/text/joint/naive threshold vs dedup rate。"),
-                _source("A/B/C/D/E data smoke metrics", "data/paper/llava_stage4_data_smoke_abcde_metrics.json", "五组 LLaVA JSON 的路径和图片可读性检查。"),
-                _source("LLaVA E real smoke metrics", "data/paper/llava_stage4_real_train_smoke_E_metrics.json", "Stage 4 E 上真实模型 1-step LoRA 训练 smoke。"),
-                _source("LLaVA pilot metrics", "data/paper/llava_stage4_pilot_metrics.json", "A/B/C/D/E 五组 512-sample / 20-step pilot 汇总。"),
-                _source("LLaVA overnight queue log", "data/paper/llava_stage4_overnight_queue_20260521.log", "Windows 任务计划程序启动的 overnight queue 日志快照。"),
+                _source("A/B/C/D/E data smoke metrics", "data/paper/llava_stage4_data_smoke_abcde_metrics.json", "旧 split 五组 LLaVA JSON 的路径和图片可读性检查；新 v2 需重跑。"),
+                _source("LLaVA E real smoke metrics", "data/paper/llava_stage4_real_train_smoke_E_metrics.json", "旧 Stage 4 E 上真实模型 1-step LoRA 训练 smoke。"),
+                _source("LLaVA pilot metrics", "data/paper/llava_stage4_pilot_metrics.json", "旧 A/B/C/D/E 五组 512-sample / 20-step pilot 汇总。"),
+                _source("LLaVA overnight queue log", "data/paper/llava_stage4_overnight_queue_20260521.log", "旧 Windows 任务计划程序启动的 overnight queue 日志快照。"),
+                _source("VQAv2 quick eval metrics", "data/paper/llava_stage4_vqav2_quick_metrics.json", "旧 A/B/C/D/E 五组 1,000-sample VQAv2 quick eval 诊断记录。"),
                 _source("实验设计规则", "data/plan_requirements.json", "保留 A/B/C/D/E 设计，不默认收缩。"),
                 _source("实验 ledger CSV", "data/experiment_ledger.csv", "训练完成后每组结果必须进入 ledger。"),
             ],
@@ -962,12 +1118,13 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
     candidates = _read_json(SYNC / "exp_stage4_candidates_200k_manifest_20260516/metrics.json")
     high_joint = _read_json(SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json")
     adjudication = _read_json(RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/metrics.json")
-    evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
+    evaluation = _fair_eval_metrics() or _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
     error_analysis = _read_json(RESULTS / "exp_stage4_error_analysis_1000_200k_high_joint_20260520/metrics.json")
     split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
     llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
     llava = _llava_pilot_status()
-    best_by_score = evaluation.get("best_by_score", {})
+    vqa = _vqav2_quick_status()
+    best_by_score = evaluation.get("results_by_method") or evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
 
@@ -982,54 +1139,59 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
             "id": "dataset-ground-truth",
             "title": "数据集与 Ground Truth 构建",
             "paper_location": "论文位置：Dataset construction；表：CC3M 候选挖掘与标注统计",
-            "status": "ready",
-            "what_it_answers": "我们用了什么真实数据、为什么不是随机抽样、标注集有多少正负例。",
+            "status": "ready" if annotation.get("remaining", 0) == 0 else "active",
+            "what_it_answers": "我们用了什么真实数据、为什么改用 score-space 分层采样、标注集当前完成到哪里。",
             "recommended_claim": (
-                "We construct a real CC3M-based hard-candidate benchmark by first mining likely duplicate "
-                "image-caption pair-pairs from a 200K pool and then manually annotating 1,000 candidate pairs."
+                "We construct a real CC3M-based evaluation set by mining candidate image-caption pair-pairs "
+                "from a 200K pool and then applying label-agnostic stratified sampling over image, text, and joint similarities."
             ),
-            "do_not_write": "不要写 raw CC3M 的自然重复率就是 29.5%；这个比例只属于 high-joint hard-candidate 标注集。",
+            "do_not_write": "不要再把旧 high-joint 1000 标注集当作最终 held-out GT，也不要写 raw CC3M 的自然重复率就是旧正例比例。",
             "table_columns": ["项目", "当前数字", "论文写法"],
             "rows": [
                 ["CC3M 数据池", _fmt_int(prepare.get("saved_pairs", 200000)), "从 CC3M 准备 200K image-caption pairs。"],
                 ["初筛候选 pair-pairs", _fmt_int(candidates.get("num_candidates", 500000)), "人工标注前先挖掘可能重复的候选 pair-pairs。"],
-                ["High-joint 候选池", _fmt_int(high_joint.get("num_candidates", 129139)), "按 joint similarity 和 image similarity 过滤，用于标注采样。"],
+                ["公平分层候选", _fmt_int(annotation.get("total", 3000)), "按 image/text/joint score-space 分层采样。"],
                 ["已标注 pair-pairs", _fmt_int(annotation.get("done", 0)), "用于 Stage 4 评价的人工标注样本。"],
                 ["正例数量", _fmt_int(annotation.get("positives", 0)), "duplicate + near-duplicate。"],
                 ["负例数量", _fmt_int(annotation.get("counts", {}).get("not-duplicate", 0)), "not-duplicate。"],
+                ["Audit 预留行", _fmt_int(annotation.get("audit_rows", 600)), "主标注后给合作者抽查。"],
             ],
             "evidence": [
                 _source("CC3M 200K prepare", "data/paper/cc3m_subset_200k_prepare_metrics.json", "200K pool preparation metrics."),
                 _source("Candidate mining", "data/paper/stage4_candidates_200k_metrics.json", "500K mined candidate pair-pairs."),
-                _source("High-joint filter", "data/paper/stage4_candidates_200k_high_joint_metrics.json", "Filtered candidate pool for annotation."),
-                _source("Labeled annotations", "data/paper/stage4_annotation_1000_high_joint_labeled.csv", "Human-labeled 1,000 row benchmark."),
+                _source("Fair stratified candidates", "data/paper/stage4_fair_candidates_3000_metrics.json", "Score-space stratified 3000-row sample."),
+                _source("Fair annotation sheet", "data/paper/stage4_fair_annotation_3000_sheet.csv", "Current 3000-row labeling sheet."),
+                _source("Fair labeled annotations", "data/paper/stage4_fair_annotation_3000_labeled.csv", "Completed 3000-row fair held-out labels."),
+                _source("Legacy labeled annotations", "data/paper/stage4_annotation_1000_high_joint_labeled.csv", "Legacy 1,000-row dev diagnostic set."),
             ],
-            "gap": "如果要正式报告 inter-annotator agreement，需要真实合作者 audit；当前 audit 只是流程占位。",
+            "gap": "3000 条主标注已完成；正式报告 inter-annotator agreement 仍需要真实合作者 audit。",
         },
         {
             "id": "main-stage4-evaluation",
             "title": "主评价：Stage 4 与 Baselines 对比",
-            "paper_location": "论文表：CC3M hard-candidate benchmark 上的 Precision / Recall / F1",
-            "status": "ready_with_caution",
+            "paper_location": "论文表：CC3M 3000 fair held-out benchmark 上的 Precision / Recall / F1",
+            "status": "ready",
             "what_it_answers": "Stage 4 是否比三个单模态拼接/naive union 更合理。",
             "recommended_claim": (
-                "On the current hard-candidate benchmark, Stage 4 improves over the naive union baseline, "
-                "but image-only remains stronger; the paper should present this honestly and use error analysis to explain why."
+                "Using thresholds selected on the old 1,000-row dev diagnostic set, Stage 4 joint achieves the best F1 "
+                "on the 3,000-row fair held-out labels and substantially improves over naive union."
             ),
-            "do_not_write": "不要写 Stage 4 全面超过所有单模态 baseline；当前 image-only F1 更高。",
+            "do_not_write": "不要把旧 1000 high-joint P/R/F1 当作 ICDM 最终主表，也不要沿用旧 text/naive 阈值。",
             "table_columns": ["方法", "阈值", "Precision", "Recall", "F1", "论文备注"],
             "rows": [
-                _eval_row("Image-only", image, "当前 GT 上最强 baseline。"),
-                _eval_row("Text-only", text, "在 high-joint 候选集上明显过度预测正例。"),
+                _eval_row("Image-only", image, "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 joint。"),
+                _eval_row("Text-only", text, "dev 选出的 text 阈值退化为 0.00，在 held-out 上过度预测正例。"),
                 _eval_row("Naive union", naive, "单模态结果并集，代表简单拼接式多模态 baseline。"),
-                _eval_row("Stage 4 joint", joint, "超过 naive union，但未超过 image-only。"),
+                _eval_row("Stage 4 joint", joint, "在 3000 fair held-out 上超过 image-only 与 naive union。"),
             ],
             "evidence": [
-                _source("Main metrics", "data/paper/stage4_eval_metrics.json", "Best P/R/F1 by score."),
-                _source("Threshold sweep", "data/paper/stage4_eval_per_threshold_metrics.csv", "Complete threshold sweep."),
+                _source("Fair held-out eval metrics", "data/paper/stage4_fair_eval_3000_metrics.json", "Fixed dev-threshold evaluation on 3,000 fair labels."),
+                _source("Fair held-out fixed-threshold CSV", "data/paper/stage4_fair_eval_3000_fixed_threshold_metrics.csv", "Fixed-threshold P/R/F1 rows."),
+                _source("Dev threshold diagnostic", "data/paper/stage4_threshold_diagnostic_1000_metrics.json", "Threshold diagnosis on legacy 1,000 labels."),
+                _source("Dev naive-union grid", "data/paper/stage4_threshold_diagnostic_1000_naive_union_grid_metrics.csv", "Naive-union threshold grid diagnosis."),
                 _source("Experiment ledger", "data/experiment_ledger.csv", "Traceable experiment record."),
             ],
-            "gap": "如果想增强主 claim，下一步不是改口径，而是按预定方案跑 fair operating point / 下游验证。",
+            "gap": "主评价已完成；下一步把该表写进论文并绑定 experiment id。",
         },
         {
             "id": "error-analysis",
@@ -1064,17 +1226,18 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
             "paper_location": "论文表：LLaVA 训练数据规模与下游结果",
             "status": "partial",
             "what_it_answers": "原始、单模态、naive union、Stage 4 五组训练数据规模分别是多少，后续 LLaVA 怎么跑。",
-            "recommended_claim": "At this stage, the dashboard supports reporting materialized A/B/C/D/E training manifests and a real LLaVA-1.5 4-bit LoRA smoke test, but not downstream benchmark performance.",
-            "do_not_write": "不要写 VQAv2/TextVQA 有结果；当前 manifest 与真实模型 smoke 可证明训练链路可用，但正式下游结果还没有产生。",
+            "recommended_claim": "The dashboard supports reporting updated A/B/C/D/E v2 training manifests; downstream LLaVA training/evaluation must be rerun before making final performance claims.",
+            "do_not_write": "不要把旧 VQAv2 quick eval 写成完整正式下游 benchmark；它对应旧 split/旧标注链路，只能作为诊断记录。",
             "table_columns": ["组别", "方法", "保留 pairs", "删除 pairs", "去重率", "阈值"],
             "rows": split_rows,
             "evidence": [
                 _source("A/B/C/D/E split sizes", "data/paper/stage4_abcde_split_sizes.csv", "Current 200K materialized training split sizes."),
                 _source("Threshold dedup rates", "data/paper/stage4_threshold_dedup_rates.csv", "Threshold vs dedup rate table."),
                 _source("Split metrics", "data/paper/stage4_split_threshold_metrics.json", "Notes and source metrics."),
-                _source("Experiment ledger", "data/experiment_ledger.csv", "Includes data smoke and real LLaVA-1.5 4-bit LoRA smoke records."),
+                _source("VQAv2 quick eval metrics", "data/paper/llava_stage4_vqav2_quick_metrics.json", "旧 A/B/C/D/E 五组 1,000-sample VQAv2 quick eval 诊断记录。"),
+                _source("Experiment ledger", "data/experiment_ledger.csv", "Includes current v2 split plus old downstream diagnostic records."),
             ],
-            "gap": "下一步必须在 Windows 3090 上跑完整 A/B/C/D/E LLaVA LoRA，并产出 VQAv2/TextVQA 指标。",
+            "gap": "新 v2 split 已生成；下一步在 Windows RTX 3090 上重新 smoke、训练、评测 A/B/C/D/E。",
         },
         {
             "id": "efficiency-overhead",
@@ -1113,7 +1276,7 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
             "rows": [
                 ["Agreement rate", "不是正式合作者一致性", "真实合作者 audit 前不要报告。"],
                 ["Raw duplicate prevalence", "尚未估计", "不能从 high-joint benchmark 推断。"],
-                ["Stage 4 superiority", "目前只超过 naive union", "必须说明 image-only 在当前 benchmark 更强。"],
+                ["Stage 4 superiority", "3000 fair held-out 上超过 image-only 与 naive union", "必须说明阈值来自旧 1000 dev diagnostic。"],
                 ["Downstream performance", "缺失", "LLaVA 跑完前不能宣称训练效果。"],
             ],
             "evidence": [
@@ -1128,9 +1291,12 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
 def _eval_row(name: str, row: object, note: str) -> list[str]:
     if not isinstance(row, dict):
         return [name, "n/a", "n/a", "n/a", "n/a", note]
+    threshold = row.get("threshold", "n/a")
+    if row.get("method") == "naive_union" or row.get("image_threshold") not in {None, ""}:
+        threshold = f"image={row.get('image_threshold')}, text={row.get('text_threshold')}"
     return [
         name,
-        str(row.get("threshold", "n/a")),
+        str(threshold),
         _fmt_float(row.get("precision"), 3),
         _fmt_float(row.get("recall"), 3),
         _fmt_float(row.get("f1"), 3),
@@ -1161,8 +1327,8 @@ def _split_table_rows(metrics: dict[str, object]) -> list[list[str]]:
 
 
 def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
-    evaluation = _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
-    best_by_score = evaluation.get("best_by_score", {})
+    evaluation = _fair_eval_metrics() or _read_json(RESULTS / "exp_stage4_eval_1000_200k_high_joint_20260519/metrics.json")
+    best_by_score = evaluation.get("results_by_method") or evaluation.get("best_by_score", {})
     if not isinstance(best_by_score, dict):
         best_by_score = {}
     image = best_by_score.get("image", {})
@@ -1177,9 +1343,10 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
     split_metrics = _read_json(SPLIT_EXPERIMENT_DIR / "metrics.json")
     llava_smoke = _read_json(SYNC / "exp_llava_stage4_real_train_smoke_E_20260520/metrics.json")
     llava = _llava_pilot_status()
+    vqa = _vqav2_quick_status()
 
-    paper_eval = [_source("主评价 metrics", "data/paper/stage4_eval_metrics.json", "")]
-    threshold_csv = [_source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "")]
+    paper_eval = [_source("Fair held-out eval metrics", "data/paper/stage4_fair_eval_3000_metrics.json", "")]
+    threshold_csv = [_source("Fair fixed-threshold CSV", "data/paper/stage4_fair_eval_3000_fixed_threshold_metrics.csv", "")]
     dedup_rate_csv = [_source("200K 阈值去重率 CSV", "data/paper/stage4_threshold_dedup_rates.csv", "")]
     split_csv = [_source("A/B/C/D/E split sizes CSV", "data/paper/stage4_abcde_split_sizes.csv", "")]
     llava_smoke_sources = [
@@ -1193,6 +1360,8 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
         _source("Image wins joint loses", "data/paper/stage4_image_wins_joint_loses.csv", ""),
     ]
     annotation_sources = [
+        _source("公平分层已标注 CSV", "data/paper/stage4_fair_annotation_3000_labeled.csv", ""),
+        _source("公平分层标注 metrics", "data/paper/stage4_fair_annotation_3000_metrics.json", ""),
         _source("已标注 CSV", "data/paper/stage4_annotation_1000_high_joint_labeled.csv", ""),
         _source("Adjudicated CSV", "data/paper/stage4_adjudicated_annotations.csv", ""),
     ]
@@ -1219,7 +1388,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
                 _matrix_item(
                     "表 1.2 τ_cross 阈值扫描",
                     "complete",
-                    "joint best F1=0.583@0.85",
+                    f"dev-selected joint threshold=0.85; fair held-out joint F1={_score_text(joint)}",
                     threshold_csv,
                     "",
                     "τ_cross 对 P/R/F1 的影响。",
@@ -1237,7 +1406,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
                     "complete",
                     f"naive F1={_score_text(naive)}; Stage 4 F1={_score_text(joint)}; joint_fp_caption_equal_rate={_fmt_float(error_analysis.get('joint_fp_caption_equal_rate'), 3)}",
                     paper_eval + error_sources,
-                    "Stage 4 打过 naive union，但没打过 image-only，写作需说明。",
+                    "Stage 4 在 3000 fair held-out 上超过 naive union 与 image-only；旧 1000 high-joint 误差分析只作为诊断背景。",
                     "证明跨模态联合处理相对简单拼接/并集的增量价值。",
                 ),
                 _matrix_item(
@@ -1304,11 +1473,11 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
             "status": "active",
             "purpose": "最重要的下游验证：证明去重对 LLaVA-1.5-7B LoRA 训练有实际收益或不伤性能。",
             "items": [
-                _matrix_item("表 4.0 LLaVA 训练链路 smoke", "partial", f"A/B/C/D/E data smoke 通过；E real smoke steps={llava_smoke.get('steps', 'n/a')}; final_loss={_fmt_float(llava_smoke.get('final_loss'), 4)}; peak={_fmt_gib(llava_smoke.get('gpu_peak_memory_bytes'))}", llava_smoke_sources, "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。", "验证 Windows 3090 上真实 LLaVA-1.5-7B 4-bit LoRA 训练入口可用。"),
-                _matrix_item("表 4.0b LLaVA A/B/C/D/E pilot", "complete", f"{llava['completed']}/5 pilot complete; {llava['pilot_summary']}; {llava['current_training']}", [_source("pilot metrics", "data/paper/llava_stage4_pilot_metrics.json", ""), _source("queue log", "data/paper/llava_stage4_overnight_queue_20260521.log", ""), _source("ledger", "data/experiment_ledger.csv", "")], "这仍不是 VQAv2/TextVQA 下游性能，只能证明五组 split 均可完成真实 LoRA 训练 pilot。", "A/B/C/D/E 五组 512-sample / 20-step pilot 训练状态。"),
-                _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "complete", _split_summary(split_metrics), split_csv, "训练 manifest 已生成，且 data smoke 已验证；下一步是 Windows 3090 上实际训练和评测。", "原始样本数、去重后样本数、去重率。"),
+                _matrix_item("表 4.0 LLaVA 训练链路 smoke", "partial", f"旧 A/B/C/D/E data smoke 通过；旧 E real smoke steps={llava_smoke.get('steps', 'n/a')}; final_loss={_fmt_float(llava_smoke.get('final_loss'), 4)}; peak={_fmt_gib(llava_smoke.get('gpu_peak_memory_bytes'))}", llava_smoke_sources, "旧 smoke 对应旧 split；新 v2 split 需要重新做 data smoke / train smoke。", "验证 Windows 3090 上真实 LLaVA-1.5-7B 4-bit LoRA 训练入口可用。"),
+                _matrix_item("表 4.0b LLaVA A/B/C/D/E pilot", "partial", f"旧 pilot {llava['completed']}/5 complete; {llava['pilot_summary']}; {llava['current_training']}", [_source("pilot metrics", "data/paper/llava_stage4_pilot_metrics.json", ""), _source("queue log", "data/paper/llava_stage4_overnight_queue_20260521.log", ""), _source("ledger", "data/experiment_ledger.csv", "")], "旧 pilot 对应旧 split/旧标注链路；新 v2 split 需要重跑。", "A/B/C/D/E 五组 512-sample / 20-step pilot 训练状态。"),
+                _matrix_item("表 4.1 五组训练数据规模 A/B/C/D/E", "complete", _split_summary(split_metrics), split_csv, "新 v2 training manifest 和 LLaVA JSON 已生成；下一步是同步 Windows 3090 并重新 smoke、训练和评测。", "原始样本数、去重后样本数、去重率。"),
                 _matrix_item("表 4.2 五组训练时间", "pending", "", [], "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。", "训练效率收益。"),
-                _matrix_item("表 4.3 VQAv2 评测结果", "pending", "", [], "需要每组至少一个 seed；理想 2 seeds。", "配置、seed、accuracy。"),
+                _matrix_item("表 4.3 VQAv2 quick 评测结果", "pending", vqa["summary"], [_source("VQAv2 quick eval metrics", "data/paper/llava_stage4_vqav2_quick_metrics.json", ""), _source("VQAv2 quick queue log", "data/paper/llava_stage4_vqa_eval_vqav2_quick_20260522.log", ""), _source("ledger", "data/experiment_ledger.csv", "")], "旧 quick eval 对应旧 split，只能作为诊断；新 v2 split 需要重跑后才能写正式下游表。", "配置、VQAv2 consensus、exact match、样本数。"),
                 _matrix_item("表 4.4 TextVQA 评测结果", "pending", "", [], "时间允许再跑；不允许虚构。", "配置、seed、accuracy。"),
                 _matrix_item("表 4.5 汇总性能表", "pending", "", [], "依赖 A/B/C/D/E 训练和评测完成。", "VQAv2/TextVQA mean ± std。"),
             ],
@@ -1318,8 +1487,8 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
             "status": "partial",
             "purpose": "更新原 Figure 3，展示跨模态阈值和单模态阈值对去重率/性能的影响。",
             "items": [
-                _matrix_item("表 5.1 各模态阈值 vs 去重率", "complete", "已完成 200K manifest 上 image/text/joint/naive threshold vs dedup-rate", dedup_rate_csv, "音频不属于当前 CIKM Plan B 主线，暂不补。", "图像、文本、音频、跨模态阈值曲线。"),
-                _matrix_item("表 5.2 各模态最优阈值与去重率", "complete", f"image best={_score_text(image)}@{image.get('threshold')}; joint best={_score_text(joint)}@{joint.get('threshold')}", paper_eval + dedup_rate_csv, "音频不属于当前 CIKM Plan B 主线，暂不补。", "最优阈值选择依据。"),
+                _matrix_item("表 5.1 各模态阈值 vs 去重率", "complete", "已完成 200K manifest 上 image/text/joint/naive threshold vs dedup-rate", dedup_rate_csv, "音频不属于当前 ICDM Stage 4 主线，暂不补。", "图像、文本、音频、跨模态阈值曲线。"),
+                _matrix_item("表 5.2 各模态最优阈值与去重率", "complete", f"image best={_score_text(image)}@{image.get('threshold')}; joint best={_score_text(joint)}@{joint.get('threshold')}", paper_eval + dedup_rate_csv, "音频不属于当前 ICDM Stage 4 主线，暂不补。", "最优阈值选择依据。"),
                 _matrix_item("表 5.3 跨模态与单模态阈值组合", "pending", "", [], "需要组合扫描 image/text/cross thresholds。", "联合去重率或相关分析。"),
             ],
         },
@@ -1403,6 +1572,16 @@ def _copy_paper_source_files() -> None:
         SYNC / "cc3m_subset_200k_20260515/validation_summary.json": "cc3m_subset_200k_validation_summary.json",
         SYNC / "exp_stage4_candidates_200k_manifest_20260516/metrics.json": "stage4_candidates_200k_metrics.json",
         SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json": "stage4_candidates_200k_high_joint_metrics.json",
+        FAIR_CANDIDATE_DIR / "metrics.json": "stage4_fair_candidates_3000_metrics.json",
+        FAIR_CANDIDATE_DIR / "bucket_coverage.csv": "stage4_fair_candidates_3000_bucket_coverage.csv",
+        FAIR_ANNOTATION_DIR / "metrics.json": "stage4_fair_annotation_3000_metrics.json",
+        FAIR_ANNOTATION_DIR / "annotation_sheet.csv": "stage4_fair_annotation_3000_sheet.csv",
+        FAIR_ANNOTATION_DIR / "annotation_sheet_labeled.csv": "stage4_fair_annotation_3000_labeled.csv",
+        FAIR_EVAL_DIR / "metrics.json": "stage4_fair_eval_3000_metrics.json",
+        FAIR_EVAL_DIR / "fixed_threshold_metrics.csv": "stage4_fair_eval_3000_fixed_threshold_metrics.csv",
+        DEV_THRESHOLD_DIR / "metrics.json": "stage4_threshold_diagnostic_1000_metrics.json",
+        DEV_THRESHOLD_DIR / "per_threshold_metrics.csv": "stage4_threshold_diagnostic_1000_per_threshold_metrics.csv",
+        DEV_THRESHOLD_DIR / "naive_union_grid_metrics.csv": "stage4_threshold_diagnostic_1000_naive_union_grid_metrics.csv",
         SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516/metrics.json": "stage4_annotation_1000_high_joint_metrics.json",
         SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516/annotation_sheet_labeled.csv": "stage4_annotation_1000_high_joint_labeled.csv",
         RESULTS / "exp_stage4_adjudicated_1000_200k_high_joint_20260519/adjudicated_annotations.csv": "stage4_adjudicated_annotations.csv",
@@ -1425,8 +1604,14 @@ def _copy_paper_source_files() -> None:
         SYNC / "exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_B_image_only_metrics.json",
         SYNC / "exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_C_text_only_metrics.json",
         SYNC / "exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521/metrics.json": "llava_stage4_train25k_D_naive_union_metrics.json",
+        SYNC / "exp_llava_stage4_vqa_vqav2_quick_A_raw_20260522/metrics.json": "llava_stage4_vqav2_quick_A_raw_metrics.json",
+        SYNC / "exp_llava_stage4_vqa_vqav2_quick_B_image_only_20260522/metrics.json": "llava_stage4_vqav2_quick_B_image_only_metrics.json",
+        SYNC / "exp_llava_stage4_vqa_vqav2_quick_C_text_only_20260522/metrics.json": "llava_stage4_vqav2_quick_C_text_only_metrics.json",
+        SYNC / "exp_llava_stage4_vqa_vqav2_quick_D_naive_union_20260522/metrics.json": "llava_stage4_vqav2_quick_D_naive_union_metrics.json",
+        SYNC / "exp_llava_stage4_vqa_vqav2_quick_E_stage4_joint_20260522/metrics.json": "llava_stage4_vqav2_quick_E_stage4_joint_metrics.json",
         SYNC / "llava_stage4_overnight_queue_20260521.log": "llava_stage4_overnight_queue_20260521.log",
         SYNC / "llava_stage4_E_rerun_20260522.log": "llava_stage4_E_rerun_20260522.log",
+        SYNC / "llava_stage4_vqa_eval_vqav2_quick_20260522.log": "llava_stage4_vqa_eval_vqav2_quick_20260522.log",
         SYNC / "llava_stage4_current_training_status.json": "llava_stage4_current_training_status.json",
         SYNC / "llava_stage4_current_stdout_tail_20260521.log": "llava_stage4_current_stdout_tail_20260521.log",
         SYNC / "llava_stage4_current_gpu_20260521.log": "llava_stage4_current_gpu_20260521.log",
@@ -1438,6 +1623,24 @@ def _copy_paper_source_files() -> None:
             shutil.copyfile(src, dest)
             if dest.suffix == ".csv":
                 dest.write_text(dest.read_text(encoding="utf-8").replace("\r\n", "\n"), encoding="utf-8")
+    (paper_dir / "llava_stage4_vqav2_quick_metrics.json").write_text(
+        json.dumps(_vqav2_quick_status(), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _copy_report_files() -> None:
+    report_dir = DASHBOARD / "reports"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    source_dir = ROOT / "docs/reports"
+    for name in [
+        "stage4_final_result_report.pdf",
+        "stage4_final_result_report.html",
+        "stage4_final_result_report.md",
+    ]:
+        src = source_dir / name
+        if src.exists():
+            shutil.copyfile(src, report_dir / name)
 
 
 def _source(title: str, href: str, description: str) -> dict[str, str]:
@@ -1460,6 +1663,13 @@ def _score_text(row: object) -> str:
 def _threshold_note(row: object) -> str:
     if not isinstance(row, dict):
         return "暂无结果"
+    if row.get("method") == "naive_union" or row.get("image_threshold") not in {None, ""}:
+        return (
+            f"image_tau={row.get('image_threshold')}; "
+            f"text_tau={row.get('text_threshold')}; "
+            f"P={_fmt_float(row.get('precision'), 3)}; "
+            f"R={_fmt_float(row.get('recall'), 3)}"
+        )
     return (
         f"tau={row.get('threshold')}; "
         f"P={_fmt_float(row.get('precision'), 3)}; "

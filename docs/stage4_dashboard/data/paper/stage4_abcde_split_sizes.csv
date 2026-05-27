@@ -1,6 +1,6 @@
 split,name,description,raw_pairs,kept_pairs,dropped_pairs,dedup_rate,selected_candidate_edges,threshold
 A,raw,原始数据，不去重,200000,200000,0,0.0,0,n/a
-B,image_only,仅图像去重,200000,171997,28003,0.140015,57625,image>=0.8
-C,text_only,仅文本去重,200000,104395,95605,0.478025,490866,text>=0.6
-D,naive_union,图像 + 文本独立去重并集,200000,101752,98248,0.49124,500000,image>=0.8 OR text>=0.6
-E,stage4_joint,Stage 4 跨模态联合去重,200000,177957,22043,0.110215,47272,joint>=0.85
+B,image_only,仅图像去重,200000,177796,22204,0.11102,43785,image>=0.85
+C,text_only,仅文本去重,200000,170783,29217,0.146085,139458,text>=0.95
+D,naive_union,图像 + 文本独立去重并集,200000,155127,44873,0.224365,174520,image>=0.85 OR text>=0.95
+E,stage4_score_assisted,Stage 4 跨模态联合去重；按人工标注规则使用 image/text 双高阈值初筛,200000,190744,9256,0.04628,14637,image>=0.85 AND text>=0.85; strict_duplicate_if_both>=0.95

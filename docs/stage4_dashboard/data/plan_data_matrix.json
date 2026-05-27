@@ -20,8 +20,8 @@
         "next_action": "需要补 weighted sum 或在方案中说明本轮只采用 concat。",
         "sources": [
           {
-            "title": "主评价 metrics",
-            "href": "data/paper/stage4_eval_metrics.json",
+            "title": "Fair held-out eval metrics",
+            "href": "data/paper/stage4_fair_eval_3000_metrics.json",
             "description": ""
           }
         ],
@@ -33,16 +33,17 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "τ_cross 对 P/R/F1 的影响。",
-        "current_numbers": "joint best F1=0.583@0.85",
+        "current_numbers": "dev-selected joint threshold=0.85; fair held-out joint F1=0.616",
         "existing_data": [
-          "joint best F1=0.583@0.85"
+          "dev-selected joint threshold=0.85",
+          "fair held-out joint F1=0.616"
         ],
         "missing_data": [],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
           {
-            "title": "阈值扫描 CSV",
-            "href": "data/paper/stage4_eval_per_threshold_metrics.csv",
+            "title": "Fair fixed-threshold CSV",
+            "href": "data/paper/stage4_fair_eval_3000_fixed_threshold_metrics.csv",
             "description": ""
           }
         ],
@@ -54,18 +55,18 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "论文主表可引用的 Stage 4 最优配置。",
-        "current_numbers": "Stage 4 joint: F1=0.583, tau=0.85; P=0.510; R=0.681",
+        "current_numbers": "Stage 4 joint: F1=0.616, tau=0.85; P=0.569; R=0.671",
         "existing_data": [
-          "Stage 4 joint: F1=0.583, tau=0.85",
-          "P=0.510",
-          "R=0.681"
+          "Stage 4 joint: F1=0.616, tau=0.85",
+          "P=0.569",
+          "R=0.671"
         ],
         "missing_data": [],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
           {
-            "title": "主评价 metrics",
-            "href": "data/paper/stage4_eval_metrics.json",
+            "title": "Fair held-out eval metrics",
+            "href": "data/paper/stage4_fair_eval_3000_metrics.json",
             "description": ""
           }
         ],
@@ -77,20 +78,20 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "证明跨模态联合处理相对简单拼接/并集的增量价值。",
-        "current_numbers": "naive F1=0.456; Stage 4 F1=0.583; joint_fp_caption_equal_rate=0.425",
+        "current_numbers": "naive F1=0.372; Stage 4 F1=0.616; joint_fp_caption_equal_rate=0.425",
         "existing_data": [
-          "naive F1=0.456",
-          "Stage 4 F1=0.583",
+          "naive F1=0.372",
+          "Stage 4 F1=0.616",
           "joint_fp_caption_equal_rate=0.425"
         ],
         "missing_data": [
-          "Stage 4 打过 naive union，但没打过 image-only，写作需说明。"
+          "Stage 4 在 3000 fair held-out 上超过 naive union 与 image-only；旧 1000 high-joint 误差分析只作为诊断背景。"
         ],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
           {
-            "title": "主评价 metrics",
-            "href": "data/paper/stage4_eval_metrics.json",
+            "title": "Fair held-out eval metrics",
+            "href": "data/paper/stage4_fair_eval_3000_metrics.json",
             "description": ""
           },
           {
@@ -109,7 +110,7 @@
             "description": ""
           }
         ],
-        "gap": "Stage 4 打过 naive union，但没打过 image-only，写作需说明。"
+        "gap": "Stage 4 在 3000 fair held-out 上超过 naive union 与 image-only；旧 1000 high-joint 误差分析只作为诊断背景。"
       },
       {
         "name": "表 1.5 计算开销",
@@ -190,16 +191,26 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "标注数量、标注人、audit/adjudication。",
-        "current_numbers": "labeled=1,000; audit_rows=200",
+        "current_numbers": "labeled=3,000; audit_rows=600",
         "existing_data": [
-          "labeled=1,000",
-          "audit_rows=200"
+          "labeled=3,000",
+          "audit_rows=600"
         ],
         "missing_data": [
           "当前 audit 为内部默认完成；若正式写双人一致性，仍需真实合作者抽查。"
         ],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
+          {
+            "title": "公平分层已标注 CSV",
+            "href": "data/paper/stage4_fair_annotation_3000_labeled.csv",
+            "description": ""
+          },
+          {
+            "title": "公平分层标注 metrics",
+            "href": "data/paper/stage4_fair_annotation_3000_metrics.json",
+            "description": ""
+          },
           {
             "title": "已标注 CSV",
             "href": "data/paper/stage4_annotation_1000_high_joint_labeled.csv",
@@ -219,15 +230,25 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "三类标签数量与占比。",
-        "current_numbers": "duplicate=58; near=237; not=705",
+        "current_numbers": "duplicate=9; near=453; not=2538",
         "existing_data": [
-          "duplicate=58",
-          "near=237",
-          "not=705"
+          "duplicate=9",
+          "near=453",
+          "not=2538"
         ],
         "missing_data": [],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
+          {
+            "title": "公平分层已标注 CSV",
+            "href": "data/paper/stage4_fair_annotation_3000_labeled.csv",
+            "description": ""
+          },
+          {
+            "title": "公平分层标注 metrics",
+            "href": "data/paper/stage4_fair_annotation_3000_metrics.json",
+            "description": ""
+          },
           {
             "title": "已标注 CSV",
             "href": "data/paper/stage4_annotation_1000_high_joint_labeled.csv",
@@ -330,16 +351,16 @@
         "data_status": "partial",
         "paper_table_status": "data_ready_table_missing",
         "description": "验证 Windows 3090 上真实 LLaVA-1.5-7B 4-bit LoRA 训练入口可用。",
-        "current_numbers": "A/B/C/D/E data smoke 通过；E real smoke steps=1; final_loss=6.7041; peak=5.164 GiB",
+        "current_numbers": "旧 A/B/C/D/E data smoke 通过；旧 E real smoke steps=1; final_loss=6.7041; peak=5.164 GiB",
         "existing_data": [
-          "A/B/C/D/E data smoke 通过；E real smoke steps=1",
+          "旧 A/B/C/D/E data smoke 通过；旧 E real smoke steps=1",
           "final_loss=6.7041",
           "peak=5.164 GiB"
         ],
         "missing_data": [
-          "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。"
+          "旧 smoke 对应旧 split；新 v2 split 需要重新做 data smoke / train smoke。"
         ],
-        "next_action": "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。",
+        "next_action": "旧 smoke 对应旧 split；新 v2 split 需要重新做 data smoke / train smoke。",
         "sources": [
           {
             "title": "A/B/C/D/E data smoke metrics",
@@ -357,17 +378,17 @@
             "description": ""
           }
         ],
-        "gap": "只有 Stage 4 E 跑了 1 step；还不是正式 A/B/C/D/E 训练或下游评测。"
+        "gap": "旧 smoke 对应旧 split；新 v2 split 需要重新做 data smoke / train smoke。"
       },
       {
         "name": "表 4.0b LLaVA A/B/C/D/E pilot",
-        "status": "complete",
-        "data_status": "complete",
+        "status": "partial",
+        "data_status": "partial",
         "paper_table_status": "data_ready_table_missing",
         "description": "A/B/C/D/E 五组 512-sample / 20-step pilot 训练状态。",
-        "current_numbers": "5/5 pilot complete; A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625; A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=running step 610/2000",
+        "current_numbers": "旧 pilot 5/5 complete; A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625; A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=done loss=1.7374",
         "existing_data": [
-          "5/5 pilot complete",
+          "旧 pilot 5/5 complete",
           "A loss=2.3875",
           "B loss=4.3353",
           "C loss=2.5809",
@@ -377,12 +398,12 @@
           "B=done loss=0.4428",
           "C=done loss=3.8543",
           "D=done loss=3.5730",
-          "E=running step 610/2000"
+          "E=done loss=1.7374"
         ],
         "missing_data": [
-          "这仍不是 VQAv2/TextVQA 下游性能，只能证明五组 split 均可完成真实 LoRA 训练 pilot。"
+          "旧 pilot 对应旧 split/旧标注链路；新 v2 split 需要重跑。"
         ],
-        "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
+        "next_action": "旧 pilot 对应旧 split/旧标注链路；新 v2 split 需要重跑。",
         "sources": [
           {
             "title": "pilot metrics",
@@ -400,7 +421,7 @@
             "description": ""
           }
         ],
-        "gap": "这仍不是 VQAv2/TextVQA 下游性能，只能证明五组 split 均可完成真实 LoRA 训练 pilot。"
+        "gap": "旧 pilot 对应旧 split/旧标注链路；新 v2 split 需要重跑。"
       },
       {
         "name": "表 4.1 五组训练数据规模 A/B/C/D/E",
@@ -408,16 +429,16 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "原始样本数、去重后样本数、去重率。",
-        "current_numbers": "Raw A kept=200,000; Image-only B kept=171,997; Text-only C kept=104,395; Naive union D kept=101,752; Stage 4 E kept=177,957",
+        "current_numbers": "Raw A kept=200,000; Image-only B kept=177,796; Text-only C kept=170,783; Naive union D kept=155,127; Stage 4 E kept=190,744",
         "existing_data": [
           "Raw A kept=200,000",
-          "Image-only B kept=171,997",
-          "Text-only C kept=104,395",
-          "Naive union D kept=101,752",
-          "Stage 4 E kept=177,957"
+          "Image-only B kept=177,796",
+          "Text-only C kept=170,783",
+          "Naive union D kept=155,127",
+          "Stage 4 E kept=190,744"
         ],
         "missing_data": [
-          "训练 manifest 已生成，且 data smoke 已验证；下一步是 Windows 3090 上实际训练和评测。"
+          "新 v2 training manifest 和 LLaVA JSON 已生成；下一步是同步 Windows 3090 并重新 smoke、训练和评测。"
         ],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
@@ -427,7 +448,7 @@
             "description": ""
           }
         ],
-        "gap": "训练 manifest 已生成，且 data smoke 已验证；下一步是 Windows 3090 上实际训练和评测。"
+        "gap": "新 v2 training manifest 和 LLaVA JSON 已生成；下一步是同步 Windows 3090 并重新 smoke、训练和评测。"
       },
       {
         "name": "表 4.2 五组训练时间",
@@ -445,19 +466,41 @@
         "gap": "需要 Windows 3090 上记录完整 A/B/C/D/E GPU-hour 和 wall-clock；当前只有 E 组 1-step smoke runtime。"
       },
       {
-        "name": "表 4.3 VQAv2 评测结果",
+        "name": "表 4.3 VQAv2 quick 评测结果",
         "status": "pending",
         "data_status": "pending",
         "paper_table_status": "missing_data",
-        "description": "配置、seed、accuracy。",
-        "current_numbers": "",
-        "existing_data": [],
-        "missing_data": [
-          "需要每组至少一个 seed；理想 2 seeds。"
+        "description": "配置、VQAv2 consensus、exact match、样本数。",
+        "current_numbers": "A VQAv2=0.0940; B VQAv2=0.0060; C VQAv2=0.0037; D VQAv2=0.0010; E VQAv2=0.0057",
+        "existing_data": [
+          "A VQAv2=0.0940",
+          "B VQAv2=0.0060",
+          "C VQAv2=0.0037",
+          "D VQAv2=0.0010",
+          "E VQAv2=0.0057"
         ],
-        "next_action": "需要每组至少一个 seed；理想 2 seeds。",
-        "sources": [],
-        "gap": "需要每组至少一个 seed；理想 2 seeds。"
+        "missing_data": [
+          "旧 quick eval 对应旧 split，只能作为诊断；新 v2 split 需要重跑后才能写正式下游表。"
+        ],
+        "next_action": "旧 quick eval 对应旧 split，只能作为诊断；新 v2 split 需要重跑后才能写正式下游表。",
+        "sources": [
+          {
+            "title": "VQAv2 quick eval metrics",
+            "href": "data/paper/llava_stage4_vqav2_quick_metrics.json",
+            "description": ""
+          },
+          {
+            "title": "VQAv2 quick queue log",
+            "href": "data/paper/llava_stage4_vqa_eval_vqav2_quick_20260522.log",
+            "description": ""
+          },
+          {
+            "title": "ledger",
+            "href": "data/experiment_ledger.csv",
+            "description": ""
+          }
+        ],
+        "gap": "旧 quick eval 对应旧 split，只能作为诊断；新 v2 split 需要重跑后才能写正式下游表。"
       },
       {
         "name": "表 4.4 TextVQA 评测结果",
@@ -507,7 +550,7 @@
           "已完成 200K manifest 上 image/text/joint/naive threshold vs dedup-rate"
         ],
         "missing_data": [
-          "音频不属于当前 CIKM Plan B 主线，暂不补。"
+          "音频不属于当前 ICDM Stage 4 主线，暂不补。"
         ],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
@@ -517,7 +560,7 @@
             "description": ""
           }
         ],
-        "gap": "音频不属于当前 CIKM Plan B 主线，暂不补。"
+        "gap": "音频不属于当前 ICDM Stage 4 主线，暂不补。"
       },
       {
         "name": "表 5.2 各模态最优阈值与去重率",
@@ -525,19 +568,19 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "最优阈值选择依据。",
-        "current_numbers": "image best=0.626@0.8; joint best=0.583@0.85",
+        "current_numbers": "image best=0.378@0.81; joint best=0.616@0.85",
         "existing_data": [
-          "image best=0.626@0.8",
-          "joint best=0.583@0.85"
+          "image best=0.378@0.81",
+          "joint best=0.616@0.85"
         ],
         "missing_data": [
-          "音频不属于当前 CIKM Plan B 主线，暂不补。"
+          "音频不属于当前 ICDM Stage 4 主线，暂不补。"
         ],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
         "sources": [
           {
-            "title": "主评价 metrics",
-            "href": "data/paper/stage4_eval_metrics.json",
+            "title": "Fair held-out eval metrics",
+            "href": "data/paper/stage4_fair_eval_3000_metrics.json",
             "description": ""
           },
           {
@@ -546,7 +589,7 @@
             "description": ""
           }
         ],
-        "gap": "音频不属于当前 CIKM Plan B 主线，暂不补。"
+        "gap": "音频不属于当前 ICDM Stage 4 主线，暂不补。"
       },
       {
         "name": "表 5.3 跨模态与单模态阈值组合",
@@ -606,9 +649,9 @@
         "data_status": "partial",
         "paper_table_status": "data_ready_table_missing",
         "description": "concat vs weighted sum 的消融。",
-        "current_numbers": "concat/joint F1=0.583",
+        "current_numbers": "concat/joint F1=0.616",
         "existing_data": [
-          "concat/joint F1=0.583"
+          "concat/joint F1=0.616"
         ],
         "missing_data": [
           "weighted sum α=0.3/0.5/0.7 未跑。"
@@ -616,8 +659,8 @@
         "next_action": "weighted sum α=0.3/0.5/0.7 未跑。",
         "sources": [
           {
-            "title": "主评价 metrics",
-            "href": "data/paper/stage4_eval_metrics.json",
+            "title": "Fair held-out eval metrics",
+            "href": "data/paper/stage4_fair_eval_3000_metrics.json",
             "description": ""
           }
         ],

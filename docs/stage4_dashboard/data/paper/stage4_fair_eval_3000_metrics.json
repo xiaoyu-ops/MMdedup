@@ -1,0 +1,135 @@
+{
+  "experiment_id": "exp_stage4_fair_eval_3000_20260528",
+  "evaluation_type": "held_out_fixed_dev_thresholds",
+  "dev_metrics_json": "experiments/results/plan_b_stage4/exp_stage4_threshold_diagnostic_1000_20260523/metrics.json",
+  "annotations_csv": "experiments/results/plan_b_stage4/exp_stage4_fair_annotation_3000_20260523/annotation_sheet_labeled.csv",
+  "num_labeled_rows": 3000,
+  "num_positive": 462,
+  "num_negative": 2538,
+  "positive_labels": [
+    "duplicate",
+    "near-duplicate"
+  ],
+  "fixed_thresholds": {
+    "image": {
+      "method": "image",
+      "threshold": 0.81,
+      "source": "dev_best_by_method.image"
+    },
+    "text": {
+      "method": "text",
+      "threshold": 0.0,
+      "source": "dev_best_by_method.text"
+    },
+    "naive_union": {
+      "method": "naive_union",
+      "image_threshold": 0.79,
+      "text_threshold": 1.0,
+      "source": "dev_best_by_method.naive_union"
+    },
+    "joint": {
+      "method": "joint",
+      "threshold": 0.85,
+      "source": "dev_best_by_method.joint"
+    },
+    "max": {
+      "method": "max",
+      "threshold": 0.87,
+      "source": "dev_best_by_method.max"
+    }
+  },
+  "results_by_method": {
+    "image": {
+      "method": "image",
+      "threshold": 0.81,
+      "image_threshold": "",
+      "text_threshold": "",
+      "threshold_source": "dev_best_by_method.image",
+      "tp": 390,
+      "fp": 1211,
+      "tn": 1327,
+      "fn": 72,
+      "precision": 0.24359775140537165,
+      "recall": 0.8441558441558441,
+      "f1": 0.37809015996122153,
+      "predicted_positive": 1601,
+      "predicted_positive_rate": 0.5336666666666666,
+      "positive_labels": "duplicate|near-duplicate"
+    },
+    "text": {
+      "method": "text",
+      "threshold": 0.0,
+      "image_threshold": "",
+      "text_threshold": "",
+      "threshold_source": "dev_best_by_method.text",
+      "tp": 462,
+      "fp": 2538,
+      "tn": 0,
+      "fn": 0,
+      "precision": 0.154,
+      "recall": 1.0,
+      "f1": 0.2668977469670711,
+      "predicted_positive": 3000,
+      "predicted_positive_rate": 1.0,
+      "positive_labels": "duplicate|near-duplicate"
+    },
+    "naive_union": {
+      "method": "naive_union",
+      "threshold": "",
+      "image_threshold": 0.79,
+      "text_threshold": 1.0,
+      "threshold_source": "dev_best_by_method.naive_union",
+      "tp": 417,
+      "fp": 1363,
+      "tn": 1175,
+      "fn": 45,
+      "precision": 0.23426966292134832,
+      "recall": 0.9025974025974026,
+      "f1": 0.3719892952720785,
+      "predicted_positive": 1780,
+      "predicted_positive_rate": 0.5933333333333334,
+      "positive_labels": "duplicate|near-duplicate"
+    },
+    "joint": {
+      "method": "joint",
+      "threshold": 0.85,
+      "image_threshold": "",
+      "text_threshold": "",
+      "threshold_source": "dev_best_by_method.joint",
+      "tp": 310,
+      "fp": 235,
+      "tn": 2303,
+      "fn": 152,
+      "precision": 0.5688073394495413,
+      "recall": 0.670995670995671,
+      "f1": 0.6156901688182721,
+      "predicted_positive": 545,
+      "predicted_positive_rate": 0.18166666666666667,
+      "positive_labels": "duplicate|near-duplicate"
+    },
+    "max": {
+      "method": "max",
+      "threshold": 0.87,
+      "image_threshold": "",
+      "text_threshold": "",
+      "threshold_source": "dev_best_by_method.max",
+      "tp": 429,
+      "fp": 2067,
+      "tn": 471,
+      "fn": 33,
+      "precision": 0.171875,
+      "recall": 0.9285714285714286,
+      "f1": 0.2900608519269777,
+      "predicted_positive": 2496,
+      "predicted_positive_rate": 0.832,
+      "positive_labels": "duplicate|near-duplicate"
+    }
+  },
+  "stage4_vs_naive_union_f1_delta": 0.24370087354619357,
+  "stage4_vs_image_f1_delta": 0.23760000885705057,
+  "elapsed_seconds": 0.011955976486206055,
+  "notes": "Thresholds are selected only from the old 1000-row dev diagnostic metrics. The 3000-row fair annotations are used here only as held-out evaluation labels.",
+  "outputs": {
+    "fixed_threshold_metrics": "experiments/results/plan_b_stage4/exp_stage4_fair_eval_3000_20260528/fixed_threshold_metrics.csv"
+  }
+}

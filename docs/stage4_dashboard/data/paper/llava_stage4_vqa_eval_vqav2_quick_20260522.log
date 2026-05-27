@@ -1,0 +1,59 @@
+VQA_EVAL_QUEUE_START 2026-05-23T02:22:56+08:00
+REPO=/mnt/c/Users/sysu/code/the_work_of_dedup
+2f973435cbb0ca731fa60558ce06d96e9729a100
+Sat May 23 02:22:56 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.112                Driver Version: 581.95         CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3090        On  |   00000000:02:00.0  On |                  N/A |
+| 30%   48C    P8             19W /  350W |    1523MiB /  24576MiB |      8%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+JOB_START 2026-05-23T02:22:57+08:00 exp_llava_stage4_vqa_vqav2_quick_A_raw_20260522 split=A_raw train_exp=exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521
+METRICS exp_llava_stage4_vqa_vqav2_quick_A_raw_20260522 status=evaluated vqa=0.094 exact=0.102 n=1000
+JOB_END 2026-05-23T02:50:30+08:00 exp_llava_stage4_vqa_vqav2_quick_A_raw_20260522 code=0
+JOB_START 2026-05-23T02:50:30+08:00 exp_llava_stage4_vqa_vqav2_quick_B_image_only_20260522 split=B_image_only train_exp=exp_llava_stage4_train25k_B_image_only_25000_2000steps_20260521
+METRICS exp_llava_stage4_vqa_vqav2_quick_B_image_only_20260522 status=evaluated vqa=0.006 exact=0.006 n=1000
+JOB_END 2026-05-23T03:21:14+08:00 exp_llava_stage4_vqa_vqav2_quick_B_image_only_20260522 code=0
+JOB_START 2026-05-23T03:21:14+08:00 exp_llava_stage4_vqa_vqav2_quick_C_text_only_20260522 split=C_text_only train_exp=exp_llava_stage4_train25k_C_text_only_25000_2000steps_20260521
+METRICS exp_llava_stage4_vqa_vqav2_quick_C_text_only_20260522 status=evaluated vqa=0.0036666666666666666 exact=0.004 n=1000
+JOB_END 2026-05-23T03:52:29+08:00 exp_llava_stage4_vqa_vqav2_quick_C_text_only_20260522 code=0
+JOB_START 2026-05-23T03:52:29+08:00 exp_llava_stage4_vqa_vqav2_quick_D_naive_union_20260522 split=D_naive_union train_exp=exp_llava_stage4_train25k_D_naive_union_25000_2000steps_20260521
+METRICS exp_llava_stage4_vqa_vqav2_quick_D_naive_union_20260522 status=evaluated vqa=0.001 exact=0.001 n=1000
+JOB_END 2026-05-23T04:28:19+08:00 exp_llava_stage4_vqa_vqav2_quick_D_naive_union_20260522 code=0
+JOB_START 2026-05-23T04:28:19+08:00 exp_llava_stage4_vqa_vqav2_quick_E_stage4_joint_20260522 split=E_stage4_joint train_exp=exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun4
+METRICS exp_llava_stage4_vqa_vqav2_quick_E_stage4_joint_20260522 status=evaluated vqa=0.005666666666666667 exact=0.006 n=1000
+JOB_END 2026-05-23T04:57:23+08:00 exp_llava_stage4_vqa_vqav2_quick_E_stage4_joint_20260522 code=0
+VQA_EVAL_QUEUE_END 2026-05-23T04:57:23+08:00
+Sat May 23 04:57:23 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.112                Driver Version: 581.95         CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3090        On  |   00000000:02:00.0  On |                  N/A |
+| 51%   64C    P3            121W /  350W |    1523MiB /  24576MiB |      2%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

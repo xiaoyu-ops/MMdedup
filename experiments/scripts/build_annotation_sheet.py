@@ -48,7 +48,10 @@ def main() -> int:
                 row["annotation_guideline"] = (
                     "duplicate: same image and same caption meaning; "
                     "near-duplicate: visually/semantically same with small edits; "
-                    "not-duplicate: meaningfully different pair."
+                    "not-duplicate: meaningfully different pair. "
+                    "Score-assisted rule: if image_similarity and text_similarity are both "
+                    ">0.85 and <0.95, near-duplicate is acceptable; if both are >0.95, "
+                    "duplicate is acceptable."
                 )
 
             annotation_path = args.output_dir / "annotation_sheet.csv"

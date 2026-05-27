@@ -61,6 +61,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--image-threshold", type=float, default=0.80)
     parser.add_argument("--text-threshold", type=float, default=0.60)
     parser.add_argument("--joint-threshold", type=float, default=0.85)
+    parser.add_argument("--stage4-selection-mode", choices=("joint", "score_assisted"), default="joint")
+    parser.add_argument("--score-assisted-lower", type=float, default=0.85)
+    parser.add_argument("--score-assisted-upper", type=float, default=0.95)
     parser.add_argument("--pair-id-prefix", default="cc3m_")
     parser.add_argument(
         "--write-split-manifests",
@@ -103,6 +106,9 @@ def main() -> int:
                 "image_threshold": args.image_threshold,
                 "text_threshold": args.text_threshold,
                 "joint_threshold": args.joint_threshold,
+                "stage4_selection_mode": args.stage4_selection_mode,
+                "score_assisted_lower": args.score_assisted_lower,
+                "score_assisted_upper": args.score_assisted_upper,
                 "candidate_edges_total": len(rows),
                 "candidate_edges_in_manifest": len(scoped_rows),
                 "candidate_edges_skipped": skipped_edges,
@@ -200,6 +206,16 @@ def build_threshold_rows(
                 mode="any",
             )
         )
+        output.append(
+            rate_row(
+                rows,
+                pair_ids,
+                "score_assisted_pair",
+                threshold,
+                [("image_similarity", threshold), ("text_similarity", threshold)],
+                mode="all",
+            )
+        )
     return output
 
 
@@ -214,7 +230,7 @@ def build_split_rows(rows: Sequence[Dict[str, str]], pair_ids: Sequence[str], ar
             "图像 + 文本独立去重并集",
             [("image_similarity", args.image_threshold), ("text_similarity", args.text_threshold)],
         ),
-        ("E", "stage4_joint", "Stage 4 跨模态联合去重", [("joint_similarity", args.joint_threshold)]),
+        stage4_split_config(args),
     ]
     output = []
     for split, name, desc, checks in configs:
@@ -254,8 +270,22 @@ def split_configs(args: argparse.Namespace) -> List[Tuple[str, str, str, Sequenc
             [("image_similarity", args.image_threshold), ("text_similarity", args.text_threshold)],
             "any",
         ),
-        ("E", "stage4_joint", "Stage 4 跨模态联合去重", [("joint_similarity", args.joint_threshold)], "all"),
+        (*stage4_split_config(args), "all"),
     ]
+
+
+def stage4_split_config(args: argparse.Namespace) -> Tuple[str, str, str, Sequence[Tuple[str, float]]]:
+    if args.stage4_selection_mode == "score_assisted":
+        return (
+            "E",
+            "stage4_score_assisted",
+            "Stage 4 跨模态联合去重；按人工标注规则使用 image/text 双高阈值初筛",
+            [
+                ("image_similarity", args.score_assisted_lower),
+                ("text_similarity", args.score_assisted_lower),
+            ],
+        )
+    return ("E", "stage4_joint", "Stage 4 跨模态联合去重", [("joint_similarity", args.joint_threshold)])
 
 
 def write_split_manifests(
@@ -285,6 +315,7 @@ def write_split_manifests(
             "dedup_rate": len(drops) / len(pair_ids) if pair_ids else 0.0,
             "selected_candidate_edges": selected_edges,
             "threshold": threshold_label_for(name, args),
+            "score_assisted_duplicate_rule": score_assisted_duplicate_rule(args) if name == "stage4_score_assisted" else "",
             "keeper_rule": "first pair_id by manifest order within each connected component",
             "note": (
                 "Training manifest materialized from mined candidate graph components. "
@@ -371,7 +402,19 @@ def threshold_label_for(name: str, args: argparse.Namespace) -> str:
         return f"image>={args.image_threshold} OR text>={args.text_threshold}"
     if name == "stage4_joint":
         return f"joint>={args.joint_threshold}"
+    if name == "stage4_score_assisted":
+        return (
+            f"image>={args.score_assisted_lower} AND text>={args.score_assisted_lower}; "
+            f"strict_duplicate_if_both>={args.score_assisted_upper}"
+        )
     return "n/a"
+
+
+def score_assisted_duplicate_rule(args: argparse.Namespace) -> str:
+    return (
+        f"near-duplicate if image/text are both >= {args.score_assisted_lower} and < {args.score_assisted_upper}; "
+        f"duplicate if both are >= {args.score_assisted_upper}"
+    )
 
 
 def rate_row(

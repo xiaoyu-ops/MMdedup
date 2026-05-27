@@ -1,0 +1,6 @@
+method,threshold,image_threshold,text_threshold,threshold_source,tp,fp,tn,fn,precision,recall,f1,predicted_positive,predicted_positive_rate,positive_labels
+image,0.81,,,dev_best_by_method.image,390,1211,1327,72,0.24359775140537165,0.8441558441558441,0.37809015996122153,1601,0.5336666666666666,duplicate|near-duplicate
+text,0.0,,,dev_best_by_method.text,462,2538,0,0,0.154,1.0,0.2668977469670711,3000,1.0,duplicate|near-duplicate
+naive_union,,0.79,1.0,dev_best_by_method.naive_union,417,1363,1175,45,0.23426966292134832,0.9025974025974026,0.3719892952720785,1780,0.5933333333333334,duplicate|near-duplicate
+joint,0.85,,,dev_best_by_method.joint,310,235,2303,152,0.5688073394495413,0.670995670995671,0.6156901688182721,545,0.18166666666666667,duplicate|near-duplicate
+max,0.87,,,dev_best_by_method.max,429,2067,471,33,0.171875,0.9285714285714286,0.2900608519269777,2496,0.832,duplicate|near-duplicate
