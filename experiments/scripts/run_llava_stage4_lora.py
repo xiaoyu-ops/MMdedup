@@ -65,6 +65,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--image-size", type=int, help="Optional square resize for tiny-model smoke tests.")
     parser.add_argument("--shuffle", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--data-only", action="store_true", help="Only validate JSON/images and write metrics.")
+    parser.add_argument("--resume", action="store_true", help="Resume from the latest local checkpoint if one exists.")
+    parser.add_argument(
+        "--checkpoint-every-steps",
+        type=int,
+        default=0,
+        help="Save a resumable LoRA checkpoint every N optimizer steps. Disabled when 0.",
+    )
     return parser.parse_args()
 
 
@@ -166,7 +173,7 @@ def validate_images(records: list[dict[str, Any]]) -> dict[str, Any]:
 
 def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config: RunConfig) -> dict[str, Any]:
     import torch
-    from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+    from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training
     from torch.utils.data import DataLoader
     from transformers import AutoProcessor, BitsAndBytesConfig, LlavaForConditionalGeneration
 
@@ -212,6 +219,8 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
     elif torch.cuda.is_available():
         model.to("cuda")
 
+    resume_checkpoint = find_latest_checkpoint(args.output_dir) if args.resume else None
+    resume_state = read_checkpoint_state(resume_checkpoint) if resume_checkpoint else {}
     lora_config = LoraConfig(
         r=args.lora_r,
         lora_alpha=args.lora_alpha,
@@ -220,8 +229,12 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
         bias="none",
         task_type="CAUSAL_LM",
     )
-    log_event("attaching_lora", target_modules=config.target_modules, lora_r=args.lora_r)
-    model = get_peft_model(model, lora_config)
+    if resume_checkpoint:
+        log_event("loading_lora_checkpoint", checkpoint=str(resume_checkpoint))
+        model = PeftModel.from_pretrained(model, resume_checkpoint, is_trainable=True)
+    else:
+        log_event("attaching_lora", target_modules=config.target_modules, lora_r=args.lora_r)
+        model = get_peft_model(model, lora_config)
     model.train()
 
     dataset = LlavaJsonDataset(records)
@@ -231,12 +244,22 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
         max_length=args.max_length,
         image_size=args.image_size,
     )
-    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=args.shuffle, collate_fn=collator)
+    generator = torch.Generator()
+    generator.manual_seed(args.seed)
+    loader = DataLoader(
+        dataset,
+        batch_size=args.batch_size,
+        shuffle=args.shuffle,
+        collate_fn=collator,
+        generator=generator,
+    )
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
 
-    losses: list[float] = []
+    start_step = int(resume_state.get("step") or 0)
+    losses: list[float] = [float(value) for value in resume_state.get("losses", [])]
+    batches_to_skip = start_step * args.gradient_accumulation_steps
     optimizer.zero_grad(set_to_none=True)
-    step = 0
+    step = start_step
     log_event(
         "training_loop_start",
         records=len(dataset),
@@ -244,8 +267,12 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         max_steps=args.max_steps,
         shuffle=args.shuffle,
+        resume_checkpoint=str(resume_checkpoint) if resume_checkpoint else None,
+        start_step=start_step,
     )
     for batch_idx, batch in enumerate(loader):
+        if batch_idx < batches_to_skip:
+            continue
         log_event("batch_start", batch_idx=batch_idx)
         batch = move_batch(batch, model)
         log_event("forward_start", batch_idx=batch_idx)
@@ -259,6 +286,8 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
             step += 1
             losses.append(float(loss.detach().cpu()) * args.gradient_accumulation_steps)
             print(f"step={step} loss={losses[-1]:.6f}", flush=True)
+            if args.checkpoint_every_steps > 0 and step % args.checkpoint_every_steps == 0:
+                save_training_checkpoint(args.output_dir, step, losses, model, processor)
             if step >= args.max_steps:
                 break
 
@@ -274,7 +303,52 @@ def run_training(args: argparse.Namespace, records: list[dict[str, Any]], config
         "cuda_available": torch.cuda.is_available(),
         "gpu_name": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
         "gpu_peak_memory_bytes": torch.cuda.max_memory_allocated() if torch.cuda.is_available() else None,
+        "resumed_from_checkpoint": str(resume_checkpoint) if resume_checkpoint else None,
     }
+
+
+def find_latest_checkpoint(output_dir: Path) -> Path | None:
+    checkpoint_root = output_dir / "checkpoints"
+    if not checkpoint_root.exists():
+        return None
+    checkpoints = []
+    for path in checkpoint_root.glob("checkpoint-step-*"):
+        state = path / "train_state.json"
+        if not state.exists():
+            continue
+        try:
+            step = int(path.name.rsplit("-", 1)[-1])
+        except ValueError:
+            continue
+        checkpoints.append((step, path))
+    if not checkpoints:
+        return None
+    return max(checkpoints, key=lambda item: item[0])[1]
+
+
+def read_checkpoint_state(checkpoint_dir: Path | None) -> dict[str, Any]:
+    if checkpoint_dir is None:
+        return {}
+    state_path = checkpoint_dir / "train_state.json"
+    if not state_path.exists():
+        return {}
+    return json.loads(state_path.read_text(encoding="utf-8"))
+
+
+def save_training_checkpoint(output_dir: Path, step: int, losses: list[float], model: Any, processor: Any) -> None:
+    checkpoint_dir = output_dir / "checkpoints" / f"checkpoint-step-{step:04d}"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    log_event("saving_checkpoint", checkpoint=str(checkpoint_dir), step=step)
+    model.save_pretrained(checkpoint_dir)
+    processor.save_pretrained(checkpoint_dir / "processor")
+    write_json(
+        checkpoint_dir / "train_state.json",
+        {
+            "step": step,
+            "losses": losses,
+            "saved_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        },
+    )
 
 
 class LlavaJsonDataset:
