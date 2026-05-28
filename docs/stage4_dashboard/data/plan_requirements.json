@@ -87,7 +87,7 @@
       "A/B/C/D/E LLaVA JSON data-smoke validated",
       "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
       "A/B/C/D/E 512-sample LoRA pilot：5/5 complete",
-      "旧正式训练状态：A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=done loss=1.7374",
+      "v2 正式训练状态：E=done loss=1.1180; D=running step 1310/2000; A=pending; B=pending; C=pending",
       "旧 VQAv2 quick eval：5/5 complete; A VQAv2=0.0940; B VQAv2=0.0060; C VQAv2=0.0037; D VQAv2=0.0010; E VQAv2=0.0057",
       "旧 A/B/C/D/E LoRA 与 VQAv2 quick eval 基于旧 split/旧标注链路；3000 fair labels 完成并按 image/text 0.85/0.95 规则生成新 split 后，旧下游结果只能作为诊断记录，不能作为最终论文结论。",
       "smoke final_loss=6.7041; peak_memory=5.164 GiB",

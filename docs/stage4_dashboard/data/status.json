@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-28T14:16:18+08:00",
+  "updated_at": "2026-05-28T14:47:38+08:00",
   "target": {
     "venue": "ICDM 2026",
     "deadline": "2026-06-06",
@@ -587,39 +587,39 @@
     ],
     "llava_formal_train25k": [
       {
-        "label": "A raw",
+        "label": "E Stage 4 score-assisted v2",
         "value": 100.0,
         "unit": "progress percent",
         "status": "trained",
-        "note": "trained; loss=4.2365; exit=0"
+        "note": "trained; loss=1.1180"
       },
       {
-        "label": "B image-only",
-        "value": 100.0,
+        "label": "D naive union v2",
+        "value": 65.5,
         "unit": "progress percent",
-        "status": "trained",
-        "note": "trained; loss=0.4428; exit=0"
+        "status": "running",
+        "note": "running; latest_loss=3.2906"
       },
       {
-        "label": "C text-only",
-        "value": 100.0,
+        "label": "A raw v2",
+        "value": 0.0,
         "unit": "progress percent",
-        "status": "trained",
-        "note": "trained; loss=3.8543; exit=0"
+        "status": "pending",
+        "note": "pending"
       },
       {
-        "label": "D naive union",
-        "value": 100.0,
+        "label": "B image-only v2",
+        "value": 0.0,
         "unit": "progress percent",
-        "status": "trained",
-        "note": "trained; loss=3.5730; exit=0"
+        "status": "pending",
+        "note": "pending"
       },
       {
-        "label": "E Stage 4 joint rerun4",
-        "value": 100.0,
+        "label": "C text-only v2",
+        "value": 0.0,
         "unit": "progress percent",
-        "status": "trained",
-        "note": "trained; loss=1.7374; exit=0"
+        "status": "pending",
+        "note": "pending"
       }
     ],
     "vqav2_quick_eval": [
@@ -744,7 +744,7 @@
         "A/B/C/D/E LLaVA JSON data-smoke validated",
         "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
         "A/B/C/D/E 512-sample LoRA pilot：5/5 complete",
-        "旧正式训练状态：A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=done loss=1.7374",
+        "v2 正式训练状态：E=done loss=1.1180; D=running step 1310/2000; A=pending; B=pending; C=pending",
         "旧 VQAv2 quick eval：5/5 complete; A VQAv2=0.0940; B VQAv2=0.0060; C VQAv2=0.0037; D VQAv2=0.0010; E VQAv2=0.0057",
         "旧 A/B/C/D/E LoRA 与 VQAv2 quick eval 基于旧 split/旧标注链路；3000 fair labels 完成并按 image/text 0.85/0.95 规则生成新 split 后，旧下游结果只能作为诊断记录，不能作为最终论文结论。",
         "smoke final_loss=6.7041; peak_memory=5.164 GiB",
@@ -2157,7 +2157,7 @@
           "data_status": "partial",
           "paper_table_status": "data_ready_table_missing",
           "description": "A/B/C/D/E 五组 512-sample / 20-step pilot 训练状态。",
-          "current_numbers": "旧 pilot 5/5 complete; A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625; A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=done loss=1.7374",
+          "current_numbers": "旧 pilot 5/5 complete; A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625; E=done loss=1.1180; D=running step 1310/2000; A=pending; B=pending; C=pending",
           "existing_data": [
             "旧 pilot 5/5 complete",
             "A loss=2.3875",
@@ -2165,11 +2165,11 @@
             "C loss=2.5809",
             "D loss=2.8424",
             "E loss=2.3625",
-            "A=done loss=4.2365",
-            "B=done loss=0.4428",
-            "C=done loss=3.8543",
-            "D=done loss=3.5730",
-            "E=done loss=1.7374"
+            "E=done loss=1.1180",
+            "D=running step 1310/2000",
+            "A=pending",
+            "B=pending",
+            "C=pending"
           ],
           "missing_data": [
             "旧 pilot 对应旧 split/旧标注链路；新 v2 split 需要重跑。"

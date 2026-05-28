@@ -386,7 +386,7 @@
         "data_status": "partial",
         "paper_table_status": "data_ready_table_missing",
         "description": "A/B/C/D/E 五组 512-sample / 20-step pilot 训练状态。",
-        "current_numbers": "旧 pilot 5/5 complete; A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625; A=done loss=4.2365; B=done loss=0.4428; C=done loss=3.8543; D=done loss=3.5730; E=done loss=1.7374",
+        "current_numbers": "旧 pilot 5/5 complete; A loss=2.3875; B loss=4.3353; C loss=2.5809; D loss=2.8424; E loss=2.3625; E=done loss=1.1180; D=running step 1310/2000; A=pending; B=pending; C=pending",
         "existing_data": [
           "旧 pilot 5/5 complete",
           "A loss=2.3875",
@@ -394,11 +394,11 @@
           "C loss=2.5809",
           "D loss=2.8424",
           "E loss=2.3625",
-          "A=done loss=4.2365",
-          "B=done loss=0.4428",
-          "C=done loss=3.8543",
-          "D=done loss=3.5730",
-          "E=done loss=1.7374"
+          "E=done loss=1.1180",
+          "D=running step 1310/2000",
+          "A=pending",
+          "B=pending",
+          "C=pending"
         ],
         "missing_data": [
           "旧 pilot 对应旧 split/旧标注链路；新 v2 split 需要重跑。"

@@ -279,7 +279,7 @@ def _plan_requirements() -> list[dict[str, object]]:
                 "A/B/C/D/E LLaVA JSON data-smoke validated",
                 "Stage 4 E 真实 LLaVA-1.5-7B 4-bit LoRA 1-step smoke",
                 f"A/B/C/D/E 512-sample LoRA pilot：{llava['completed']}/5 complete",
-                f"旧正式训练状态：{llava['current_training']}",
+                f"v2 正式训练状态：{llava['current_training']}",
                 f"旧 VQAv2 quick eval：{vqa['completed']}/5 complete; {vqa['summary']}",
                 DOWNSTREAM_RERUN_REASON,
                 f"smoke final_loss={_fmt_float(llava_smoke.get('final_loss'), 4)}; peak_memory={llava_peak_memory}",

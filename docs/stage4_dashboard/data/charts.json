@@ -519,39 +519,39 @@
   ],
   "llava_formal_train25k": [
     {
-      "label": "A raw",
+      "label": "E Stage 4 score-assisted v2",
       "value": 100.0,
       "unit": "progress percent",
       "status": "trained",
-      "note": "trained; loss=4.2365; exit=0"
+      "note": "trained; loss=1.1180"
     },
     {
-      "label": "B image-only",
-      "value": 100.0,
+      "label": "D naive union v2",
+      "value": 65.5,
       "unit": "progress percent",
-      "status": "trained",
-      "note": "trained; loss=0.4428; exit=0"
+      "status": "running",
+      "note": "running; latest_loss=3.2906"
     },
     {
-      "label": "C text-only",
-      "value": 100.0,
+      "label": "A raw v2",
+      "value": 0.0,
       "unit": "progress percent",
-      "status": "trained",
-      "note": "trained; loss=3.8543; exit=0"
+      "status": "pending",
+      "note": "pending"
     },
     {
-      "label": "D naive union",
-      "value": 100.0,
+      "label": "B image-only v2",
+      "value": 0.0,
       "unit": "progress percent",
-      "status": "trained",
-      "note": "trained; loss=3.5730; exit=0"
+      "status": "pending",
+      "note": "pending"
     },
     {
-      "label": "E Stage 4 joint rerun4",
-      "value": 100.0,
+      "label": "C text-only v2",
+      "value": 0.0,
       "unit": "progress percent",
-      "status": "trained",
-      "note": "trained; loss=1.7374; exit=0"
+      "status": "pending",
+      "note": "pending"
     }
   ],
   "vqav2_quick_eval": [
