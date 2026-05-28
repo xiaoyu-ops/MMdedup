@@ -33,9 +33,9 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "τ_cross 对 P/R/F1 的影响。",
-        "current_numbers": "dev-selected joint threshold=0.85; fair held-out joint F1=0.616",
+        "current_numbers": "fixed joint threshold=0.85; fair held-out joint F1=0.616",
         "existing_data": [
-          "dev-selected joint threshold=0.85",
+          "fixed joint threshold=0.85",
           "fair held-out joint F1=0.616"
         ],
         "missing_data": [],
@@ -78,9 +78,9 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "证明跨模态联合处理相对简单拼接/并集的增量价值。",
-        "current_numbers": "naive F1=0.372; Stage 4 F1=0.616; joint_fp_caption_equal_rate=0.425",
+        "current_numbers": "naive F1=0.322; Stage 4 F1=0.616; joint_fp_caption_equal_rate=0.425",
         "existing_data": [
-          "naive F1=0.372",
+          "naive F1=0.322",
           "Stage 4 F1=0.616",
           "joint_fp_caption_equal_rate=0.425"
         ],
@@ -568,9 +568,9 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "最优阈值选择依据。",
-        "current_numbers": "image best=0.378@0.81; joint best=0.616@0.85",
+        "current_numbers": "image best=0.333@0.85; joint best=0.616@0.85",
         "existing_data": [
-          "image best=0.378@0.81",
+          "image best=0.333@0.85",
           "joint best=0.616@0.85"
         ],
         "missing_data": [

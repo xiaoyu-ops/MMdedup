@@ -35,6 +35,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--experiment-id", required=True)
     parser.add_argument("--positive-labels", default="duplicate,near-duplicate")
     parser.add_argument("--label-column", default="auto")
+    parser.add_argument(
+        "--manual-thresholds-json",
+        default="",
+        help=(
+            "Optional JSON object with fixed paper-facing thresholds. "
+            "When provided, this overrides dev-selected thresholds."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -50,7 +58,31 @@ def main() -> int:
             rows = read_labeled_rows(args.annotations_csv, args.label_column)
             positive_labels = {item.strip() for item in args.positive_labels.split(",") if item.strip()}
             dev_metrics = json.loads(args.dev_metrics_json.read_text(encoding="utf-8"))
-            thresholds = fixed_thresholds_from_dev(dev_metrics)
+            thresholds = (
+                parse_manual_thresholds(args.manual_thresholds_json)
+                if args.manual_thresholds_json
+                else fixed_thresholds_from_dev(dev_metrics)
+            )
+            threshold_policy = (
+                "manual paper-facing thresholds aligned with downstream split generation; "
+                "no held-out threshold tuning"
+                if args.manual_thresholds_json
+                else "selected on old 1000-row dev diagnostic only; no held-out threshold tuning"
+            )
+            evaluation_type = (
+                "held_out_manual_fixed_thresholds"
+                if args.manual_thresholds_json
+                else "held_out_fixed_dev_thresholds"
+            )
+            notes = (
+                "Manual thresholds are fixed before evaluation reporting and match the v2 downstream split policy. "
+                "The 3000-row fair annotations are used here only as held-out evaluation labels."
+                if args.manual_thresholds_json
+                else (
+                    "Thresholds are selected only from the old 1000-row dev diagnostic metrics. "
+                    "The 3000-row fair annotations are used here only as held-out evaluation labels."
+                )
+            )
 
             result_rows = [
                 evaluate_method(rows, method, thresholds[method], positive_labels)
@@ -62,7 +94,7 @@ def main() -> int:
             by_method = {row["method"]: row for row in result_rows}
             metrics = {
                 "experiment_id": args.experiment_id,
-                "evaluation_type": "held_out_fixed_dev_thresholds",
+                "evaluation_type": evaluation_type,
                 "dev_metrics_json": str(args.dev_metrics_json),
                 "annotations_csv": str(args.annotations_csv),
                 "num_labeled_rows": len(rows),
@@ -74,10 +106,7 @@ def main() -> int:
                 "stage4_vs_naive_union_f1_delta": _delta(by_method, "joint", "naive_union"),
                 "stage4_vs_image_f1_delta": _delta(by_method, "joint", "image"),
                 "elapsed_seconds": time.time() - started,
-                "notes": (
-                    "Thresholds are selected only from the old 1000-row dev diagnostic metrics. "
-                    "The 3000-row fair annotations are used here only as held-out evaluation labels."
-                ),
+                "notes": notes,
                 "outputs": {
                     "fixed_threshold_metrics": str(args.output_dir / "fixed_threshold_metrics.csv"),
                 },
@@ -94,7 +123,7 @@ def main() -> int:
                 "label_column": args.label_column,
                 "positive_labels": sorted(positive_labels),
                 "fixed_thresholds": thresholds,
-                "threshold_selection_policy": "selected on old 1000-row dev diagnostic only; no held-out threshold tuning",
+                "threshold_selection_policy": threshold_policy,
             }
             (args.output_dir / "config.yaml").write_text(
                 yaml.safe_dump(config, sort_keys=False, allow_unicode=True),
@@ -147,6 +176,34 @@ def fixed_thresholds_from_dev(metrics: dict[str, Any]) -> dict[str, dict[str, fl
     missing = [method for method in ("image", "text", "naive_union", "joint") if method not in thresholds]
     if missing:
         raise ValueError(f"dev metrics missing fixed thresholds for: {missing}")
+    return thresholds
+
+
+def parse_manual_thresholds(raw: str) -> dict[str, dict[str, float | str]]:
+    data = json.loads(raw)
+    if not isinstance(data, dict):
+        raise ValueError("manual thresholds must be a JSON object")
+    thresholds: dict[str, dict[str, float | str]] = {}
+    for method in METHOD_ORDER:
+        row = data.get(method)
+        if not isinstance(row, dict):
+            continue
+        if method == "naive_union":
+            thresholds[method] = {
+                "method": method,
+                "image_threshold": float(row["image_threshold"]),
+                "text_threshold": float(row["text_threshold"]),
+                "source": str(row.get("source", "manual_paper_thresholds.naive_union")),
+            }
+        else:
+            thresholds[method] = {
+                "method": method,
+                "threshold": float(row["threshold"]),
+                "source": str(row.get("source", f"manual_paper_thresholds.{method}")),
+            }
+    missing = [method for method in ("image", "text", "naive_union", "joint") if method not in thresholds]
+    if missing:
+        raise ValueError(f"manual thresholds missing required methods: {missing}")
     return thresholds
 
 

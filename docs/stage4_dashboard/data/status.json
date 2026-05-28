@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-28T02:12:17+08:00",
+  "updated_at": "2026-05-28T14:16:18+08:00",
   "target": {
     "venue": "ICDM 2026",
     "deadline": "2026-06-06",
@@ -57,7 +57,7 @@
       "name": "Stage 4 主评价",
       "status": "done",
       "percent": 100,
-      "detail": "3000 fair held-out 主评价已完成；Stage 4 joint F1=0.6157，naive union F1=0.3720，image-only F1=0.3781。"
+      "detail": "3000 fair held-out 主评价已完成；Stage 4 joint F1=0.6157，naive union F1=0.3216，image-only F1=0.3326。"
     },
     {
       "name": "LLaVA 下游验证",
@@ -260,27 +260,27 @@
         "label": "exp_stage4_fair_eval_3000_20260528",
         "value": 0.0,
         "unit": "minutes",
-        "note": "rows=3000; positives=462; image_f1=0.3781@0.81; text_f1=0.2669@0.00; naive_union_f1=0.3720@image0.79_text1.00; joint_f1=0.6157@0.85; stage4_vs_naive_delta=0.2437; stage4_vs_image_delta=0.2376"
+        "note": "rows=3000; positives=462; image_f1=0.3326@0.85; text_f1=0.2786@0.95; naive_union_f1=0.3216@image0.85_text0.95; joint_f1=0.6157@0.85; stage4_vs_naive_delta=0.2941; stage4_vs_image_delta=0.2830"
       }
     ],
     "stage4_eval_best_f1": [
       {
         "label": "Image-only",
-        "value": 0.378,
+        "value": 0.333,
         "unit": "F1",
-        "note": "tau=0.81; P=0.244; R=0.844"
+        "note": "tau=0.85; P=0.218; R=0.701"
       },
       {
         "label": "Text-only",
-        "value": 0.267,
+        "value": 0.279,
         "unit": "F1",
-        "note": "tau=0.0; P=0.154; R=1.000"
+        "note": "tau=0.95; P=0.280; R=0.277"
       },
       {
         "label": "Naive union",
-        "value": 0.372,
+        "value": 0.322,
         "unit": "F1",
-        "note": "image_tau=0.79; text_tau=1.0; P=0.234; R=0.903"
+        "note": "image_tau=0.85; text_tau=0.95; P=0.201; R=0.799"
       },
       {
         "label": "Stage 4 joint",
@@ -290,9 +290,9 @@
       },
       {
         "label": "Max score",
-        "value": 0.29,
+        "value": 0.311,
         "unit": "F1",
-        "note": "tau=0.87; P=0.172; R=0.929"
+        "note": "tau=0.95; P=0.276; R=0.357"
       }
     ],
     "stage4_abcde_split_sizes": [
@@ -964,8 +964,8 @@
       "dataset": "CC3M 200K fair score-space stratified 3000 held-out labels",
       "hardware": "Darwin arm64 | Python 3.13.12",
       "runtime": "0.0 s",
-      "numbers": "rows=3000; positives=462; image_f1=0.3781@0.81; text_f1=0.2669@0.00; naive_union_f1=0.3720@image0.79_text1.00; joint_f1=0.6157@0.85; stage4_vs_naive_delta=0.2437; stage4_vs_image_delta=0.2376",
-      "notes": "ICDM fair held-out Stage 4 main evaluation; thresholds fixed from old 1000-row dev diagnostic, no held-out threshold tuning."
+      "numbers": "rows=3000; positives=462; image_f1=0.3326@0.85; text_f1=0.2786@0.95; naive_union_f1=0.3216@image0.85_text0.95; joint_f1=0.6157@0.85; stage4_vs_naive_delta=0.2941; stage4_vs_image_delta=0.2830",
+      "notes": "ICDM fair held-out Stage 4 main evaluation; manual paper-facing thresholds aligned with v2 downstream split policy; 3000 held-out labels are not used for threshold tuning."
     }
   ],
   "paper_writing_data": [
@@ -1090,22 +1090,22 @@
     {
       "title": "Stage 4 主评价表",
       "status": "complete",
-      "paper_use": "用于论文 Main Results 表。旧 1000 high-joint 结果只作为 dev/threshold diagnostic；当前主表来自新 3000 公平分层 held-out 标注，阈值固定自 dev。",
+      "paper_use": "用于论文 Main Results 表。旧 1000 high-joint 结果只作为 dev/threshold diagnostic；当前主表来自新 3000 公平分层 held-out 标注，使用与 v2 下游 split 对齐的固定人工阈值。",
       "key_numbers": [
         {
           "label": "Image-only best F1",
-          "value": "0.378",
-          "note": "tau=0.81; P=0.244; R=0.844"
+          "value": "0.333",
+          "note": "tau=0.85; P=0.218; R=0.701"
         },
         {
           "label": "Text-only best F1",
-          "value": "0.267",
-          "note": "tau=0.0; P=0.154; R=1.000"
+          "value": "0.279",
+          "note": "tau=0.95; P=0.280; R=0.277"
         },
         {
           "label": "Naive union best F1",
-          "value": "0.372",
-          "note": "image_tau=0.79; text_tau=1.0; P=0.234; R=0.903"
+          "value": "0.322",
+          "note": "image_tau=0.85; text_tau=0.95; P=0.201; R=0.799"
         },
         {
           "label": "Stage 4 joint best F1",
@@ -1127,7 +1127,7 @@
         {
           "title": "Fair held-out eval metrics",
           "href": "data/paper/stage4_fair_eval_3000_metrics.json",
-          "description": "3000 fair held-out labels 上固定 dev 阈值的 P/R/F1。"
+          "description": "3000 fair held-out labels 上固定人工阈值的 P/R/F1。"
         },
         {
           "title": "Fair held-out fixed-threshold CSV",
@@ -1426,7 +1426,7 @@
       "paper_location": "论文表：CC3M 3000 fair held-out benchmark 上的 Precision / Recall / F1",
       "status": "ready",
       "what_it_answers": "Stage 4 是否比三个单模态拼接/naive union 更合理。",
-      "recommended_claim": "Using thresholds selected on the old 1,000-row dev diagnostic set, Stage 4 joint achieves the best F1 on the 3,000-row fair held-out labels and substantially improves over naive union.",
+      "recommended_claim": "Using manual paper-facing thresholds aligned with the v2 downstream split policy, Stage 4 joint achieves the best F1 on the 3,000-row fair held-out labels and substantially improves over naive union.",
       "do_not_write": "不要把旧 1000 high-joint P/R/F1 当作 ICDM 最终主表，也不要沿用旧 text/naive 阈值。",
       "table_columns": [
         "方法",
@@ -1439,26 +1439,26 @@
       "rows": [
         [
           "Image-only",
-          "0.81",
-          "0.244",
-          "0.844",
-          "0.378",
+          "0.85",
+          "0.218",
+          "0.701",
+          "0.333",
           "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 joint。"
         ],
         [
           "Text-only",
-          "0.0",
-          "0.154",
-          "1.000",
-          "0.267",
-          "dev 选出的 text 阈值退化为 0.00，在 held-out 上过度预测正例。"
+          "0.95",
+          "0.280",
+          "0.277",
+          "0.279",
+          "使用与下游 C split 对齐的 text>=0.95 固定阈值。"
         ],
         [
           "Naive union",
-          "image=0.79, text=1.0",
-          "0.234",
-          "0.903",
-          "0.372",
+          "image=0.85, text=0.95",
+          "0.201",
+          "0.799",
+          "0.322",
           "单模态结果并集，代表简单拼接式多模态 baseline。"
         ],
         [
@@ -1474,7 +1474,7 @@
         {
           "title": "Fair held-out eval metrics",
           "href": "data/paper/stage4_fair_eval_3000_metrics.json",
-          "description": "Fixed dev-threshold evaluation on 3,000 fair labels."
+          "description": "Manual fixed-threshold evaluation on 3,000 fair labels."
         },
         {
           "title": "Fair held-out fixed-threshold CSV",
@@ -1804,9 +1804,9 @@
           "data_status": "complete",
           "paper_table_status": "data_ready_table_missing",
           "description": "τ_cross 对 P/R/F1 的影响。",
-          "current_numbers": "dev-selected joint threshold=0.85; fair held-out joint F1=0.616",
+          "current_numbers": "fixed joint threshold=0.85; fair held-out joint F1=0.616",
           "existing_data": [
-            "dev-selected joint threshold=0.85",
+            "fixed joint threshold=0.85",
             "fair held-out joint F1=0.616"
           ],
           "missing_data": [],
@@ -1849,9 +1849,9 @@
           "data_status": "complete",
           "paper_table_status": "data_ready_table_missing",
           "description": "证明跨模态联合处理相对简单拼接/并集的增量价值。",
-          "current_numbers": "naive F1=0.372; Stage 4 F1=0.616; joint_fp_caption_equal_rate=0.425",
+          "current_numbers": "naive F1=0.322; Stage 4 F1=0.616; joint_fp_caption_equal_rate=0.425",
           "existing_data": [
-            "naive F1=0.372",
+            "naive F1=0.322",
             "Stage 4 F1=0.616",
             "joint_fp_caption_equal_rate=0.425"
           ],
@@ -2339,9 +2339,9 @@
           "data_status": "complete",
           "paper_table_status": "data_ready_table_missing",
           "description": "最优阈值选择依据。",
-          "current_numbers": "image best=0.378@0.81; joint best=0.616@0.85",
+          "current_numbers": "image best=0.333@0.85; joint best=0.616@0.85",
           "existing_data": [
-            "image best=0.378@0.81",
+            "image best=0.333@0.85",
             "joint best=0.616@0.85"
           ],
           "missing_data": [

@@ -120,22 +120,22 @@
   {
     "title": "Stage 4 主评价表",
     "status": "complete",
-    "paper_use": "用于论文 Main Results 表。旧 1000 high-joint 结果只作为 dev/threshold diagnostic；当前主表来自新 3000 公平分层 held-out 标注，阈值固定自 dev。",
+    "paper_use": "用于论文 Main Results 表。旧 1000 high-joint 结果只作为 dev/threshold diagnostic；当前主表来自新 3000 公平分层 held-out 标注，使用与 v2 下游 split 对齐的固定人工阈值。",
     "key_numbers": [
       {
         "label": "Image-only best F1",
-        "value": "0.378",
-        "note": "tau=0.81; P=0.244; R=0.844"
+        "value": "0.333",
+        "note": "tau=0.85; P=0.218; R=0.701"
       },
       {
         "label": "Text-only best F1",
-        "value": "0.267",
-        "note": "tau=0.0; P=0.154; R=1.000"
+        "value": "0.279",
+        "note": "tau=0.95; P=0.280; R=0.277"
       },
       {
         "label": "Naive union best F1",
-        "value": "0.372",
-        "note": "image_tau=0.79; text_tau=1.0; P=0.234; R=0.903"
+        "value": "0.322",
+        "note": "image_tau=0.85; text_tau=0.95; P=0.201; R=0.799"
       },
       {
         "label": "Stage 4 joint best F1",
@@ -157,7 +157,7 @@
       {
         "title": "Fair held-out eval metrics",
         "href": "data/paper/stage4_fair_eval_3000_metrics.json",
-        "description": "3000 fair held-out labels 上固定 dev 阈值的 P/R/F1。"
+        "description": "3000 fair held-out labels 上固定人工阈值的 P/R/F1。"
       },
       {
         "title": "Fair held-out fixed-threshold CSV",

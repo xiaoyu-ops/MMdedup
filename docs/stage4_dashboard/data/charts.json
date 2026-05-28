@@ -192,27 +192,27 @@
       "label": "exp_stage4_fair_eval_3000_20260528",
       "value": 0.0,
       "unit": "minutes",
-      "note": "rows=3000; positives=462; image_f1=0.3781@0.81; text_f1=0.2669@0.00; naive_union_f1=0.3720@image0.79_text1.00; joint_f1=0.6157@0.85; stage4_vs_naive_delta=0.2437; stage4_vs_image_delta=0.2376"
+      "note": "rows=3000; positives=462; image_f1=0.3326@0.85; text_f1=0.2786@0.95; naive_union_f1=0.3216@image0.85_text0.95; joint_f1=0.6157@0.85; stage4_vs_naive_delta=0.2941; stage4_vs_image_delta=0.2830"
     }
   ],
   "stage4_eval_best_f1": [
     {
       "label": "Image-only",
-      "value": 0.378,
+      "value": 0.333,
       "unit": "F1",
-      "note": "tau=0.81; P=0.244; R=0.844"
+      "note": "tau=0.85; P=0.218; R=0.701"
     },
     {
       "label": "Text-only",
-      "value": 0.267,
+      "value": 0.279,
       "unit": "F1",
-      "note": "tau=0.0; P=0.154; R=1.000"
+      "note": "tau=0.95; P=0.280; R=0.277"
     },
     {
       "label": "Naive union",
-      "value": 0.372,
+      "value": 0.322,
       "unit": "F1",
-      "note": "image_tau=0.79; text_tau=1.0; P=0.234; R=0.903"
+      "note": "image_tau=0.85; text_tau=0.95; P=0.201; R=0.799"
     },
     {
       "label": "Stage 4 joint",
@@ -222,9 +222,9 @@
     },
     {
       "label": "Max score",
-      "value": 0.29,
+      "value": 0.311,
       "unit": "F1",
-      "note": "tau=0.87; P=0.172; R=0.929"
+      "note": "tau=0.95; P=0.276; R=0.357"
     }
   ],
   "stage4_abcde_split_sizes": [

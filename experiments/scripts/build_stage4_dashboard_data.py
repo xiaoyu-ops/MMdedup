@@ -1046,7 +1046,7 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
         {
             "title": "Stage 4 主评价表",
             "status": "complete" if _fair_eval_metrics() else "active",
-            "paper_use": "用于论文 Main Results 表。旧 1000 high-joint 结果只作为 dev/threshold diagnostic；当前主表来自新 3000 公平分层 held-out 标注，阈值固定自 dev。",
+            "paper_use": "用于论文 Main Results 表。旧 1000 high-joint 结果只作为 dev/threshold diagnostic；当前主表来自新 3000 公平分层 held-out 标注，使用与 v2 下游 split 对齐的固定人工阈值。",
             "key_numbers": [
                 {"label": "Image-only best F1", "value": _score_text(image), "note": _threshold_note(image)},
                 {"label": "Text-only best F1", "value": _score_text(text), "note": _threshold_note(text)},
@@ -1056,7 +1056,7 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
                 {"label": "Image correct / joint wrong", "value": _fmt_int(error_analysis.get("image_correct_joint_wrong")), "note": "解释 image-only 当前更强的样本池证据"},
             ],
             "sources": [
-                _source("Fair held-out eval metrics", "data/paper/stage4_fair_eval_3000_metrics.json", "3000 fair held-out labels 上固定 dev 阈值的 P/R/F1。"),
+                _source("Fair held-out eval metrics", "data/paper/stage4_fair_eval_3000_metrics.json", "3000 fair held-out labels 上固定人工阈值的 P/R/F1。"),
                 _source("Fair held-out fixed-threshold CSV", "data/paper/stage4_fair_eval_3000_fixed_threshold_metrics.csv", "每个方法的固定阈值、TP/FP/TN/FN、P/R/F1。"),
                 _source("Dev 阈值诊断 metrics", "data/paper/stage4_threshold_diagnostic_1000_metrics.json", "旧 1000 标注上的 image/text/joint/naive-union 阈值诊断。"),
                 _source("Dev naive-union grid", "data/paper/stage4_threshold_diagnostic_1000_naive_union_grid_metrics.csv", "旧阈值过低问题的 grid 诊断。"),
@@ -1173,19 +1173,19 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
             "status": "ready",
             "what_it_answers": "Stage 4 是否比三个单模态拼接/naive union 更合理。",
             "recommended_claim": (
-                "Using thresholds selected on the old 1,000-row dev diagnostic set, Stage 4 joint achieves the best F1 "
-                "on the 3,000-row fair held-out labels and substantially improves over naive union."
+                "Using manual paper-facing thresholds aligned with the v2 downstream split policy, Stage 4 joint "
+                "achieves the best F1 on the 3,000-row fair held-out labels and substantially improves over naive union."
             ),
             "do_not_write": "不要把旧 1000 high-joint P/R/F1 当作 ICDM 最终主表，也不要沿用旧 text/naive 阈值。",
             "table_columns": ["方法", "阈值", "Precision", "Recall", "F1", "论文备注"],
             "rows": [
                 _eval_row("Image-only", image, "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 joint。"),
-                _eval_row("Text-only", text, "dev 选出的 text 阈值退化为 0.00，在 held-out 上过度预测正例。"),
+                _eval_row("Text-only", text, "使用与下游 C split 对齐的 text>=0.95 固定阈值。"),
                 _eval_row("Naive union", naive, "单模态结果并集，代表简单拼接式多模态 baseline。"),
                 _eval_row("Stage 4 joint", joint, "在 3000 fair held-out 上超过 image-only 与 naive union。"),
             ],
             "evidence": [
-                _source("Fair held-out eval metrics", "data/paper/stage4_fair_eval_3000_metrics.json", "Fixed dev-threshold evaluation on 3,000 fair labels."),
+                _source("Fair held-out eval metrics", "data/paper/stage4_fair_eval_3000_metrics.json", "Manual fixed-threshold evaluation on 3,000 fair labels."),
                 _source("Fair held-out fixed-threshold CSV", "data/paper/stage4_fair_eval_3000_fixed_threshold_metrics.csv", "Fixed-threshold P/R/F1 rows."),
                 _source("Dev threshold diagnostic", "data/paper/stage4_threshold_diagnostic_1000_metrics.json", "Threshold diagnosis on legacy 1,000 labels."),
                 _source("Dev naive-union grid", "data/paper/stage4_threshold_diagnostic_1000_naive_union_grid_metrics.csv", "Naive-union threshold grid diagnosis."),
@@ -1388,7 +1388,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
                 _matrix_item(
                     "表 1.2 τ_cross 阈值扫描",
                     "complete",
-                    f"dev-selected joint threshold=0.85; fair held-out joint F1={_score_text(joint)}",
+                    f"fixed joint threshold=0.85; fair held-out joint F1={_score_text(joint)}",
                     threshold_csv,
                     "",
                     "τ_cross 对 P/R/F1 的影响。",

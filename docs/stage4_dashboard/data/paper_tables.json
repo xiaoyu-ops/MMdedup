@@ -89,7 +89,7 @@
     "paper_location": "论文表：CC3M 3000 fair held-out benchmark 上的 Precision / Recall / F1",
     "status": "ready",
     "what_it_answers": "Stage 4 是否比三个单模态拼接/naive union 更合理。",
-    "recommended_claim": "Using thresholds selected on the old 1,000-row dev diagnostic set, Stage 4 joint achieves the best F1 on the 3,000-row fair held-out labels and substantially improves over naive union.",
+    "recommended_claim": "Using manual paper-facing thresholds aligned with the v2 downstream split policy, Stage 4 joint achieves the best F1 on the 3,000-row fair held-out labels and substantially improves over naive union.",
     "do_not_write": "不要把旧 1000 high-joint P/R/F1 当作 ICDM 最终主表，也不要沿用旧 text/naive 阈值。",
     "table_columns": [
       "方法",
@@ -102,26 +102,26 @@
     "rows": [
       [
         "Image-only",
-        "0.81",
-        "0.244",
-        "0.844",
-        "0.378",
+        "0.85",
+        "0.218",
+        "0.701",
+        "0.333",
         "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 joint。"
       ],
       [
         "Text-only",
-        "0.0",
-        "0.154",
-        "1.000",
-        "0.267",
-        "dev 选出的 text 阈值退化为 0.00，在 held-out 上过度预测正例。"
+        "0.95",
+        "0.280",
+        "0.277",
+        "0.279",
+        "使用与下游 C split 对齐的 text>=0.95 固定阈值。"
       ],
       [
         "Naive union",
-        "image=0.79, text=1.0",
-        "0.234",
-        "0.903",
-        "0.372",
+        "image=0.85, text=0.95",
+        "0.201",
+        "0.799",
+        "0.322",
         "单模态结果并集，代表简单拼接式多模态 baseline。"
       ],
       [
@@ -137,7 +137,7 @@
       {
         "title": "Fair held-out eval metrics",
         "href": "data/paper/stage4_fair_eval_3000_metrics.json",
-        "description": "Fixed dev-threshold evaluation on 3,000 fair labels."
+        "description": "Manual fixed-threshold evaluation on 3,000 fair labels."
       },
       {
         "title": "Fair held-out fixed-threshold CSV",
