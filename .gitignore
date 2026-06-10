@@ -107,3 +107,6 @@ B_image_only
 C_text_only
 D_naive_union
 Cleaning_up_the_Digital_Swamp__An_End_to_End_Pipeline_for_Sorting_and_Deduplicating_Mixed_Modality_Data/
+# Local assistant/tooling state (do not commit)
+.agents/
+.claude/
