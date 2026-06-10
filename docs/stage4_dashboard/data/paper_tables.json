@@ -89,7 +89,7 @@
     "paper_location": "论文表：CC3M 3000 fair held-out benchmark 上的 Precision / Recall / F1",
     "status": "ready",
     "what_it_answers": "Stage 4 是否比三个单模态拼接/naive union 更合理。",
-    "recommended_claim": "Using manual paper-facing thresholds aligned with the v2 downstream split policy, Stage 4 joint achieves the best F1 on the 3,000-row fair held-out labels and substantially improves over naive union.",
+    "recommended_claim": "Using the unified conservative operating point, Stage 4 achieves the best F1 among A/B/C/D/E on the 3,000-row fair held-out labels and substantially improves over naive union.",
     "do_not_write": "不要把旧 1000 high-joint P/R/F1 当作 ICDM 最终主表，也不要沿用旧 text/naive 阈值。",
     "table_columns": [
       "方法",
@@ -102,15 +102,15 @@
     "rows": [
       [
         "Image-only",
-        "0.85",
+        "image>=0.85",
         "0.218",
         "0.701",
         "0.333",
-        "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 joint。"
+        "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 conservative。"
       ],
       [
         "Text-only",
-        "0.95",
+        "text>=0.95",
         "0.280",
         "0.277",
         "0.279",
@@ -118,19 +118,27 @@
       ],
       [
         "Naive union",
-        "image=0.85, text=0.95",
+        "image=None, text=None",
         "0.201",
         "0.799",
         "0.322",
         "单模态结果并集，代表简单拼接式多模态 baseline。"
       ],
       [
-        "Stage 4 joint",
-        "0.85",
+        "Stage 4 conservative",
+        "image>=0.85 AND text>=0.85",
+        "0.726",
+        "0.431",
+        "0.541",
+        "统一使用 image>=0.85 AND text>=0.85；在主表中超过 image-only 与 naive union。"
+      ],
+      [
+        "Stage 4 joint (alt)",
+        "joint>=0.85",
         "0.569",
         "0.671",
         "0.616",
-        "在 3000 fair held-out 上超过 image-only 与 naive union。"
+        "更偏 recall/F1 的 alternative operating point；不作为统一主规则。"
       ]
     ],
     "evidence": [
@@ -339,7 +347,7 @@
       ],
       [
         "评价脚本 wall-clock",
-        "0.0 s",
+        "n/a",
         "已有，但不是 GPU 开销"
       ],
       [

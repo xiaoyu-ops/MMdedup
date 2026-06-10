@@ -8,6 +8,8 @@ evaluation/
 # ── 实验产物（运行时生成，不入库） ──────────────────────
 artifacts/
 outputs/
+output/
+tmp/
 experiments/results/download_datasets/
 experiments/results/artifacts_full_global/
 experiments/results/artifacts_10k/
@@ -63,6 +65,10 @@ node_modules/
 *.log
 *.cache
 *.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
 *.out
 *.toc
 *.html
@@ -74,3 +80,8 @@ node_modules/
 # ── 其他 ─────────────────────────────────────────────────
 audio/test.py
 tests/
+A_raw
+B_image_only
+C_text_only
+D_naive_union
+Cleaning_up_the_Digital_Swamp__An_End_to_End_Pipeline_for_Sorting_and_Deduplicating_Mixed_Modality_Data/

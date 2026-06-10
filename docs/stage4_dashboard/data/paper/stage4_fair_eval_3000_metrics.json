@@ -1,7 +1,6 @@
 {
-  "experiment_id": "exp_stage4_fair_eval_3000_20260528",
-  "evaluation_type": "held_out_manual_fixed_thresholds",
-  "dev_metrics_json": "experiments/results/plan_b_stage4/exp_stage4_threshold_diagnostic_1000_20260523/metrics.json",
+  "experiment_id": "exp_stage4_fair_eval_3000_conservative_and_20260601",
+  "analysis_type": "manual_fixed_threshold_eval_with_conservative_and_rule",
   "annotations_csv": "experiments/results/plan_b_stage4/exp_stage4_fair_annotation_3000_20260523/annotation_sheet_labeled.csv",
   "num_labeled_rows": 3000,
   "num_positive": 462,
@@ -10,41 +9,10 @@
     "duplicate",
     "near-duplicate"
   ],
-  "fixed_thresholds": {
-    "image": {
-      "method": "image",
-      "threshold": 0.85,
-      "source": "manual_paper_thresholds.image_aligned_with_downstream"
-    },
-    "text": {
-      "method": "text",
-      "threshold": 0.95,
-      "source": "manual_paper_thresholds.text_aligned_with_downstream"
-    },
-    "naive_union": {
-      "method": "naive_union",
-      "image_threshold": 0.85,
-      "text_threshold": 0.95,
-      "source": "manual_paper_thresholds.naive_union_aligned_with_downstream"
-    },
-    "joint": {
-      "method": "joint",
-      "threshold": 0.85,
-      "source": "manual_paper_thresholds.joint_stage4"
-    },
-    "max": {
-      "method": "max",
-      "threshold": 0.95,
-      "source": "manual_paper_thresholds.max_reference"
-    }
-  },
   "results_by_method": {
     "image": {
       "method": "image",
-      "threshold": 0.85,
-      "image_threshold": "",
-      "text_threshold": "",
-      "threshold_source": "manual_paper_thresholds.image_aligned_with_downstream",
+      "rule": "image>=0.85",
       "tp": 324,
       "fp": 1162,
       "tn": 1376,
@@ -54,14 +22,12 @@
       "f1": 0.33264887063655035,
       "predicted_positive": 1486,
       "predicted_positive_rate": 0.49533333333333335,
-      "positive_labels": "duplicate|near-duplicate"
+      "f1_ci95_low": 0.30515463917525776,
+      "f1_ci95_high": 0.35990220048899757
     },
     "text": {
       "method": "text",
-      "threshold": 0.95,
-      "image_threshold": "",
-      "text_threshold": "",
-      "threshold_source": "manual_paper_thresholds.text_aligned_with_downstream",
+      "rule": "text>=0.95",
       "tp": 128,
       "fp": 329,
       "tn": 2209,
@@ -71,14 +37,12 @@
       "f1": 0.27856365614798695,
       "predicted_positive": 457,
       "predicted_positive_rate": 0.15233333333333332,
-      "positive_labels": "duplicate|near-duplicate"
+      "f1_ci95_low": 0.24080267558528426,
+      "f1_ci95_high": 0.3163596966413868
     },
     "naive_union": {
       "method": "naive_union",
-      "threshold": "",
-      "image_threshold": 0.85,
-      "text_threshold": 0.95,
-      "threshold_source": "manual_paper_thresholds.naive_union_aligned_with_downstream",
+      "rule": "image>=0.85 OR text>=0.95",
       "tp": 369,
       "fp": 1464,
       "tn": 1074,
@@ -88,14 +52,12 @@
       "f1": 0.3215686274509804,
       "predicted_positive": 1833,
       "predicted_positive_rate": 0.611,
-      "positive_labels": "duplicate|near-duplicate"
+      "f1_ci95_low": 0.29688888888888887,
+      "f1_ci95_high": 0.346483704974271
     },
     "joint": {
       "method": "joint",
-      "threshold": 0.85,
-      "image_threshold": "",
-      "text_threshold": "",
-      "threshold_source": "manual_paper_thresholds.joint_stage4",
+      "rule": "joint>=0.85",
       "tp": 310,
       "fp": 235,
       "tn": 2303,
@@ -105,31 +67,44 @@
       "f1": 0.6156901688182721,
       "predicted_positive": 545,
       "predicted_positive_rate": 0.18166666666666667,
-      "positive_labels": "duplicate|near-duplicate"
+      "f1_ci95_low": 0.5798237022526935,
+      "f1_ci95_high": 0.6502463054187191
     },
-    "max": {
-      "method": "max",
-      "threshold": 0.95,
-      "image_threshold": "",
-      "text_threshold": "",
-      "threshold_source": "manual_paper_thresholds.max_reference",
-      "tp": 165,
-      "fp": 433,
-      "tn": 2105,
-      "fn": 297,
-      "precision": 0.27591973244147155,
-      "recall": 0.35714285714285715,
-      "f1": 0.3113207547169811,
-      "predicted_positive": 598,
-      "predicted_positive_rate": 0.19933333333333333,
-      "positive_labels": "duplicate|near-duplicate"
+    "conservative_and": {
+      "method": "conservative_and",
+      "rule": "image>=0.85 AND text>=0.85",
+      "tp": 199,
+      "fp": 75,
+      "tn": 2463,
+      "fn": 263,
+      "precision": 0.7262773722627737,
+      "recall": 0.43073593073593075,
+      "f1": 0.5407608695652174,
+      "predicted_positive": 274,
+      "predicted_positive_rate": 0.09133333333333334,
+      "f1_ci95_low": 0.4971264367816092,
+      "f1_ci95_high": 0.5836680053547523
     }
   },
-  "stage4_vs_naive_union_f1_delta": 0.2941215413672917,
-  "stage4_vs_image_f1_delta": 0.28304129818172175,
-  "elapsed_seconds": 0.013453006744384766,
-  "notes": "Manual thresholds are fixed before evaluation reporting and match the v2 downstream split policy. The 3000-row fair annotations are used here only as held-out evaluation labels.",
+  "bootstrap_iterations": 10000,
+  "bootstrap_delta_ci95": {
+    "conservative_minus_joint": {
+      "delta_ci95_low": -0.11285536060308443,
+      "delta_ci95_high": -0.0379395083800379
+    },
+    "conservative_minus_naive_union": {
+      "delta_ci95_low": 0.17678813372963226,
+      "delta_ci95_high": 0.26172282394763435
+    },
+    "conservative_minus_image": {
+      "delta_ci95_low": 0.16792990649290546,
+      "delta_ci95_high": 0.24754006094050207
+    }
+  },
+  "notes": "Unified paper-facing Stage4 rule: image>=0.85 AND text>=0.85 is used for both the 3000-row main detection table and downstream E_train_stage4_conservative. joint>=0.85 is retained only as an alternative operating point / ablation.",
   "outputs": {
-    "fixed_threshold_metrics": "experiments/results/plan_b_stage4/exp_stage4_fair_eval_3000_20260528/fixed_threshold_metrics.csv"
-  }
+    "metrics_csv": "experiments/results/plan_b_stage4/exp_stage4_fair_eval_3000_conservative_and_20260601/fixed_threshold_metrics_with_conservative_and.csv"
+  },
+  "git_commit": "fa9cc33b207b610f3391b0ef8e50455b0d9588c5",
+  "hardware": "macOS-26.4.1-arm64-arm-64bit-Mach-O"
 }

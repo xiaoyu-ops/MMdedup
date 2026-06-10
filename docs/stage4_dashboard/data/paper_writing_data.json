@@ -125,22 +125,27 @@
       {
         "label": "Image-only best F1",
         "value": "0.333",
-        "note": "tau=0.85; P=0.218; R=0.701"
+        "note": "rule=image>=0.85; P=0.218; R=0.701"
       },
       {
         "label": "Text-only best F1",
         "value": "0.279",
-        "note": "tau=0.95; P=0.280; R=0.277"
+        "note": "rule=text>=0.95; P=0.280; R=0.277"
       },
       {
         "label": "Naive union best F1",
         "value": "0.322",
-        "note": "image_tau=0.85; text_tau=0.95; P=0.201; R=0.799"
+        "note": "rule=image>=0.85 OR text>=0.95; P=0.201; R=0.799"
       },
       {
-        "label": "Stage 4 joint best F1",
+        "label": "Stage 4 conservative F1",
+        "value": "0.541",
+        "note": "rule=image>=0.85 AND text>=0.85; P=0.726; R=0.431"
+      },
+      {
+        "label": "Stage 4 joint alt F1",
         "value": "0.616",
-        "note": "tau=0.85; P=0.569; R=0.671"
+        "note": "Alternative operating point / ablation"
       },
       {
         "label": "Joint false positives",
@@ -192,7 +197,7 @@
       {
         "title": "Joint FP examples CSV",
         "href": "data/paper/stage4_joint_fp_examples.csv",
-        "description": "Stage 4 false positive 样例。"
+        "description": "旧 joint operating point false positive 诊断样例。"
       },
       {
         "title": "Image wins / joint loses CSV",
@@ -223,7 +228,7 @@
       },
       {
         "label": "Stage 4 评价耗时",
-        "value": "0.0 s",
+        "value": "n/a",
         "note": "Mac 上纯指标计算"
       },
       {

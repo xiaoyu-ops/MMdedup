@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-28T14:47:38+08:00",
+  "updated_at": "2026-06-10T09:24:19+08:00",
   "target": {
     "venue": "ICDM 2026",
     "deadline": "2026-06-06",
@@ -57,7 +57,7 @@
       "name": "Stage 4 主评价",
       "status": "done",
       "percent": 100,
-      "detail": "3000 fair held-out 主评价已完成；Stage 4 joint F1=0.6157，naive union F1=0.3216，image-only F1=0.3326。"
+      "detail": "3000 fair held-out 主评价已完成；Stage 4 conservative F1=0.5408，naive union F1=0.3216，image-only F1=0.3326。"
     },
     {
       "name": "LLaVA 下游验证",
@@ -255,12 +255,6 @@
         "value": 343.2,
         "unit": "minutes",
         "note": "C text-only train25k; samples=25000; steps=2000; final_loss=3.8543; peak_memory_gb=5.523"
-      },
-      {
-        "label": "exp_stage4_fair_eval_3000_20260528",
-        "value": 0.0,
-        "unit": "minutes",
-        "note": "rows=3000; positives=462; image_f1=0.3326@0.85; text_f1=0.2786@0.95; naive_union_f1=0.3216@image0.85_text0.95; joint_f1=0.6157@0.85; stage4_vs_naive_delta=0.2941; stage4_vs_image_delta=0.2830"
       }
     ],
     "stage4_eval_best_f1": [
@@ -268,31 +262,25 @@
         "label": "Image-only",
         "value": 0.333,
         "unit": "F1",
-        "note": "tau=0.85; P=0.218; R=0.701"
+        "note": "rule=image>=0.85; P=0.218; R=0.701"
       },
       {
         "label": "Text-only",
         "value": 0.279,
         "unit": "F1",
-        "note": "tau=0.95; P=0.280; R=0.277"
+        "note": "rule=text>=0.95; P=0.280; R=0.277"
       },
       {
         "label": "Naive union",
         "value": 0.322,
         "unit": "F1",
-        "note": "image_tau=0.85; text_tau=0.95; P=0.201; R=0.799"
+        "note": "rule=image>=0.85 OR text>=0.95; P=0.201; R=0.799"
       },
       {
-        "label": "Stage 4 joint",
-        "value": 0.616,
+        "label": "Stage 4 conservative",
+        "value": 0.541,
         "unit": "F1",
-        "note": "tau=0.85; P=0.569; R=0.671"
-      },
-      {
-        "label": "Max score",
-        "value": 0.311,
-        "unit": "F1",
-        "note": "tau=0.95; P=0.276; R=0.357"
+        "note": "rule=image>=0.85 AND text>=0.85; P=0.726; R=0.431"
       }
     ],
     "stage4_abcde_split_sizes": [
@@ -712,7 +700,7 @@
         "image-only baseline scores",
         "text-only baseline scores",
         "naive union baseline scores",
-        "Stage 4 joint scores"
+        "Stage 4 conservative scores"
       ],
       "current_outputs": [
         "1000 条 adjudicated labels",
@@ -960,12 +948,12 @@
       "notes": "Failed Windows formal LoRA run; CUDA unknown error near the end; excluded from final downstream comparison until rerun succeeds."
     },
     {
-      "id": "exp_stage4_fair_eval_3000_20260528",
+      "id": "exp_stage4_fair_eval_3000_conservative_and_20260601",
       "dataset": "CC3M 200K fair score-space stratified 3000 held-out labels",
-      "hardware": "Darwin arm64 | Python 3.13.12",
-      "runtime": "0.0 s",
-      "numbers": "rows=3000; positives=462; image_f1=0.3326@0.85; text_f1=0.2786@0.95; naive_union_f1=0.3216@image0.85_text0.95; joint_f1=0.6157@0.85; stage4_vs_naive_delta=0.2941; stage4_vs_image_delta=0.2830",
-      "notes": "ICDM fair held-out Stage 4 main evaluation; manual paper-facing thresholds aligned with v2 downstream split policy; 3000 held-out labels are not used for threshold tuning."
+      "hardware": "macOS-26.4.1-arm64-arm-64bit-Mach-O",
+      "runtime": "n/a",
+      "numbers": "rows=3000; positives=462; stage4_conservative_and_f1=0.5408; precision=0.7263; recall=0.4307; image_f1=0.3326; text_f1=0.2786; naive_union_f1=0.3216; stage4_vs_naive_delta_ci95=[0.1768,0.2617]; stage4_vs_image_delta_ci95=[0.1679,0.2475]",
+      "notes": "Unified paper-facing Stage4 detection/training rule; joint>=0.85 retained as alternative operating point / ablation."
     }
   ],
   "paper_writing_data": [
@@ -1095,22 +1083,27 @@
         {
           "label": "Image-only best F1",
           "value": "0.333",
-          "note": "tau=0.85; P=0.218; R=0.701"
+          "note": "rule=image>=0.85; P=0.218; R=0.701"
         },
         {
           "label": "Text-only best F1",
           "value": "0.279",
-          "note": "tau=0.95; P=0.280; R=0.277"
+          "note": "rule=text>=0.95; P=0.280; R=0.277"
         },
         {
           "label": "Naive union best F1",
           "value": "0.322",
-          "note": "image_tau=0.85; text_tau=0.95; P=0.201; R=0.799"
+          "note": "rule=image>=0.85 OR text>=0.95; P=0.201; R=0.799"
         },
         {
-          "label": "Stage 4 joint best F1",
+          "label": "Stage 4 conservative F1",
+          "value": "0.541",
+          "note": "rule=image>=0.85 AND text>=0.85; P=0.726; R=0.431"
+        },
+        {
+          "label": "Stage 4 joint alt F1",
           "value": "0.616",
-          "note": "tau=0.85; P=0.569; R=0.671"
+          "note": "Alternative operating point / ablation"
         },
         {
           "label": "Joint false positives",
@@ -1162,7 +1155,7 @@
         {
           "title": "Joint FP examples CSV",
           "href": "data/paper/stage4_joint_fp_examples.csv",
-          "description": "Stage 4 false positive 样例。"
+          "description": "旧 joint operating point false positive 诊断样例。"
         },
         {
           "title": "Image wins / joint loses CSV",
@@ -1193,7 +1186,7 @@
         },
         {
           "label": "Stage 4 评价耗时",
-          "value": "0.0 s",
+          "value": "n/a",
           "note": "Mac 上纯指标计算"
         },
         {
@@ -1426,7 +1419,7 @@
       "paper_location": "论文表：CC3M 3000 fair held-out benchmark 上的 Precision / Recall / F1",
       "status": "ready",
       "what_it_answers": "Stage 4 是否比三个单模态拼接/naive union 更合理。",
-      "recommended_claim": "Using manual paper-facing thresholds aligned with the v2 downstream split policy, Stage 4 joint achieves the best F1 on the 3,000-row fair held-out labels and substantially improves over naive union.",
+      "recommended_claim": "Using the unified conservative operating point, Stage 4 achieves the best F1 among A/B/C/D/E on the 3,000-row fair held-out labels and substantially improves over naive union.",
       "do_not_write": "不要把旧 1000 high-joint P/R/F1 当作 ICDM 最终主表，也不要沿用旧 text/naive 阈值。",
       "table_columns": [
         "方法",
@@ -1439,15 +1432,15 @@
       "rows": [
         [
           "Image-only",
-          "0.85",
+          "image>=0.85",
           "0.218",
           "0.701",
           "0.333",
-          "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 joint。"
+          "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 conservative。"
         ],
         [
           "Text-only",
-          "0.95",
+          "text>=0.95",
           "0.280",
           "0.277",
           "0.279",
@@ -1455,19 +1448,27 @@
         ],
         [
           "Naive union",
-          "image=0.85, text=0.95",
+          "image=None, text=None",
           "0.201",
           "0.799",
           "0.322",
           "单模态结果并集，代表简单拼接式多模态 baseline。"
         ],
         [
-          "Stage 4 joint",
-          "0.85",
+          "Stage 4 conservative",
+          "image>=0.85 AND text>=0.85",
+          "0.726",
+          "0.431",
+          "0.541",
+          "统一使用 image>=0.85 AND text>=0.85；在主表中超过 image-only 与 naive union。"
+        ],
+        [
+          "Stage 4 joint (alt)",
+          "joint>=0.85",
           "0.569",
           "0.671",
           "0.616",
-          "在 3000 fair held-out 上超过 image-only 与 naive union。"
+          "更偏 recall/F1 的 alternative operating point；不作为统一主规则。"
         ]
       ],
       "evidence": [
@@ -1676,7 +1677,7 @@
         ],
         [
           "评价脚本 wall-clock",
-          "0.0 s",
+          "n/a",
           "已有，但不是 GPU 开销"
         ],
         [
@@ -1781,9 +1782,9 @@
           "data_status": "partial",
           "paper_table_status": "data_ready_table_missing",
           "description": "concat vs weighted sum 在 1000 条 ground truth 上的 P/R/F1。",
-          "current_numbers": "当前只有 concat/joint 第一版；weighted sum α=0.3/0.5/0.7 未跑",
+          "current_numbers": "当前主规则为 conservative AND；joint>=0.85 保留为 alternative operating point；weighted sum α=0.3/0.5/0.7 未跑",
           "existing_data": [
-            "当前只有 concat/joint 第一版；weighted sum α=0.3/0.5/0.7 未跑"
+            "当前主规则为 conservative AND；joint>=0.85 保留为 alternative operating point；weighted sum α=0.3/0.5/0.7 未跑"
           ],
           "missing_data": [
             "需要补 weighted sum 或在方案中说明本轮只采用 concat。"
@@ -1804,10 +1805,10 @@
           "data_status": "complete",
           "paper_table_status": "data_ready_table_missing",
           "description": "τ_cross 对 P/R/F1 的影响。",
-          "current_numbers": "fixed joint threshold=0.85; fair held-out joint F1=0.616",
+          "current_numbers": "fixed conservative rule=image>=0.85 AND text>=0.85; fair held-out F1=0.541",
           "existing_data": [
-            "fixed joint threshold=0.85",
-            "fair held-out joint F1=0.616"
+            "fixed conservative rule=image>=0.85 AND text>=0.85",
+            "fair held-out F1=0.541"
           ],
           "missing_data": [],
           "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
@@ -1826,11 +1827,11 @@
           "data_status": "complete",
           "paper_table_status": "data_ready_table_missing",
           "description": "论文主表可引用的 Stage 4 最优配置。",
-          "current_numbers": "Stage 4 joint: F1=0.616, tau=0.85; P=0.569; R=0.671",
+          "current_numbers": "Stage 4 conservative: F1=0.541, rule=image>=0.85 AND text>=0.85; P=0.726; R=0.431",
           "existing_data": [
-            "Stage 4 joint: F1=0.616, tau=0.85",
-            "P=0.569",
-            "R=0.671"
+            "Stage 4 conservative: F1=0.541, rule=image>=0.85 AND text>=0.85",
+            "P=0.726",
+            "R=0.431"
           ],
           "missing_data": [],
           "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
@@ -1849,11 +1850,11 @@
           "data_status": "complete",
           "paper_table_status": "data_ready_table_missing",
           "description": "证明跨模态联合处理相对简单拼接/并集的增量价值。",
-          "current_numbers": "naive F1=0.322; Stage 4 F1=0.616; joint_fp_caption_equal_rate=0.425",
+          "current_numbers": "naive F1=0.322; Stage 4 conservative F1=0.541; joint_alt_F1=0.616",
           "existing_data": [
             "naive F1=0.322",
-            "Stage 4 F1=0.616",
-            "joint_fp_caption_equal_rate=0.425"
+            "Stage 4 conservative F1=0.541",
+            "joint_alt_F1=0.616"
           ],
           "missing_data": [
             "Stage 4 在 3000 fair held-out 上超过 naive union 与 image-only；旧 1000 high-joint 误差分析只作为诊断背景。"
@@ -2339,10 +2340,10 @@
           "data_status": "complete",
           "paper_table_status": "data_ready_table_missing",
           "description": "最优阈值选择依据。",
-          "current_numbers": "image best=0.333@0.85; joint best=0.616@0.85",
+          "current_numbers": "image best=0.333@None; Stage4 conservative=0.541@image/text 0.85",
           "existing_data": [
-            "image best=0.333@0.85",
-            "joint best=0.616@0.85"
+            "image best=0.333@None",
+            "Stage4 conservative=0.541@image/text 0.85"
           ],
           "missing_data": [
             "音频不属于当前 ICDM Stage 4 主线，暂不补。"
@@ -2419,10 +2420,11 @@
           "status": "partial",
           "data_status": "partial",
           "paper_table_status": "data_ready_table_missing",
-          "description": "concat vs weighted sum 的消融。",
-          "current_numbers": "concat/joint F1=0.616",
+          "description": "operating point 与 concat vs weighted sum 的消融。",
+          "current_numbers": "conservative AND F1=0.541; joint alt F1=0.616",
           "existing_data": [
-            "concat/joint F1=0.616"
+            "conservative AND F1=0.541",
+            "joint alt F1=0.616"
           ],
           "missing_data": [
             "weighted sum α=0.3/0.5/0.7 未跑。"

@@ -41,6 +41,7 @@ class RunConfig:
     max_length: int
     image_size: int | None
     shuffle: bool
+    sample_before_slice: bool
     prompt: str
 
 
@@ -64,6 +65,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-length", type=int, default=768)
     parser.add_argument("--image-size", type=int, help="Optional square resize for tiny-model smoke tests.")
     parser.add_argument("--shuffle", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--sample-before-slice",
+        action="store_true",
+        help="Shuffle the full JSON with --seed before taking --max-samples. Use for paper-facing fixed-budget samples.",
+    )
     parser.add_argument("--data-only", action="store_true", help="Only validate JSON/images and write metrics.")
     parser.add_argument("--resume", action="store_true", help="Resume from the latest local checkpoint if one exists.")
     parser.add_argument(
@@ -82,7 +88,7 @@ def main() -> int:
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     log_event("loading_records", path=str(args.train_json), max_samples=args.max_samples)
-    records = load_records(args.train_json, args.max_samples)
+    records = load_records(args.train_json, args.max_samples, args.sample_before_slice, args.seed)
     log_event("records_loaded", count=len(records))
     log_event("validating_images", count=len(records))
     image_check = validate_images(records)
@@ -106,6 +112,7 @@ def main() -> int:
         max_length=args.max_length,
         image_size=args.image_size,
         shuffle=args.shuffle,
+        sample_before_slice=args.sample_before_slice,
         prompt="LLaVA conversation JSON: human image prompt, assistant caption",
     )
     write_config(args.output_dir, asdict(config))
@@ -137,11 +144,14 @@ def main() -> int:
     return 0
 
 
-def load_records(path: Path, max_samples: int) -> list[dict[str, Any]]:
+def load_records(path: Path, max_samples: int, sample_before_slice: bool, seed: int) -> list[dict[str, Any]]:
     with path.open("r", encoding="utf-8") as handle:
         records = json.load(handle)
     if not isinstance(records, list):
         raise ValueError(f"Expected a JSON list: {path}")
+    if sample_before_slice:
+        records = list(records)
+        random.Random(seed).shuffle(records)
     return records[:max_samples]
 
 

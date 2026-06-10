@@ -515,7 +515,7 @@ B/C vs A：单模态去重的效果
 
 ## 五、当前实施进展（2026-05-12）
 
-总体判断：当前已经完成 Mac 工程验证和 Windows 3090 服务器迁移验证，项目已从“方案讨论 / 本机 smoke”推进到“准备真实 CC3M 小子集”的阶段。也就是说，Stage 4 的工程链路已经可运行，但正式论文实验数据还没有开始产出。
+总体判断：当前已经完成 Mac 工程验证、Windows 3090 服务器迁移验证，以及 1K 真实 CC3M 小子集准备。项目已从“方案讨论 / 本机 smoke”推进到“真实 CC3M 小跑前置数据已就绪”的阶段。也就是说，Stage 4 的工程链路已经可运行，下一步可以开始真实 CC3M Stage 4 小跑。
 
 重要说明：以下 smoke 结果仅用于工程验收和迁移验证，不作为论文结果或主表数字使用。论文可引用的数据必须来自后续真实 CC3M 标注集、完整 metrics 文件和 experiment_ledger.csv。
 
@@ -526,8 +526,11 @@ B/C vs A：单模态去重的效果
 | Mac 工程验证 | 在本机打通 Stage 4、候选挖掘、标注、评估工具链 | 已完成 | 所有 smoke 已通过；代码已提交到 codex/plan-b-stage4-pair-dedup。 |
 | Windows Phase 1 | 代码迁移、SSH 控制、CUDA / 3090 环境验证 | 已完成 | Windows 可通过 Tailscale + SSH 控制；RTX 3090 可用。 |
 | Windows Phase 2 | Windows 本地 smoke 和 open_clip CUDA smoke | 已完成 | 四个 smoke 通过；open_clip + CUDA 小样本 Stage 4 通过。 |
-| Windows Phase 3 | 准备 1K-5K 真实 CC3M image-caption 小子集 | 正在进入 | 目录 D:\data\cc3m_subset 已创建，但真实 CC3M 数据尚未放入。 |
-| Windows Phase 4+ | 真实 CC3M Stage 4、candidate mining、annotation、evaluation | 未开始 | 等待 Phase 3 数据准备完成。 |
+| Windows Phase 3 | 准备 1K-5K 真实 CC3M image-caption 小子集 | 已完成 | 已在 D:\data\cc3m_subset 准备 1,000 对真实 CC3M sidecar 数据。 |
+| Windows Phase 4 | 真实 CC3M Stage 4 小跑 | 已完成 | 1K 真实 CC3M，open_clip CUDA，tau=0.95，完整产物已同步回 Mac。 |
+| Windows Phase 5 | 真实 CC3M candidate mining | 已完成 | 基于 Phase 4 cache 挖出 2,663 条候选 pair-pairs。 |
+| Windows Phase 6 | 第一版人工标注表 | 已完成 | 已生成 200 行 annotation_sheet，其中 40 行 needs_audit。 |
+| Windows Phase 7+ | 仲裁、评估、扩大规模、LLaVA | 未开始 | 等待人工标注完成后进入评估；规模化实验可并行规划。 |
 
 ### 5.2 已完成的工程产物
 
@@ -542,6 +545,8 @@ B/C vs A：单模态去重的效果
 | Windows 迁移文档 | docs/plan_b_after_windows_migration.md | Windows 服务器阶段执行清单。 |
 | Windows runbook | docs/plan_b_windows_server_runbook.md | Windows 上具体命令顺序。 |
 | source-of-truth 骨架 | experiments/results/plan_b_stage4/ | 记录 daily log、ledger 和每次实验产物。 |
+| CC3M 数据准备脚本 | experiments/scripts/prepare_cc3m_hf_subset.py | 从 HuggingFace CC3M 数据集导出 jpg/txt sidecar 子集。 |
+| sidecar 校验脚本 | experiments/scripts/validate_sidecar_pairs.py | 校验图片/文本数量、manifest、配对完整性和图片可读性。 |
 
 ### 5.3 Windows 服务器验证结果
 
@@ -553,25 +558,30 @@ B/C vs A：单模态去重的效果
 | PyTorch / CUDA | torch 2.11.0+cu130；torch.cuda.is_available() = True | 已从 CUDA wheel 重装，避免 CPU 版 torch。 |
 | Windows smoke | 全部通过 | smoke_stage4_pair_dedup / annotation_flow / evaluation / adjudication 均通过。 |
 | open_clip CUDA smoke | 通过 | 4 对合成图文对：num_pairs=4, num_keepers=3, num_drops=1, dedup_rate=25%。仅工程验证，不作论文数据。 |
-| 数据目录 | D:\data\cc3m_subset | 已创建，等待放入 1K-5K 真实 CC3M 图文对。 |
+| 数据目录 | D:\data\cc3m_subset | 已放入 1,000 对真实 CC3M 图文 sidecar 数据。 |
+| CC3M 1K 校验 | 通过 | jpg_count=1000, txt_count=1000, manifest_rows=1000, metrics_saved_pairs=1000, sampled_images_verified=100。 |
+| Mac 元数据副本 | experiments/results/plan_b_stage4/windows_sync/cc3m_subset_1k_20260512/ | 已同步 manifest、prepare_metrics、prepare_failures、validation_summary。 |
+| Stage 4 真实 1K 小跑 | experiments/results/plan_b_stage4/windows_sync/exp_stage4_cc3m_1k_20260513/ | num_pairs=1000, num_keepers=1000, num_drops=0, tau_cross=0.95。 |
+| 候选挖掘 1K | experiments/results/plan_b_stage4/windows_sync/exp_stage4_candidates_1k_20260513/ | num_candidates=2663，signals=image/text/joint，min_similarity=0.70。 |
+| 200 行标注表 | experiments/results/plan_b_stage4/windows_sync/exp_stage4_annotation_200_20260513/ | annotation_rows=200, audit_rows=40，覆盖 very_high/high/medium bucket。 |
 
 ### 5.4 下一步阶段产物
 
 | 下一阶段 | 需要产物 | 验收标准 | 状态 |
 | --- | --- | --- | --- |
-| Phase 3：CC3M 小子集 | D:\data\cc3m_subset 下的 jpg/txt sidecar 文件 | 1K-5K 对；caption 非空；图片可打开；同 stem 配对 | 未完成 |
-| Phase 4：Stage 4 真实小跑 | exp_stage4_cc3m_5k_smoke_YYYYMMDD/ | metrics、keepers、drops、groups、cache、stdout/stderr、manifest 齐全 | 未开始 |
-| Phase 5：候选挖掘 | stage4_candidate_pairs.csv | 候选数量非零；包含 image/text/joint similarity 和 bucket | 未开始 |
-| Phase 6：人工标注表 | annotation_sheet.csv | 目标先 200 行小标注，后续扩展到 1000 行；20% needs_audit | 未开始 |
+| Phase 3：CC3M 小子集 | D:\data\cc3m_subset 下的 jpg/txt sidecar 文件 | 1K-5K 对；caption 非空；图片可打开；同 stem 配对 | 已完成：1K 对 |
+| Phase 4：Stage 4 真实小跑 | exp_stage4_cc3m_1k_20260513/ | metrics、keepers、drops、groups、cache、stdout/stderr、manifest 齐全 | 已完成：1K 小跑 |
+| Phase 5：候选挖掘 | stage4_candidate_pairs.csv | 候选数量非零；包含 image/text/joint similarity 和 bucket | 已完成：2,663 候选 |
+| Phase 6：人工标注表 | annotation_sheet.csv | 目标先 200 行小标注，后续扩展到 1000 行；20% needs_audit | 已完成：200 行 |
 | Phase 7：仲裁与评估 | adjudicated_annotations.csv, per_threshold_metrics.csv, metrics.json | joint 与 naive_union 均有 P/R/F1；能判断 Stage 4 是否优于 baseline | 未开始 |
 | Phase 8：扩大规模 | 10K-50K / 100K-300K CC3M 结果 | 候选挖掘和标注达到论文主表规模 | 未开始 |
 | Phase 9：LLaVA | A/B/C/D/E 训练数据与下游评测结果 | 至少 VQAv2；TextVQA 视时间加入 | 未开始 |
 
 ### 5.5 对原实验设计的当前修订说明
 
-• 实验 1（Stage 4）目前已经完成最小可运行实现和 Windows CUDA smoke，但尚未在真实 CC3M ground truth 上得到 P/R/F1。
+• 实验 1（Stage 4）目前已经完成最小可运行实现、Windows CUDA smoke 和 1K 真实 CC3M 小跑。tau=0.95 下没有直接 drop，说明自然 CC3M 1K 子集重复稀疏，后续重点应转向 candidate mining + 标注评估，而不是只看无标签 drop rate。
 
-• 实验 2（CC3M Ground Truth）应先通过 image/text/joint similarity 挖候选 pair-pairs，再做人工标注；不要直接随机采样 pair-pairs，否则正例会极少。
+• 实验 2（CC3M Ground Truth）已经完成第一版候选挖掘和 200 行标注表生成。下一步需要人工填写 label/audit_label，再运行 adjudication 和 evaluation。
 
 • 实验 3（SSCD baseline）暂未开始；当前优先级低于 Stage 4 ground truth 和 LLaVA 验证。
 
@@ -581,4 +591,4 @@ B/C vs A：单模态去重的效果
 
 ### 5.6 当前一句话结论
 
-当前计划已经完成“工程实现 + Windows 服务器迁移验证”，下一步正式进入“真实 CC3M 小子集准备”。只有当 1K-5K 真实 CC3M 小跑通过后，才进入 1000 行标注集和 Stage 4 vs baseline 主实验。
+当前计划已经完成“工程实现 + Windows 服务器迁移验证 + 1K 真实 CC3M 数据准备 + Stage 4 小跑 + 候选挖掘 + 200 行标注表”。下一步有两条线：一是人工标注 200 行后跑 Phase 7 评估，二是把同一流程扩大到 5K/10K 为正式标注和论文实验做准备。

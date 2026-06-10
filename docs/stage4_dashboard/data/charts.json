@@ -187,12 +187,6 @@
       "value": 343.2,
       "unit": "minutes",
       "note": "C text-only train25k; samples=25000; steps=2000; final_loss=3.8543; peak_memory_gb=5.523"
-    },
-    {
-      "label": "exp_stage4_fair_eval_3000_20260528",
-      "value": 0.0,
-      "unit": "minutes",
-      "note": "rows=3000; positives=462; image_f1=0.3326@0.85; text_f1=0.2786@0.95; naive_union_f1=0.3216@image0.85_text0.95; joint_f1=0.6157@0.85; stage4_vs_naive_delta=0.2941; stage4_vs_image_delta=0.2830"
     }
   ],
   "stage4_eval_best_f1": [
@@ -200,31 +194,25 @@
       "label": "Image-only",
       "value": 0.333,
       "unit": "F1",
-      "note": "tau=0.85; P=0.218; R=0.701"
+      "note": "rule=image>=0.85; P=0.218; R=0.701"
     },
     {
       "label": "Text-only",
       "value": 0.279,
       "unit": "F1",
-      "note": "tau=0.95; P=0.280; R=0.277"
+      "note": "rule=text>=0.95; P=0.280; R=0.277"
     },
     {
       "label": "Naive union",
       "value": 0.322,
       "unit": "F1",
-      "note": "image_tau=0.85; text_tau=0.95; P=0.201; R=0.799"
+      "note": "rule=image>=0.85 OR text>=0.95; P=0.201; R=0.799"
     },
     {
-      "label": "Stage 4 joint",
-      "value": 0.616,
+      "label": "Stage 4 conservative",
+      "value": 0.541,
       "unit": "F1",
-      "note": "tau=0.85; P=0.569; R=0.671"
-    },
-    {
-      "label": "Max score",
-      "value": 0.311,
-      "unit": "F1",
-      "note": "tau=0.95; P=0.276; R=0.357"
+      "note": "rule=image>=0.85 AND text>=0.85; P=0.726; R=0.431"
     }
   ],
   "stage4_abcde_split_sizes": [

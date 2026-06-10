@@ -35,7 +35,7 @@ FAIR_ANNOTATION_EXPERIMENT_ID = "exp_stage4_fair_annotation_3000_20260523"
 FAIR_ANNOTATION_DIR = RESULTS / FAIR_ANNOTATION_EXPERIMENT_ID
 DEV_THRESHOLD_EXPERIMENT_ID = "exp_stage4_threshold_diagnostic_1000_20260523"
 DEV_THRESHOLD_DIR = RESULTS / DEV_THRESHOLD_EXPERIMENT_ID
-FAIR_EVAL_EXPERIMENT_ID = "exp_stage4_fair_eval_3000_20260528"
+FAIR_EVAL_EXPERIMENT_ID = "exp_stage4_fair_eval_3000_conservative_and_20260601"
 FAIR_EVAL_DIR = RESULTS / FAIR_EVAL_EXPERIMENT_ID
 LEGACY_ANNOTATION_DIR = SYNC / "exp_stage4_annotation_1000_200k_high_joint_20260516"
 
@@ -247,7 +247,7 @@ def _plan_requirements() -> list[dict[str, object]]:
                 "image-only baseline scores",
                 "text-only baseline scores",
                 "naive union baseline scores",
-                "Stage 4 joint scores",
+                "Stage 4 conservative scores",
             ],
             "current_outputs": [
                 "1000 条 adjudicated labels",
@@ -566,11 +566,12 @@ def _stage4_eval_chart() -> list[dict[str, object]]:
         "image": "Image-only",
         "text": "Text-only",
         "naive_union": "Naive union",
-        "joint": "Stage 4 joint",
+        "conservative_and": "Stage 4 conservative",
+        "joint": "Stage 4 joint (alt)",
         "max": "Max score",
     }
     rows = []
-    for key in ["image", "text", "naive_union", "joint", "max"]:
+    for key in ["image", "text", "naive_union", "conservative_and"]:
         item = best_by_score.get(key, {})
         if not isinstance(item, dict) or "f1" not in item:
             continue
@@ -594,13 +595,13 @@ def _stage4_eval_detail(annotation: dict[str, object]) -> str:
     if fair_eval:
         by_method = fair_eval.get("results_by_method", {})
         if isinstance(by_method, dict):
-            joint = by_method.get("joint", {})
+            stage4 = by_method.get("conservative_and", {}) or by_method.get("joint", {})
             naive = by_method.get("naive_union", {})
             image = by_method.get("image", {})
-            if isinstance(joint, dict) and isinstance(naive, dict) and isinstance(image, dict):
+            if isinstance(stage4, dict) and isinstance(naive, dict) and isinstance(image, dict):
                 return (
                     "3000 fair held-out 主评价已完成；"
-                    f"Stage 4 joint F1={_fmt_float(joint.get('f1'), 4)}，"
+                    f"Stage 4 conservative F1={_fmt_float(stage4.get('f1'), 4)}，"
                     f"naive union F1={_fmt_float(naive.get('f1'), 4)}，"
                     f"image-only F1={_fmt_float(image.get('f1'), 4)}。"
                 )
@@ -1002,7 +1003,8 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
     image = best_by_score.get("image", {})
     text = best_by_score.get("text", {})
     naive = best_by_score.get("naive_union", {})
-    joint = best_by_score.get("joint", {})
+    stage4 = best_by_score.get("conservative_and", {}) or best_by_score.get("joint", {})
+    joint_alt = best_by_score.get("joint", {})
 
     return [
         {
@@ -1051,7 +1053,8 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
                 {"label": "Image-only best F1", "value": _score_text(image), "note": _threshold_note(image)},
                 {"label": "Text-only best F1", "value": _score_text(text), "note": _threshold_note(text)},
                 {"label": "Naive union best F1", "value": _score_text(naive), "note": _threshold_note(naive)},
-                {"label": "Stage 4 joint best F1", "value": _score_text(joint), "note": _threshold_note(joint)},
+                {"label": "Stage 4 conservative F1", "value": _score_text(stage4), "note": _threshold_note(stage4)},
+                {"label": "Stage 4 joint alt F1", "value": _score_text(joint_alt), "note": "Alternative operating point / ablation"},
                 {"label": "Joint false positives", "value": _fmt_int(error_analysis.get("joint_false_positives")), "note": f"caption_equal_rate={_fmt_float(error_analysis.get('joint_fp_caption_equal_rate'), 3)}"},
                 {"label": "Image correct / joint wrong", "value": _fmt_int(error_analysis.get("image_correct_joint_wrong")), "note": "解释 image-only 当前更强的样本池证据"},
             ],
@@ -1063,7 +1066,7 @@ def _paper_writing_data(annotation: dict[str, object]) -> list[dict[str, object]
                 _source("主评价 metrics JSON", "data/paper/stage4_eval_metrics.json", "各 score 的 best precision/recall/F1。"),
                 _source("阈值扫描 CSV", "data/paper/stage4_eval_per_threshold_metrics.csv", "image/text/naive_union/joint/max 的完整 threshold sweep。"),
                 _source("误差分析 metrics JSON", "data/paper/stage4_error_analysis_metrics.json", "joint/image 的 FP/FN 和互胜样本统计。"),
-                _source("Joint FP examples CSV", "data/paper/stage4_joint_fp_examples.csv", "Stage 4 false positive 样例。"),
+                _source("Joint FP examples CSV", "data/paper/stage4_joint_fp_examples.csv", "旧 joint operating point false positive 诊断样例。"),
                 _source("Image wins / joint loses CSV", "data/paper/stage4_image_wins_joint_loses.csv", "image-only 正确但 joint 错误的样例。"),
                 _source("实验 ledger CSV", "data/experiment_ledger.csv", "所有可引用实验的 source-of-truth ledger。"),
             ],
@@ -1131,7 +1134,8 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
     image = best_by_score.get("image", {})
     text = best_by_score.get("text", {})
     naive = best_by_score.get("naive_union", {})
-    joint = best_by_score.get("joint", {})
+    stage4 = best_by_score.get("conservative_and", {}) or best_by_score.get("joint", {})
+    joint_alt = best_by_score.get("joint", {})
     split_rows = _split_table_rows(split_metrics)
 
     return [
@@ -1173,16 +1177,17 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
             "status": "ready",
             "what_it_answers": "Stage 4 是否比三个单模态拼接/naive union 更合理。",
             "recommended_claim": (
-                "Using manual paper-facing thresholds aligned with the v2 downstream split policy, Stage 4 joint "
-                "achieves the best F1 on the 3,000-row fair held-out labels and substantially improves over naive union."
+                "Using the unified conservative operating point, Stage 4 achieves the best F1 among A/B/C/D/E "
+                "on the 3,000-row fair held-out labels and substantially improves over naive union."
             ),
             "do_not_write": "不要把旧 1000 high-joint P/R/F1 当作 ICDM 最终主表，也不要沿用旧 text/naive 阈值。",
             "table_columns": ["方法", "阈值", "Precision", "Recall", "F1", "论文备注"],
             "rows": [
-                _eval_row("Image-only", image, "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 joint。"),
+                _eval_row("Image-only", image, "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 conservative。"),
                 _eval_row("Text-only", text, "使用与下游 C split 对齐的 text>=0.95 固定阈值。"),
                 _eval_row("Naive union", naive, "单模态结果并集，代表简单拼接式多模态 baseline。"),
-                _eval_row("Stage 4 joint", joint, "在 3000 fair held-out 上超过 image-only 与 naive union。"),
+                _eval_row("Stage 4 conservative", stage4, "统一使用 image>=0.85 AND text>=0.85；在主表中超过 image-only 与 naive union。"),
+                _eval_row("Stage 4 joint (alt)", joint_alt, "更偏 recall/F1 的 alternative operating point；不作为统一主规则。"),
             ],
             "evidence": [
                 _source("Fair held-out eval metrics", "data/paper/stage4_fair_eval_3000_metrics.json", "Manual fixed-threshold evaluation on 3,000 fair labels."),
@@ -1291,7 +1296,7 @@ def _paper_tables(annotation: dict[str, object]) -> list[dict[str, object]]:
 def _eval_row(name: str, row: object, note: str) -> list[str]:
     if not isinstance(row, dict):
         return [name, "n/a", "n/a", "n/a", "n/a", note]
-    threshold = row.get("threshold", "n/a")
+    threshold = row.get("rule") or row.get("threshold", "n/a")
     if row.get("method") == "naive_union" or row.get("image_threshold") not in {None, ""}:
         threshold = f"image={row.get('image_threshold')}, text={row.get('text_threshold')}"
     return [
@@ -1334,7 +1339,8 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
     image = best_by_score.get("image", {})
     text = best_by_score.get("text", {})
     naive = best_by_score.get("naive_union", {})
-    joint = best_by_score.get("joint", {})
+    stage4 = best_by_score.get("conservative_and", {}) or best_by_score.get("joint", {})
+    joint_alt = best_by_score.get("joint", {})
     prepare = _read_json(SYNC / "cc3m_subset_200k_20260515/prepare_metrics.json")
     candidates = _read_json(SYNC / "exp_stage4_candidates_200k_manifest_20260516/metrics.json")
     high_joint = _read_json(SYNC / "exp_stage4_candidates_200k_high_joint_20260516/metrics.json")
@@ -1380,7 +1386,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
                 _matrix_item(
                     "表 1.1 Joint embedding 方式对比",
                     "partial",
-                    "当前只有 concat/joint 第一版；weighted sum α=0.3/0.5/0.7 未跑",
+                    "当前主规则为 conservative AND；joint>=0.85 保留为 alternative operating point；weighted sum α=0.3/0.5/0.7 未跑",
                     paper_eval,
                     "需要补 weighted sum 或在方案中说明本轮只采用 concat。",
                     "concat vs weighted sum 在 1000 条 ground truth 上的 P/R/F1。",
@@ -1388,7 +1394,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
                 _matrix_item(
                     "表 1.2 τ_cross 阈值扫描",
                     "complete",
-                    f"fixed joint threshold=0.85; fair held-out joint F1={_score_text(joint)}",
+                    f"fixed conservative rule=image>=0.85 AND text>=0.85; fair held-out F1={_score_text(stage4)}",
                     threshold_csv,
                     "",
                     "τ_cross 对 P/R/F1 的影响。",
@@ -1396,7 +1402,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
                 _matrix_item(
                     "表 1.3 最优配置最终性能",
                     "complete",
-                    f"Stage 4 joint: F1={_score_text(joint)}, {_threshold_note(joint)}",
+                    f"Stage 4 conservative: F1={_score_text(stage4)}, {_threshold_note(stage4)}",
                     paper_eval,
                     "",
                     "论文主表可引用的 Stage 4 最优配置。",
@@ -1404,7 +1410,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
                 _matrix_item(
                     "表 1.4 与 naive multimodal baseline 对比",
                     "complete",
-                    f"naive F1={_score_text(naive)}; Stage 4 F1={_score_text(joint)}; joint_fp_caption_equal_rate={_fmt_float(error_analysis.get('joint_fp_caption_equal_rate'), 3)}",
+                    f"naive F1={_score_text(naive)}; Stage 4 conservative F1={_score_text(stage4)}; joint_alt_F1={_score_text(joint_alt)}",
                     paper_eval + error_sources,
                     "Stage 4 在 3000 fair held-out 上超过 naive union 与 image-only；旧 1000 high-joint 误差分析只作为诊断背景。",
                     "证明跨模态联合处理相对简单拼接/并集的增量价值。",
@@ -1488,7 +1494,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
             "purpose": "更新原 Figure 3，展示跨模态阈值和单模态阈值对去重率/性能的影响。",
             "items": [
                 _matrix_item("表 5.1 各模态阈值 vs 去重率", "complete", "已完成 200K manifest 上 image/text/joint/naive threshold vs dedup-rate", dedup_rate_csv, "音频不属于当前 ICDM Stage 4 主线，暂不补。", "图像、文本、音频、跨模态阈值曲线。"),
-                _matrix_item("表 5.2 各模态最优阈值与去重率", "complete", f"image best={_score_text(image)}@{image.get('threshold')}; joint best={_score_text(joint)}@{joint.get('threshold')}", paper_eval + dedup_rate_csv, "音频不属于当前 ICDM Stage 4 主线，暂不补。", "最优阈值选择依据。"),
+                _matrix_item("表 5.2 各模态最优阈值与去重率", "complete", f"image best={_score_text(image)}@{image.get('threshold')}; Stage4 conservative={_score_text(stage4)}@image/text 0.85", paper_eval + dedup_rate_csv, "音频不属于当前 ICDM Stage 4 主线，暂不补。", "最优阈值选择依据。"),
                 _matrix_item("表 5.3 跨模态与单模态阈值组合", "pending", "", [], "需要组合扫描 image/text/cross thresholds。", "联合去重率或相关分析。"),
             ],
         },
@@ -1499,7 +1505,7 @@ def _plan_data_matrix(annotation: dict[str, object]) -> list[dict[str, object]]:
             "items": [
                 _matrix_item("表 6.1 各 ablation 配置去重率", "pending", "", [], "需要 Full/w-o Stage4/w-o Image/w-o Text 等配置跑完。", "Mixed-Test 或 CC3M 上的各组件去重率。"),
                 _matrix_item("表 6.2 各 ablation 配置 MLLM 下游性能", "pending", "", [], "依赖 LLaVA 下游训练。", "VQAv2/TextVQA acc。"),
-                _matrix_item("表 6.3 Stage 4 设计选择对比", "partial", f"concat/joint F1={_score_text(joint)}", paper_eval, "weighted sum α=0.3/0.5/0.7 未跑。", "concat vs weighted sum 的消融。"),
+                _matrix_item("表 6.3 Stage 4 设计选择对比", "partial", f"conservative AND F1={_score_text(stage4)}; joint alt F1={_score_text(joint_alt)}", paper_eval, "weighted sum α=0.3/0.5/0.7 未跑。", "operating point 与 concat vs weighted sum 的消融。"),
             ],
         },
         {
@@ -1663,6 +1669,12 @@ def _score_text(row: object) -> str:
 def _threshold_note(row: object) -> str:
     if not isinstance(row, dict):
         return "暂无结果"
+    if row.get("rule"):
+        return (
+            f"rule={row.get('rule')}; "
+            f"P={_fmt_float(row.get('precision'), 3)}; "
+            f"R={_fmt_float(row.get('recall'), 3)}"
+        )
     if row.get("method") == "naive_union" or row.get("image_threshold") not in {None, ""}:
         return (
             f"image_tau={row.get('image_threshold')}; "

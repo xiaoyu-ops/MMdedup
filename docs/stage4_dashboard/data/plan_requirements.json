@@ -55,7 +55,7 @@
       "image-only baseline scores",
       "text-only baseline scores",
       "naive union baseline scores",
-      "Stage 4 joint scores"
+      "Stage 4 conservative scores"
     ],
     "current_outputs": [
       "1000 条 adjudicated labels",

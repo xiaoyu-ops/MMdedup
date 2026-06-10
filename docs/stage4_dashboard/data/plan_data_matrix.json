@@ -10,9 +10,9 @@
         "data_status": "partial",
         "paper_table_status": "data_ready_table_missing",
         "description": "concat vs weighted sum 在 1000 条 ground truth 上的 P/R/F1。",
-        "current_numbers": "当前只有 concat/joint 第一版；weighted sum α=0.3/0.5/0.7 未跑",
+        "current_numbers": "当前主规则为 conservative AND；joint>=0.85 保留为 alternative operating point；weighted sum α=0.3/0.5/0.7 未跑",
         "existing_data": [
-          "当前只有 concat/joint 第一版；weighted sum α=0.3/0.5/0.7 未跑"
+          "当前主规则为 conservative AND；joint>=0.85 保留为 alternative operating point；weighted sum α=0.3/0.5/0.7 未跑"
         ],
         "missing_data": [
           "需要补 weighted sum 或在方案中说明本轮只采用 concat。"
@@ -33,10 +33,10 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "τ_cross 对 P/R/F1 的影响。",
-        "current_numbers": "fixed joint threshold=0.85; fair held-out joint F1=0.616",
+        "current_numbers": "fixed conservative rule=image>=0.85 AND text>=0.85; fair held-out F1=0.541",
         "existing_data": [
-          "fixed joint threshold=0.85",
-          "fair held-out joint F1=0.616"
+          "fixed conservative rule=image>=0.85 AND text>=0.85",
+          "fair held-out F1=0.541"
         ],
         "missing_data": [],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
@@ -55,11 +55,11 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "论文主表可引用的 Stage 4 最优配置。",
-        "current_numbers": "Stage 4 joint: F1=0.616, tau=0.85; P=0.569; R=0.671",
+        "current_numbers": "Stage 4 conservative: F1=0.541, rule=image>=0.85 AND text>=0.85; P=0.726; R=0.431",
         "existing_data": [
-          "Stage 4 joint: F1=0.616, tau=0.85",
-          "P=0.569",
-          "R=0.671"
+          "Stage 4 conservative: F1=0.541, rule=image>=0.85 AND text>=0.85",
+          "P=0.726",
+          "R=0.431"
         ],
         "missing_data": [],
         "next_action": "已有部分/全部数据；下一步是生成论文表格草稿并绑定 experiment id。",
@@ -78,11 +78,11 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "证明跨模态联合处理相对简单拼接/并集的增量价值。",
-        "current_numbers": "naive F1=0.322; Stage 4 F1=0.616; joint_fp_caption_equal_rate=0.425",
+        "current_numbers": "naive F1=0.322; Stage 4 conservative F1=0.541; joint_alt_F1=0.616",
         "existing_data": [
           "naive F1=0.322",
-          "Stage 4 F1=0.616",
-          "joint_fp_caption_equal_rate=0.425"
+          "Stage 4 conservative F1=0.541",
+          "joint_alt_F1=0.616"
         ],
         "missing_data": [
           "Stage 4 在 3000 fair held-out 上超过 naive union 与 image-only；旧 1000 high-joint 误差分析只作为诊断背景。"
@@ -568,10 +568,10 @@
         "data_status": "complete",
         "paper_table_status": "data_ready_table_missing",
         "description": "最优阈值选择依据。",
-        "current_numbers": "image best=0.333@0.85; joint best=0.616@0.85",
+        "current_numbers": "image best=0.333@None; Stage4 conservative=0.541@image/text 0.85",
         "existing_data": [
-          "image best=0.333@0.85",
-          "joint best=0.616@0.85"
+          "image best=0.333@None",
+          "Stage4 conservative=0.541@image/text 0.85"
         ],
         "missing_data": [
           "音频不属于当前 ICDM Stage 4 主线，暂不补。"
@@ -648,10 +648,11 @@
         "status": "partial",
         "data_status": "partial",
         "paper_table_status": "data_ready_table_missing",
-        "description": "concat vs weighted sum 的消融。",
-        "current_numbers": "concat/joint F1=0.616",
+        "description": "operating point 与 concat vs weighted sum 的消融。",
+        "current_numbers": "conservative AND F1=0.541; joint alt F1=0.616",
         "existing_data": [
-          "concat/joint F1=0.616"
+          "conservative AND F1=0.541",
+          "joint alt F1=0.616"
         ],
         "missing_data": [
           "weighted sum α=0.3/0.5/0.7 未跑。"

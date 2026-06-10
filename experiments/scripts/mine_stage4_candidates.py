@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import csv
+import heapq
 import json
 import platform
 import subprocess
@@ -40,7 +41,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--joint-method", default="concat", choices=["concat", "weighted_sum"])
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--cache-dir", type=Path)
-    parser.add_argument("--method", default="auto", choices=["auto", "exact", "sklearn"])
+    parser.add_argument("--method", default="auto", choices=["auto", "exact", "sklearn", "torch"])
     parser.add_argument("--signals", default="image,text,joint", help="Comma-separated subset of image,text,joint.")
     parser.add_argument("--top-k", type=int, default=20, help="Neighbors retained per pair for each signal.")
     parser.add_argument("--min-similarity", type=float, default=0.0)
@@ -175,35 +176,43 @@ def mine_candidates(
         for i, j in keys:
             candidate_keys.setdefault((i, j), set()).add(signal)
 
-    rows: List[Dict[str, object]] = []
-    for i, j in candidate_keys:
+    selected: list[tuple[float, int, Dict[str, object]]] = []
+    for row_index, (i, j) in enumerate(candidate_keys):
         image_similarity = float(np.dot(arrays["image"][i], arrays["image"][j]))
         text_similarity = float(np.dot(arrays["text"][i], arrays["text"][j]))
         joint_similarity = float(np.dot(arrays["joint"][i], arrays["joint"][j]))
         max_similarity = max(image_similarity, text_similarity, joint_similarity)
-        rows.append(
-            {
-                "candidate_id": f"cand_{len(rows):06d}",
-                "pair_id_a": pairs[i].pair_id,
-                "pair_id_b": pairs[j].pair_id,
-                "image_path_a": str(pairs[i].image_path),
-                "image_path_b": str(pairs[j].image_path),
-                "caption_a": pairs[i].caption,
-                "caption_b": pairs[j].caption,
-                "image_similarity": image_similarity,
-                "text_similarity": text_similarity,
-                "joint_similarity": joint_similarity,
-                "max_similarity": max_similarity,
-                "signals": "|".join(sorted(candidate_keys[(i, j)])),
-                "bucket": _bucket(max_similarity),
-                "label": "",
-                "annotator": "",
-                "audit_label": "",
-                "notes": "",
-            }
-        )
+        row = {
+            "candidate_id": f"cand_{row_index:06d}",
+            "pair_id_a": pairs[i].pair_id,
+            "pair_id_b": pairs[j].pair_id,
+            "image_path_a": str(pairs[i].image_path),
+            "image_path_b": str(pairs[j].image_path),
+            "caption_a": pairs[i].caption,
+            "caption_b": pairs[j].caption,
+            "image_similarity": image_similarity,
+            "text_similarity": text_similarity,
+            "joint_similarity": joint_similarity,
+            "max_similarity": max_similarity,
+            "signals": "|".join(sorted(candidate_keys[(i, j)])),
+            "bucket": _bucket(max_similarity),
+            "label": "",
+            "annotator": "",
+            "audit_label": "",
+            "notes": "",
+        }
+        if max_candidates <= 0:
+            continue
+        item = (max_similarity, row_index, row)
+        if len(selected) < max_candidates:
+            heapq.heappush(selected, item)
+        elif item > selected[0]:
+            heapq.heapreplace(selected, item)
+    rows = [item[2] for item in selected]
     rows.sort(key=lambda row: (float(row["max_similarity"]), row["candidate_id"]), reverse=True)
-    return rows[: max(0, max_candidates)]
+    for idx, row in enumerate(rows):
+        row["candidate_id"] = f"cand_{idx:06d}"
+    return rows
 
 
 def write_candidates_csv(rows: Sequence[Dict[str, object]], path: Path) -> None:
@@ -246,7 +255,7 @@ def _candidate_keys_for_signal(
     resolved = method
     exact_pairs = n * (n - 1) // 2
     if resolved == "auto":
-        resolved = "exact" if exact_pairs <= max_exact_pairs else "sklearn"
+        resolved = "exact" if exact_pairs <= max_exact_pairs else "torch"
     if resolved == "exact":
         if exact_pairs > max_exact_pairs:
             raise ValueError(
@@ -256,6 +265,8 @@ def _candidate_keys_for_signal(
         return _exact_topk_keys(embeddings, top_k=top_k, min_similarity=min_similarity)
     if resolved == "sklearn":
         return _sklearn_topk_keys(embeddings, top_k=top_k, min_similarity=min_similarity)
+    if resolved == "torch":
+        return _torch_topk_keys(embeddings, top_k=top_k, min_similarity=min_similarity)
     raise ValueError(f"Unsupported mining method: {method}")
 
 
@@ -294,6 +305,46 @@ def _sklearn_topk_keys(embeddings: np.ndarray, top_k: int, min_similarity: float
                 continue
             a, b = sorted((int(i), int(j)))
             keys.add((a, b))
+    return sorted(keys)
+
+
+def _torch_topk_keys(
+    embeddings: np.ndarray,
+    top_k: int,
+    min_similarity: float,
+    chunk_size: int = 512,
+) -> List[Tuple[int, int]]:
+    try:
+        import torch  # type: ignore
+    except ImportError as exc:
+        raise RuntimeError("PyTorch is required for --method torch candidate mining") from exc
+
+    n = embeddings.shape[0]
+    k = min(max(1, top_k), n - 1)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    dtype = torch.float16 if device == "cuda" else torch.float32
+    matrix = torch.as_tensor(np.asarray(embeddings, dtype=np.float32), device=device, dtype=dtype)
+    keys: set[Tuple[int, int]] = set()
+    with torch.no_grad():
+        all_t = matrix.T.contiguous()
+        for start in range(0, n, chunk_size):
+            end = min(start + chunk_size, n)
+            similarity = matrix[start:end] @ all_t
+            row_indices = torch.arange(end - start, device=device)
+            similarity[row_indices, torch.arange(start, end, device=device)] = -float("inf")
+            values, indices = torch.topk(similarity, k=k, dim=1)
+            values_cpu = values.float().cpu().numpy()
+            indices_cpu = indices.cpu().numpy()
+            for offset in range(end - start):
+                i = start + offset
+                for position, j in enumerate(indices_cpu[offset]):
+                    if values_cpu[offset][position] < min_similarity:
+                        continue
+                    a, b = sorted((int(i), int(j)))
+                    keys.add((a, b))
+            if start == 0 or end == n or end % max(chunk_size * 20, 1) == 0:
+                print(f"torch top-k progress: {end}/{n}", flush=True)
+            del similarity, values, indices
     return sorted(keys)
 
 
@@ -343,4 +394,3 @@ def _hardware_summary() -> str:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
