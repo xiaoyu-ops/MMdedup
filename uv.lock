@@ -1285,7 +1285,7 @@ wheels = [
 ]
 
 [[package]]
-name = "mmdedup"
+name = "MMdedup"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
@@ -1343,7 +1343,7 @@ requires-dist = [
     { name = "imagehash", marker = "extra == 'audio'", specifier = ">=4.3" },
     { name = "librosa", marker = "extra == 'audio'", specifier = ">=0.10" },
     { name = "matplotlib", marker = "extra == 'audio'", specifier = ">=3.7" },
-    { name = "mmdedup", extras = ["image", "audio", "text"], marker = "extra == 'all'" },
+    { name = "MMdedup", extras = ["image", "audio", "text"], marker = "extra == 'all'" },
     { name = "numpy", specifier = ">=1.26,<3" },
     { name = "open-clip-torch", marker = "extra == 'image'", specifier = ">=2.20" },
     { name = "pillow", marker = "extra == 'audio'", specifier = ">=10.0" },

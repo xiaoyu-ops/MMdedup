@@ -1,5 +1,5 @@
 [project]
-name = "mmdedup"
+name = "MMdedup"
 version = "0.1.0"
 description = "Multimodal dataset deduplication framework (image/audio/text)"
 requires-python = ">=3.10"
@@ -38,7 +38,7 @@ text = [
 
 # Install everything
 all = [
-    "mmdedup[image,audio,text]",
+    "MMdedup[image,audio,text]",
 ]
 
 [build-system]
