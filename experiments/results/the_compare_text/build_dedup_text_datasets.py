@@ -9,7 +9,7 @@ from datasketch import MinHash, MinHashLSH
 from simhash import Simhash
 from tqdm import tqdm
 
-# ================= 配置区域 =================
+# ================= Configuration =================
 DATA_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\digital_swamp_text"
 OUTPUT_DIR = r"D:\Deduplication_framework_text_deduped"
 TEXT_COLUMN = "content"
@@ -18,12 +18,12 @@ TITLE_COLUMN = "title"
 CHUNK_SIZE = 10000
 MAX_FILES = int(os.environ.get("MAX_FILES", "10"))
 
-# 算法参数
+# Algorithm parameters.
 NUM_PERM = 128
 THRESHOLD = 0.8
 SIMHASH_DIST = 10
 SIMHASH_WINDOW = 200
-# 速度优化：限制特征数量
+# Speed optimization: limit feature counts.
 MAX_WORDS = 200
 MAX_CHAR_GRAMS = 200
 MAX_SIMHASH_TOKENS = 200
@@ -36,7 +36,7 @@ METHODS = [
     "minhash_lsh",
     "ours_lsh",
 ]
-# 可选：只运行部分方法
+# Optional: run only a subset of methods.
 ENABLE_METHODS = set(METHODS)
 
 
@@ -115,7 +115,7 @@ def run():
             print(f"[WARN] Failed to read {path}: {e}")
             continue
 
-        # 使用手动 chunk 计数的 tqdm，确保在每个 chunk 处理后立即刷新
+        # Use manual chunk-count tqdm so progress refreshes after each chunk.
         chunks_pbar = tqdm(desc=f"Chunks {os.path.basename(path)}", unit='chunk', leave=False)
         processed_rows = 0
         for chunk in reader:
@@ -195,11 +195,11 @@ def run():
                         counts["ours_lsh"] += 1
                         if counts["ours_lsh"] % 1000 == 0:
                             print(f"[Write] ours_lsh: {counts['ours_lsh']} rows written -> {out_paths['ours_lsh']}")
-            # 本 chunk 处理完，更新计数与进度条，并偶尔打印总体进度以避免长时间无输出
+            # After each chunk, update counters and occasionally print global progress.
             processed_rows += len(chunk)
             chunks_pbar.update(1)
             try:
-                # 全局累计行数（用于较长运行的周期性汇报）
+                # Global processed row count used for periodic long-run reporting.
                 global_processed = globals().get("_GLOBAL_TEXT_ROWS_PROCESSED", 0) + len(chunk)
                 globals()['_GLOBAL_TEXT_ROWS_PROCESSED'] = global_processed
                 if global_processed % 50000 < len(chunk):
@@ -213,7 +213,7 @@ def run():
     print("\n=== Dedup Summary ===")
     for m in METHODS:
         print(f"{m}: {counts[m]}")
-    # 列出最终输出文件与大小
+    # List final output files and sizes.
     try:
         print("\nFinal output files:")
         for m in METHODS:
@@ -225,7 +225,7 @@ def run():
                 print(f"  - {m}: {p} (not created, rows={counts[m]})")
     except Exception:
         pass
-    # 写入去重汇总（CSV + JSON），包含每个方法保留数与去重率
+    # Write deduplication summaries as CSV and JSON, including kept counts and dedup rates.
     try:
         total_rows = globals().get("_GLOBAL_TEXT_ROWS_PROCESSED", 0)
         if not total_rows:

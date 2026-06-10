@@ -37,7 +37,7 @@ def main() -> None:
     output_dir = ensure_output_dir("PIPELINE_IMAGE_OUTPUT_DIR")
     config_path = os.environ.get("PIPELINE_IMAGE_CONFIG_FILE")
     
-    # 新增: 支持导出纯 JSON 列表与跳过物理复制
+    # Support exporting a plain JSON keep list and optionally skipping physical copies.
     export_json_path = os.environ.get("PIPELINE_IMAGE_EXPORT_JSON")
     skip_copy = os.environ.get("PIPELINE_IMAGE_SKIP_COPY", "0") == "1"
 
@@ -53,7 +53,7 @@ def main() -> None:
     stats.setdefault("total_candidates", total_candidates)
     stats.setdefault("selected", len(result.keepers))
 
-    # 如果配置了导出 JSON 路径，则保存纯文件名列表 (适配 benchmark 对比)
+    # If a JSON export path is configured, save a plain filename list for benchmark comparisons.
     if export_json_path and result.keepers:
         try:
             with open(export_json_path, 'w', encoding='utf-8') as f:
@@ -76,7 +76,7 @@ def main() -> None:
 
     stats["missing"] = len(result.missing) + copy_stats.get("missing", 0)
 
-    # 计算输入集合的字节总量（用于上报吞吐），以 bytes 为单位
+    # Compute total input bytes for throughput reporting.
     try:
         processed_bytes = 0
         for p in paths:
@@ -84,7 +84,7 @@ def main() -> None:
                 if p.exists():
                     processed_bytes += p.stat().st_size
             except Exception:
-                # 忽略单个文件 stat 错误
+                # Ignore stat errors for individual files.
                 continue
         stats["processed_bytes"] = processed_bytes
     except Exception:

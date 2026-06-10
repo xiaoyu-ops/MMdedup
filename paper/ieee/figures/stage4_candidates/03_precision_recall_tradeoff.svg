@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560">
+<rect width="100%" height="100%" fill="white"/>
+<text x="540.00" y="34.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="22" font-weight="700" fill="#1f2933">Precision-Recall Tradeoff</text>
+<text x="540.00" y="58.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="14" font-weight="400" fill="#52616f">Bubble size encodes predicted duplicate rate</text>
+<line x1="105.00" y1="443.38" x2="840.00" y2="443.38" stroke="#d8dee9" stroke-width="1"/>
+<text x="95.00" y="448.38" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.2</text>
+<line x1="105.00" y1="324.92" x2="840.00" y2="324.92" stroke="#d8dee9" stroke-width="1"/>
+<text x="95.00" y="329.92" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.4</text>
+<line x1="105.00" y1="206.46" x2="840.00" y2="206.46" stroke="#d8dee9" stroke-width="1"/>
+<text x="95.00" y="211.46" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.6</text>
+<line x1="105.00" y1="88.00" x2="840.00" y2="88.00" stroke="#d8dee9" stroke-width="1"/>
+<text x="95.00" y="93.00" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.8</text>
+<line x1="156.76" y1="88.00" x2="156.76" y2="473.00" stroke="#d8dee9" stroke-width="1"/>
+<text x="156.76" y="495.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.2</text>
+<line x1="363.80" y1="88.00" x2="363.80" y2="473.00" stroke="#d8dee9" stroke-width="1"/>
+<text x="363.80" y="495.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.4</text>
+<line x1="570.85" y1="88.00" x2="570.85" y2="473.00" stroke="#d8dee9" stroke-width="1"/>
+<text x="570.85" y="495.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.6</text>
+<line x1="777.89" y1="88.00" x2="777.89" y2="473.00" stroke="#d8dee9" stroke-width="1"/>
+<text x="777.89" y="495.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.8</text>
+<line x1="105.00" y1="473.00" x2="840.00" y2="473.00" stroke="#1f2933" stroke-width="1.2"/>
+<line x1="105.00" y1="88.00" x2="105.00" y2="473.00" stroke="#1f2933" stroke-width="1.2"/>
+<text x="472.50" y="521.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="16" font-weight="400" fill="#1f2933">Recall</text>
+<text x="50.00" y="280.50" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="16" font-weight="400" fill="#1f2933" transform="rotate(-90.0 50.00 280.50)">Precision</text>
+<circle cx="675.71" cy="432.70" r="23.86" fill="#8d99ae" stroke="#1f2933" stroke-width="1.2" opacity="0.82"/>
+<text x="687.71" y="400.84" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="15" font-weight="700" fill="#1f2933">Image</text>
+<circle cx="236.53" cy="395.95" r="13.57" fill="#b7a99a" stroke="#1f2933" stroke-width="1.2" opacity="0.82"/>
+<text x="248.53" y="374.38" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="15" font-weight="700" fill="#1f2933">Text</text>
+<circle cx="776.54" cy="442.61" r="27.33" fill="#8d99ae" stroke="#1f2933" stroke-width="1.2" opacity="0.82"/>
+<text x="788.54" y="407.28" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="15" font-weight="700" fill="#1f2933">Union</text>
+<circle cx="644.34" cy="224.94" r="14.45" fill="#1f4e79" stroke="#1f2933" stroke-width="1.2" opacity="0.82"/>
+<text x="656.34" y="202.49" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="15" font-weight="700" fill="#1f2933">Joint</text>
+<circle cx="395.62" cy="131.67" r="11.74" fill="#8d99ae" stroke="#1f2933" stroke-width="1.2" opacity="0.82"/>
+<text x="383.62" y="111.93" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="15" font-weight="700" fill="#1f2933">Cons.</text>
+<text x="715.77" y="378.23" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#e76f51">Union: many positives</text>
+<text x="644.35" y="179.82" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f4e79">Joint: balanced</text>
+</svg>

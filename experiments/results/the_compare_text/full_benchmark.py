@@ -6,17 +6,17 @@ from datasketch import MinHash, MinHashLSH
 from simhash import Simhash
 from tqdm import tqdm
 
-# ================= 配置区域 =================
+# ================= Configuration =================
 DATA_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\digital_swamp_text"
 SEED_FILE = "part_0000.csv"
 TEXT_COLUMN = "content"
 SAMPLE_ROWS = 10000 
 OUTPUT_DEBUG_FILE = "debug_benchmark_4_methods.csv"
 
-# 算法参数
+# Algorithm parameters.
 NUM_PERM = 128
-THRESHOLD = 0.8  # 相似度 > 0.8 视为重复
-SIMHASH_DIST = 10 # 放宽 SimHash 阈值
+THRESHOLD = 0.8  # Treat similarity > 0.8 as duplicate.
+SIMHASH_DIST = 10 # Relaxed SimHash threshold.
 # ===========================================
 
 def load_seed_data():
@@ -29,7 +29,7 @@ def load_seed_data():
         return []
 
 def inject_noise(text):
-    # 注入足以破坏 MD5 但保留 Jaccard 相似度的噪点
+    # Inject noise that breaks MD5 while preserving Jaccard similarity.
     noise_id = "".join(random.choices("0123456789", k=6))
     return f"{text} [noise:{noise_id}]"
 
@@ -37,15 +37,15 @@ def generate_fixed_dataset(seed_texts):
     print(f"[Info] Generating ordered dataset (Originals FIRST)...")
     data_list = []
     
-    # 1. 先放所有的【原件】 (Keep)
+    # 1. Add all originals first.
     for i, t in enumerate(seed_texts):
         data_list.append({
             "id": i, "text": t, "ground_truth": "keep", "type": "original"
         })
         
-    # 2. 再放所有的【副本】 (Remove)
+    # 2. Add all duplicates afterward.
     for i, t in enumerate(seed_texts):
-        # 20% 模糊重复，80% 精确重复
+        # 20% fuzzy near duplicates, 80% exact duplicates.
         if random.random() < 0.2:
             txt = inject_noise(t)
             dup_type = "near_dup_fuzzy"
@@ -57,7 +57,7 @@ def generate_fixed_dataset(seed_texts):
             "id": i, "text": txt, "ground_truth": "remove", "type": dup_type
         })
             
-    # 【重要】绝对不 Shuffle，保证先来后到
+    # Important: do not shuffle, so order remains deterministic.
     return pd.DataFrame(data_list)
 
 # --- 1. MD5 ---
@@ -108,7 +108,7 @@ def run_standard_minhash_lsh(df):
         text = row['text']
         m = MinHash(num_perm=NUM_PERM)
         
-        # 【特征差异点】只使用 Char-level 3-gram
+        # Feature difference: use char-level 3-grams only.
         t_clean = text.lower().replace(" ", "")
         if len(t_clean) >= 3:
             for i in range(len(t_clean)-2):
@@ -134,7 +134,7 @@ def run_ours_lsh(df):
         text = row['text']
         m = MinHash(num_perm=NUM_PERM)
         
-        # 【特征差异点】多粒度：同时使用 Word-level 和 Char-level
+        # Feature difference: use both word-level and char-level features.
         # A. Word Level
         for w in text.lower().split():
             m.update(w.encode('utf8'))
@@ -167,23 +167,23 @@ if __name__ == "__main__":
     texts = load_seed_data()
     if not texts: exit()
     
-    # 生成有序数据
+    # Generate ordered data.
     df = generate_fixed_dataset(texts)
     
-    # 运行所有算法 (确保这里有4行)
+    # Run all algorithms.
     df = run_md5(df)
     df = run_simhash(df)
     df = run_standard_minhash_lsh(df) 
     df = run_ours_lsh(df)
     
-    # 计算
+    # Compute metrics.
     metrics = {}
     metrics['MD5'] = calculate_metrics(df, 'pred_md5')
     metrics['SimHash'] = calculate_metrics(df, 'pred_simhash')
     metrics['MinHash (Std)'] = calculate_metrics(df, 'pred_std_minhash')
     metrics['Ours (Multi)'] = calculate_metrics(df, 'pred_ours')
     
-    # 输出
+    # Output results.
     print("\n" + "="*60)
     print(" FINAL COMPLETE BENCHMARK (4 Methods)")
     print("="*60)

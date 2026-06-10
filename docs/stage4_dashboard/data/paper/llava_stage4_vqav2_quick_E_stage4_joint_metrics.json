@@ -1,0 +1,28 @@
+{
+  "experiment_id": "exp_llava_stage4_vqa_vqav2_quick_E_stage4_joint_20260522",
+  "model_id": "llava-hf/llava-1.5-7b-hf",
+  "adapter_dir": "/mnt/c/Users/sysu/code/the_work_of_dedup/experiments/results/plan_b_stage4/exp_llava_stage4_train25k_E_stage4_joint_25000_2000steps_20260522_rerun4/adapter",
+  "eval_json": "experiments/results/plan_b_stage4/downstream_eval/vqav2_quick/vqav2_val_questions_1000.json",
+  "annotations_json": "experiments/results/plan_b_stage4/downstream_eval/vqav2_quick/vqav2_val_annotations_1000.json",
+  "num_eval_records": 1000,
+  "num_answered_records": 1000,
+  "image_check": {
+    "checked_records": 1000,
+    "missing_images": 0,
+    "bad_images": 0,
+    "first_image_size": [
+      640,
+      480
+    ]
+  },
+  "data_only": false,
+  "status": "evaluated",
+  "predictions_jsonl": "/mnt/c/Users/sysu/code/the_work_of_dedup/experiments/results/plan_b_stage4/exp_llava_stage4_vqa_vqav2_quick_E_stage4_joint_20260522/predictions.jsonl",
+  "exact_match": 0.006,
+  "vqa_consensus": 0.005666666666666667,
+  "num_scored_records": 1000,
+  "cuda_available": true,
+  "gpu_name": "NVIDIA GeForce RTX 3090",
+  "gpu_peak_memory_bytes": 4626224128,
+  "runtime_seconds": 1742.0976643562317
+}

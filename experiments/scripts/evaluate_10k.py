@@ -7,20 +7,20 @@ from pathlib import Path
 from collections import defaultdict
 
 # -------------------------------------------------------------
-# 0. 配置区域 (Adapted for 10k Test)
+# 0. Configuration area (adapted for the 10k test)
 # -------------------------------------------------------------
 
 PIPELINE_SUMMARY_FILE = Path(r"D:/Deduplication_framework/2026_new_experiment/result_10k/summary.json")
 RESULT_FILE = r"D:\Deduplication_framework\2026_new_experiment\result\image_benchmark_results.csv"
 
 # -------------------------------------------------------------
-# 1. 辅助函数
+# 1. Helper functions
 # -------------------------------------------------------------
 
 def parse_id(filename):
     """
-    文件名解析逻辑，需与基线一致。
-    例如 train-0_0_aug_noise.jpg -> train-0_0
+    Parse filenames consistently with the baseline.
+    Example: train-0_0_aug_noise.jpg -> train-0_0.
     """
     name = os.path.splitext(filename)[0]
     if "_aug" in name:
@@ -28,7 +28,7 @@ def parse_id(filename):
     return name
 
 def log_result_csv(method, throughput, precision, recall, gpu_mem):
-    """追加写入 CSV"""
+    """Append one result row to the CSV file."""
     file_exists = os.path.isfile(RESULT_FILE)
     try:
         with open(RESULT_FILE, mode='a', newline='', encoding='utf-8') as f:
@@ -46,7 +46,7 @@ def log_result_csv(method, throughput, precision, recall, gpu_mem):
         print(f"[错误] 写入CSV失败: {e}")
 
 # -------------------------------------------------------------
-# 2. 主逻辑
+# 2. Main logic
 # -------------------------------------------------------------
 
 def main():

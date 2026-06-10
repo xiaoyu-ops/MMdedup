@@ -7,8 +7,8 @@ from tqdm import tqdm
 from collections import defaultdict
 import csv
 
-# ================= 配置区域 =================
-# 指向 imagenet_bloated 文件夹
+# ================= Configuration =================
+# Path to the imagenet_bloated folder.
 IMAGE_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\imagenet_bloated"
 
 SAMPLE_SIZE = 10000 
@@ -22,7 +22,7 @@ def get_md5(file_path):
 
 def parse_id(filename):
     """
-    解析文件名逻辑：
+    Filename parsing logic:
     train-xxx_229.jpg           -> ID: train-xxx_229
     train-xxx_229_aug_noise.jpg -> ID: train-xxx_229
     """
@@ -41,7 +41,7 @@ def get_all_images(root_dir):
     return image_files
 
 def log_result(method, throughput, precision, recall, gpu_mem="0"):
-    """写入 CSV"""
+    """Write one result row to CSV."""
     file_exists = os.path.isfile(RESULT_FILE)
     with open(RESULT_FILE, mode='a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
@@ -74,7 +74,7 @@ def run_benchmark():
     cost = time.time() - start_time
     throughput = len(test_files) / cost
     
-    # 统计 Recall
+    # Compute recall.
     id_counts = defaultdict(int)
     for f in test_files:
         fid = parse_id(os.path.basename(f))
@@ -103,12 +103,12 @@ def run_benchmark():
     cost = time.time() - start_time
     throughput = len(test_files) / cost
     
-    # 两两比对
+    # Pairwise comparison.
     paths = list(phash_dict.keys())
     hashes = list(phash_dict.values())
     n = len(paths)
     
-    # 重新计算有效 GT
+    # Recompute valid ground truth.
     sub_ids = [parse_id(os.path.basename(p)) for p in paths]
     from collections import Counter
     cnt = Counter(sub_ids)

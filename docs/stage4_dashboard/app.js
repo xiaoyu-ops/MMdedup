@@ -491,7 +491,7 @@ function renderExports(exports) {
   root.innerHTML = "";
   exports.forEach((entry) => {
     const node = el("a", "export-card");
-    node.href = viewUrl(entry.href, entry.title);
+    node.href = entry.href.startsWith("data/") ? viewUrl(entry.href, entry.title) : entry.href;
     node.target = "_blank";
     node.rel = "noopener";
     node.append(el("strong", "", entry.title));

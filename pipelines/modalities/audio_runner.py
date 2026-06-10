@@ -74,7 +74,7 @@ def main() -> None:
 
     stats["missing"] = len(result.missing) + copy_stats.get("missing", 0)
 
-    # 计算输入集合的字节总量（用于上报吞吐），以 bytes 为单位
+    # Compute total input bytes for throughput reporting.
     try:
         processed_bytes = 0
         for p in paths:

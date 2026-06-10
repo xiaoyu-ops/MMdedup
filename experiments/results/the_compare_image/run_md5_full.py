@@ -4,23 +4,23 @@ import json
 from multiprocessing import Pool, cpu_count
 from tqdm import tqdm
 
-# ================= 配置区域 =================
+# ================= Configuration =================
 IMAGE_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\imagenet_bloated"
 OUTPUT_JSON = r"D:\Deduplication_framework\2026_new_experiment\result\md5_keep_list.json"
 # ============================================
 
 def get_md5_worker(file_path):
-    """单独的 Worker 函数，计算单个文件的 MD5"""
+    """Worker function that computes MD5 for one file."""
     try:
         with open(file_path, "rb") as f:
             file_hash = hashlib.md5(f.read()).hexdigest()
         return file_hash, file_path
     except Exception:
-        # 如果读取出错（如文件损坏），返回 None
+        # Return None on read errors such as corrupted files.
         return None
 
 def main():
-    # 确保输出目录存在
+    # Ensure the output directory exists.
     os.makedirs(os.path.dirname(OUTPUT_JSON), exist_ok=True)
     
     if not os.path.exists(IMAGE_DIR):
@@ -40,14 +40,14 @@ def main():
     seen = set()
     keep = []
     
-    # 根据 CPU 核心数设定进程数，保留两个核心给系统
+    # Set process count from CPU cores, leaving two cores for the system.
     num_processes = max(1, cpu_count() - 2)
     print(f"启动 {num_processes} 个进程进行 MD5 计算...")
 
-    # 使用 Pool 进行多进程处理
-    # chunksize 设置大一点可以减少进程间通信开销
+    # Use Pool for multiprocessing.
+    # A larger chunksize reduces inter-process communication overhead.
     with Pool(processes=num_processes) as pool:
-        # imap_unordered 会乱序返回结果，但因为我们需要全部处理，顺序不重要且能更快且实时显示进度
+        # imap_unordered returns out of order, which is fine and enables live progress.
         results = list(tqdm(pool.imap_unordered(get_md5_worker, files, chunksize=100), total=total_files, desc="Calculating MD5"))
 
     print("正在进行去重筛选...")

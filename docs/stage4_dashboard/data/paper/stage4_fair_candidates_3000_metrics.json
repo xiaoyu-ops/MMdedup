@@ -1,0 +1,44 @@
+{
+  "experiment_id": "exp_stage4_fair_score_stratified_candidates_3000_20260523",
+  "source_candidates": 500000,
+  "excluded_candidates": 1000,
+  "eligible_candidates": 499000,
+  "target_size": 3000,
+  "sampled_rows": 3000,
+  "populated_buckets": 37,
+  "sampled_buckets": 37,
+  "image_bins": [
+    -1.0,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.01
+  ],
+  "text_bins": [
+    -1.0,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.01
+  ],
+  "joint_bins": [
+    -1.0,
+    0.3,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.01
+  ],
+  "seed": 42,
+  "elapsed_seconds": 1.931894063949585,
+  "outputs": {
+    "candidates": "experiments/results/plan_b_stage4/exp_stage4_fair_score_stratified_candidates_3000_20260523/fair_eval_candidates_3000.csv",
+    "bucket_coverage": "experiments/results/plan_b_stage4/exp_stage4_fair_score_stratified_candidates_3000_20260523/bucket_coverage.csv"
+  }
+}

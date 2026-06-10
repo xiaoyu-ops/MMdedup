@@ -517,31 +517,31 @@ def main() -> None:
         {
             "name": "image_only",
             "label": "Image Dedup Only",
-            "sorter": False,   # 建议保持 True，sorter 通常负责整理文件清单(manifest)
-            "image": True,    # 开启图像去重
-            "audio": False,   # 关闭音频去重
-            "text": False,    # 关闭文本去重
-            "near": True,     # True 表示使用近似去重 (CLIP + SemDedup)，False 则退化为 MD5/精确去重
+            "sorter": False,   # Usually keep True because the sorter prepares manifests.
+            "image": True,    # Enable image deduplication.
+            "audio": False,   # Disable audio deduplication.
+            "text": False,    # Disable text deduplication.
+            "near": True,     # True uses near-deduplication; False falls back to MD5/exact deduplication.
             "notes": "Only image dedup enabled",
         },
         {
             "name": "audio_only",
             "label": "Audio Dedup Only",
-            "sorter": False,   # 建议保持 True，sorter 通常负责整理文件清单(manifest)
-            "image": False,    # 关闭图像去重
-            "audio": True,    # 开启音频去重
-            "text": False,    # 关闭文本去重
-            "near": True,     # True 表示使用近似去重 (CLIP + SemDedup)，False 则退化为 MD5/精确去重
+            "sorter": False,   # Usually keep True because the sorter prepares manifests.
+            "image": False,    # Disable image deduplication.
+            "audio": True,    # Enable audio deduplication.
+            "text": False,    # Disable text deduplication.
+            "near": True,     # True uses near-deduplication; False falls back to MD5/exact deduplication.
             "notes": "Only audio dedup enabled",
         },
         {
             "name": "text_only",
             "label": "Text Dedup Only",
-            "sorter": False,   # 建议保持 True，sorter 通常负责整理文件清单(manifest)
-            "image": False,    # 关闭图像去重
-            "audio": False,   # 关闭音频去重
-            "text": True,    # 开启文本去重
-            "near": True,     # True 表示使用近似去重 (CLIP + SemDedup)，False 则退化为 MD5/精确去重
+            "sorter": False,   # Usually keep True because the sorter prepares manifests.
+            "image": False,    # Disable image deduplication.
+            "audio": False,   # Disable audio deduplication.
+            "text": True,    # Enable text deduplication.
+            "near": True,     # True uses near-deduplication; False falls back to MD5/exact deduplication.
             "notes": "Only text dedup enabled",
         },                      
     ]

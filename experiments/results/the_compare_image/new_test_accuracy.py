@@ -27,7 +27,7 @@ def safe_collate(batch):
         return None
     return default_collate(batch)
 
-# ================= 1. 实验配置 =================
+# ================= 1. Experiment configuration =================
 RAW_DATA_ROOT = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\imagenet_bloated\train"
 JSON_RESULT_DIR = r"D:\Deduplication_framework\2026_new_experiment\result" 
 
@@ -40,7 +40,7 @@ METHODS_TO_COMPARE = [
     ("Ours (Pipeline)", "our_pipeline_keep_list.json") 
 ]
 
-# 【修改点 1】: 调低 BATCH_SIZE 防止 OOM，如果你的显存>24G，可以改回 256/512
+# Change 1: lower BATCH_SIZE to avoid OOM; use 256/512 again if VRAM is above 24 GB.
 BATCH_SIZE = 256
 EPOCHS = 4
 
@@ -51,23 +51,23 @@ SPLIT_SEED = 42
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 CACHE_FILENAME = "cached_no_dedup_list.json"
 
-# 【修改点 2】: 动态设置 num_workers，防止 Windows 进程死锁
+# Change 2: choose num_workers dynamically to avoid Windows process deadlocks.
 NUM_WORKERS = min(8, os.cpu_count() // 2) if os.name == 'nt' else 8
 
-# 加速设置
+# Acceleration settings.
 torch.backends.cudnn.benchmark = True
 
-# WebDataset 设置 (目前强制关闭，以保证 JSON Keep-List 逻辑正常运行)
+# WebDataset settings; currently forced off so JSON keep-list logic works normally.
 USE_WDS = False
 WDS_ROOT = r"D:\Deduplication_framework_wds_shards"
 # ===============================================
 
-# ================= 2. 核心辅助函数 =================
+# ================= 2. Core helper functions =================
 def is_validation_sample(filepath: str) -> bool:
     """
-    【修改点 3】：确定性划分考卷。
-    使用 '父文件夹名/文件名' 组合计算 MD5 哈希，确保在不同电脑/不同路径下，
-    同一张图片始终被划分为同一个集合（训练或验证）。
+    Change 3: deterministically assign validation samples.
+    Compute an MD5 hash from the 'parent-folder/file-name' pair so the same
+    image is always assigned to the same split across machines and root paths.
     """
     if not isinstance(filepath, str):
         return False
@@ -76,7 +76,7 @@ def is_validation_sample(filepath: str) -> bool:
     return int(h[:8], 16) % 100 < int(VAL_SPLIT * 100)
 
 def load_image_paths(root_dir, json_file=None):
-    """统一的路径加载器，负责读取 JSON 或扫描目录"""
+    """Load image paths from a JSON keep-list or by scanning a directory."""
     paths = []
     if json_file:
         full_json_path = os.path.join(JSON_RESULT_DIR, json_file)
@@ -105,20 +105,20 @@ def load_image_paths(root_dir, json_file=None):
 # ===============================================
 
 class DedupJsonDataset(Dataset):
-    """【修改点 4】：Dataset 现只负责读取传入的 path list，不再内部做切分逻辑"""
+    """Dataset only reads the given path list; split logic is handled outside."""
     def __init__(self, image_paths, transform=None):
         self.image_paths = image_paths
         self.transform = transform
 
     def _extract_label(self, filepath):
-        # 正确标签来自父目录名（0-999）
+        # The correct label comes from the parent directory name (0-999).
         try:
             parent = os.path.basename(os.path.dirname(filepath))
             if parent.isdigit():
                 return int(parent)
         except:
             pass
-        # 兜底：兼容旧的文件名规则
+        # Fallback: support the old filename convention.
         try:
             filename = os.path.basename(filepath)
             match = re.search(r'_(\d+)(?:_aug|\.)', filename)
@@ -146,32 +146,32 @@ def run_training(method_name, json_file, raw_all_paths):
     print(f"START TRAINING: {method_name} (UNFROZEN / FINE-TUNING)")
     print("="*50)
 
-    # 【修改点 5】: 拆分 Train 和 Val 的数据增强 (Data Augmentation)
+    # Change 5: use separate data augmentation for train and validation splits.
     train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),       # 训练期：随机裁剪
-        transforms.RandomHorizontalFlip(),       # 训练期：随机翻转
+        transforms.RandomResizedCrop(224),       # Train: random crop.
+        transforms.RandomHorizontalFlip(),       # Train: random horizontal flip.
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
     val_transform = transforms.Compose([
-        transforms.Resize(256),                  # 验证期：先缩放到256
-        transforms.CenterCrop(224),              # 验证期：再中心裁剪224
+        transforms.Resize(256),                  # Validation: resize to 256 first.
+        transforms.CenterCrop(224),              # Validation: center crop to 224.
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-    # 1. 获取当前方法的图片列表
+    # 1. Get the image list for the current method.
     current_method_paths = load_image_paths(RAW_DATA_ROOT, json_file)
     if not current_method_paths:
         return None
 
     dataset_size = len(current_method_paths)
 
-    # 2. 严格的数据划分 (核心修复点)
-    # 训练集：当前方法的 keep_list 中，扣除掉属于验证集的部分
+    # 2. Strict data split (core fix).
+    # Train set: use the current method's keep-list after removing validation samples.
     train_paths = [p for p in current_method_paths if not is_validation_sample(p)]
-    # 验证集：必须从最原始的全量数据 (raw_all_paths) 中提取，保证所有方法考同一套考卷！
+    # Validation set: draw from the raw full data so all methods use the same exam set.
     val_paths = [p for p in raw_all_paths if is_validation_sample(p)]
 
     print(f"   [Data] Total Keep-List: {dataset_size}")
@@ -237,7 +237,7 @@ def run_training(method_name, json_file, raw_all_paths):
             acc = 100 * correct / total
             pbar.set_postfix({"Loss": f"{loss.item():.4f}", "Acc": f"{acc:.2f}%"})
 
-        # 验证
+        # Validate.
         if val_loader is not None and len(val_dataset) > 0:
             model.eval()
             val_correct = 0
@@ -277,7 +277,7 @@ if __name__ == "__main__":
     results = []
     print(f"Device: {DEVICE} | Batch: {BATCH_SIZE} | Workers: {NUM_WORKERS} | LR: {LR} | Mode: Unfrozen")
     
-    # 【修改点 6】：在主循环开始前，统一加载一次最原始的全量数据池，用于抽取固定验证集
+    # Change 6: load the raw full data pool once before the main loop for a fixed validation set.
     print("\n--- Initializing Fixed Validation Pool ---")
     raw_all_paths = load_image_paths(RAW_DATA_ROOT, json_file=None)
     print(f"Total raw dataset size: {len(raw_all_paths)}")
@@ -299,7 +299,7 @@ if __name__ == "__main__":
                 "Best Val": f"{best_val:.2f}%" if best_val else ""
             })
 
-            # 实时保存，防止中断
+            # Save incrementally to tolerate interruptions.
             try:
                 with open("final_ours_full_run.csv", 'w', newline='', encoding='utf-8') as f:
                     writer = csv.DictWriter(f, fieldnames=["Method", "Size", "Time(s)", "Train Acc", "Best Val"])

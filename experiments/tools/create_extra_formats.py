@@ -17,7 +17,7 @@ def ensure_dir() -> Path:
 
 def write_text_files(base: Path) -> None:
     (base / "notes_markdown.md").write_text(
-        "# Mixed Data Note\n\n- 包含多种文件格式，用于测试 sorter\n- 覆盖文本/音频/图像等\n",
+        "# Mixed Data Note\n\n- Contains multiple file formats for sorter testing\n- Covers text, audio, image, and related formats\n",
         encoding="utf-8",
     )
     (base / "sample_page.html").write_text(

@@ -10,7 +10,7 @@ from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score
 
-# ================= 配置区域 =================
+# ================= Configuration =================
 RAW_DATA_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\digital_swamp_text"
 DEDUP_DIR = r"D:\Deduplication_framework_text_deduped"
 TEXT_COLUMN = "content"
@@ -23,11 +23,11 @@ VAL_RATIO = 0.2
 SPLIT_SEED = 42
 OUTPUT_CSV = r"D:\Deduplication_framework\2026_new_experiment\result_text\text_training_results.csv"
 
-# 强制限制文件数量（必须与去重阶段保持一致！）
-# 设为 10 以匹配你之前的去重脚本
+# Force the file count limit to match the deduplication stage.
+# Set to 10 to match the earlier deduplication script.
 MAX_RAW_FILES = 10 
 
-# 如果明确知道类别，比如 [0, 1]，填在这里可以跳过扫描
+# If the class set is known, e.g. [0, 1], set it here to skip scanning.
 KNOWN_CLASSES = None 
 
 METHODS = [
@@ -40,8 +40,8 @@ METHODS = [
 # ===========================================
 
 def iter_raw_files() -> List[str]:
-    # 【关键修改】这里增加了切片 [:MAX_RAW_FILES]
-    # 确保只读取前 10 个文件，与去重阶段的数据源保持绝对一致
+    # Critical fix: add the [:MAX_RAW_FILES] slice.
+    # This ensures we read the same first files as the deduplication stage.
     all_files = sorted(glob.glob(os.path.join(RAW_DATA_DIR, "part_*.csv")))
     if MAX_RAW_FILES and len(all_files) > MAX_RAW_FILES:
         print(f"[Info] Limiting raw files to first {MAX_RAW_FILES} (out of {len(all_files)})")
@@ -49,7 +49,7 @@ def iter_raw_files() -> List[str]:
     return all_files
 
 def get_file_iterator(file_path: str, chunk_size=CHUNK_SIZE) -> Iterable[pd.DataFrame]:
-    """通用的文件读取生成器"""
+    """Generic file reader generator."""
     try:
         reader = pd.read_csv(
             file_path,
@@ -64,7 +64,7 @@ def get_file_iterator(file_path: str, chunk_size=CHUNK_SIZE) -> Iterable[pd.Data
         print(f"[WARN] Failed to read {file_path}: {e}")
 
 def iter_dataset(files: List[str] | str) -> Iterable[pd.DataFrame]:
-    """统一接口：处理单个文件路径或文件列表"""
+    """Unified interface for a single file path or a file list."""
     if isinstance(files, str):
         files = [files]
     
@@ -76,23 +76,23 @@ def iter_dataset(files: List[str] | str) -> Iterable[pd.DataFrame]:
 
 def is_validation_sample(text: str) -> bool:
     """
-    确定性划分：基于内容的Hash。
+    Deterministic split based on a content hash.
     """
     if not isinstance(text, str):
         return False
     h = hashlib.md5((str(text) + str(SPLIT_SEED)).encode("utf-8")).hexdigest()
-    # 前8位16进制转整数，模100，小于20则为验证集
+    # Convert the first 8 hex digits to an integer; modulo 100 below 20 means validation.
     return int(h[:8], 16) % 100 < int(VAL_RATIO * 100)
 
 def collect_label_set(files: List[str]) -> List[int]:
-    """扫描所有数据以获取完整标签集"""
+    """Scan data to obtain the complete label set."""
     if KNOWN_CLASSES is not None:
         return KNOWN_CLASSES
         
     print("Scannng for labels (limit 10 chunks)...")
     labels = set()
     chunks_scanned = 0
-    # 仅扫描原始数据即可
+    # Scanning raw data is enough.
     for chunk in iter_dataset(files):
         labels.update(chunk[LABEL_COLUMN].dropna().unique().tolist())
         chunks_scanned += 1
@@ -109,7 +109,7 @@ def collect_label_set(files: List[str]) -> List[int]:
 
 def evaluate_on_fixed_val_set(clf, vectorizer, raw_files):
     """
-    始终在 Raw Data 的 Validation Split 上进行评估。
+    Always evaluate on the validation split from raw data.
     """
     y_true = []
     y_pred = []
@@ -117,14 +117,14 @@ def evaluate_on_fixed_val_set(clf, vectorizer, raw_files):
     print("  [Eval] Starting evaluation loop...", end="\r")
     chunk_count = 0
     
-    # 这里我们只读取 Raw Data (也是被限制过的 10 个文件)
+    # Read raw data only; it is also limited to the configured first files.
     for chunk in iter_dataset(raw_files):
         chunk = chunk.dropna(subset=[TEXT_COLUMN, LABEL_COLUMN])
         if chunk.empty: continue
         
-        # 计算掩码：找出验证集数据
+        # Compute the mask for validation samples.
         mask = chunk[TEXT_COLUMN].apply(is_validation_sample)
-        val_df = chunk[mask] # 只取验证集部分
+        val_df = chunk[mask] # Keep validation rows only.
         
         if val_df.empty: continue
 
@@ -156,7 +156,7 @@ def train_routine(method_name: str, train_source: str | List[str], raw_files: Li
         print(f"  Epoch {epoch+1}/{EPOCHS} started...")
         data_iter = iter_dataset(train_source)
         
-        # 进度监控变量
+        # Progress monitoring variables.
         chunk_idx = 0
         epoch_start_time = time.time()
 
@@ -164,9 +164,9 @@ def train_routine(method_name: str, train_source: str | List[str], raw_files: Li
             chunk = chunk.dropna(subset=[TEXT_COLUMN, LABEL_COLUMN])
             if chunk.empty: continue
 
-            # 防止数据泄露
+            # Prevent data leakage.
             is_val = chunk[TEXT_COLUMN].apply(is_validation_sample)
-            train_df = chunk[~is_val] # 取【非】验证集部分
+            train_df = chunk[~is_val] # Keep non-validation rows only.
 
             if train_df.empty: continue
 
@@ -176,9 +176,9 @@ def train_routine(method_name: str, train_source: str | List[str], raw_files: Li
             clf.partial_fit(X_train, y_train, classes=classes)
             train_count += len(train_df)
             
-            # 打印进度
+            # Print progress.
             chunk_idx += 1
-            if chunk_idx % 5 == 0: # 每5个chunk打印一次
+            if chunk_idx % 5 == 0: # Print every 5 chunks.
                 elapsed = time.time() - epoch_start_time
                 speed = train_count / elapsed if elapsed > 0 else 0
                 print(f"    [Epoch {epoch+1}] Chunk {chunk_idx}: Processed {train_count} total samples... ({int(speed)} rows/sec)")
@@ -194,7 +194,7 @@ def train_routine(method_name: str, train_source: str | List[str], raw_files: Li
 def main():
     os.makedirs(os.path.dirname(OUTPUT_CSV), exist_ok=True)
     
-    # 获取原始文件列表（已被截断为前10个）
+    # Get the raw file list, already truncated to the first configured files.
     raw_files = iter_raw_files()
     
     if not raw_files:
@@ -223,8 +223,7 @@ def main():
             "Val Acc": f"{val_acc*100:.2f}%",
         })
 
-        # 【新增：实时保存】
-        # 每跑完一个方法就存一次，防止程序崩溃导致前面的结果丢失
+        # Save after each method to preserve earlier results if the run crashes.
         pd.DataFrame(results).to_csv(OUTPUT_CSV, index=False, encoding="utf-8-sig")
         print(f"  [Saved] Intermediate results saved to {OUTPUT_CSV}")
 

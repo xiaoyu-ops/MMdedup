@@ -677,7 +677,7 @@ def _deduplicate_dynamic_clustering(
         print(f"[image pipeline] running MiniBatchKMeans on {len(paths)} items...", flush=True)
 
         # n_clusters = max(1, min(len(paths) // 100, 50000))
-        # 优化聚类逻辑: 调整为每 1000 个样本一个簇 (巨大簇策略，以最大化 Recall)
+        # Use coarse clusters of roughly 1,000 samples to favor recall on very large inputs.
         # N // 1000 -> 10k items = 10 clusters only!
         n_clusters = max(1, min(len(paths) // 1000, 50000))
         

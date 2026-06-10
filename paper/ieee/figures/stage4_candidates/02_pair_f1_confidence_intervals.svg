@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560">
+<rect width="100%" height="100%" fill="white"/>
+<text x="540.00" y="34.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="22" font-weight="700" fill="#1f2933">Pair-Level F1 with 95% CI</text>
+<text x="540.00" y="58.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="14" font-weight="400" fill="#52616f">Joint matching separates itself from modality-wise baselines</text>
+<line x1="90.00" y1="468.00" x2="870.00" y2="468.00" stroke="#d8dee9" stroke-width="1"/>
+<text x="80.00" y="473.00" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.0</text>
+<line x1="90.00" y1="359.43" x2="870.00" y2="359.43" stroke="#d8dee9" stroke-width="1"/>
+<text x="80.00" y="364.43" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.2</text>
+<line x1="90.00" y1="250.86" x2="870.00" y2="250.86" stroke="#d8dee9" stroke-width="1"/>
+<text x="80.00" y="255.86" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.4</text>
+<line x1="90.00" y1="142.29" x2="870.00" y2="142.29" stroke="#d8dee9" stroke-width="1"/>
+<text x="80.00" y="147.29" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="13" font-weight="400" fill="#1f2933">0.6</text>
+<line x1="90.00" y1="468.00" x2="870.00" y2="468.00" stroke="#1f2933" stroke-width="1.2"/>
+<line x1="90.00" y1="88.00" x2="90.00" y2="468.00" stroke="#1f2933" stroke-width="1.2"/>
+<text x="35.00" y="278.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="16" font-weight="400" fill="#1f2933" transform="rotate(-90.0 35.00 278.00)">F1</text>
+<rect x="141.00" y="287.42" width="54.00" height="180.58" rx="0" fill="#8d99ae" stroke="#1f2933" stroke-width="0.8" opacity="0.88"/>
+<line x1="168.00" y1="302.34" x2="168.00" y2="272.62" stroke="#1f2933" stroke-width="2"/>
+<line x1="156.00" y1="302.34" x2="180.00" y2="302.34" stroke="#1f2933" stroke-width="2"/>
+<line x1="156.00" y1="272.62" x2="180.00" y2="272.62" stroke="#1f2933" stroke-width="2"/>
+<text x="168.00" y="277.42" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="14" font-weight="700" fill="#1f2933">0.333</text>
+<text x="168.00" y="496.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" font-weight="400" fill="#1f2933" transform="rotate(-20.0 168.00 496.00)">Image</text>
+<rect x="297.00" y="316.78" width="54.00" height="151.22" rx="0" fill="#b7a99a" stroke="#1f2933" stroke-width="0.8" opacity="0.88"/>
+<line x1="324.00" y1="337.28" x2="324.00" y2="296.26" stroke="#1f2933" stroke-width="2"/>
+<line x1="312.00" y1="337.28" x2="336.00" y2="337.28" stroke="#1f2933" stroke-width="2"/>
+<line x1="312.00" y1="296.26" x2="336.00" y2="296.26" stroke="#1f2933" stroke-width="2"/>
+<text x="324.00" y="306.78" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="14" font-weight="700" fill="#1f2933">0.279</text>
+<text x="324.00" y="496.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" font-weight="400" fill="#1f2933" transform="rotate(-20.0 324.00 496.00)">Text</text>
+<rect x="453.00" y="293.43" width="54.00" height="174.57" rx="0" fill="#8d99ae" stroke="#1f2933" stroke-width="0.8" opacity="0.88"/>
+<line x1="480.00" y1="306.83" x2="480.00" y2="279.91" stroke="#1f2933" stroke-width="2"/>
+<line x1="468.00" y1="306.83" x2="492.00" y2="306.83" stroke="#1f2933" stroke-width="2"/>
+<line x1="468.00" y1="279.91" x2="492.00" y2="279.91" stroke="#1f2933" stroke-width="2"/>
+<text x="480.00" y="283.43" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="14" font-weight="700" fill="#1f2933">0.322</text>
+<text x="480.00" y="496.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" font-weight="400" fill="#1f2933" transform="rotate(-20.0 480.00 496.00)">Union</text>
+<rect x="609.00" y="133.77" width="54.00" height="334.23" rx="0" fill="#1f4e79" stroke="#1f2933" stroke-width="0.8" opacity="0.88"/>
+<line x1="636.00" y1="153.24" x2="636.00" y2="115.01" stroke="#1f2933" stroke-width="2"/>
+<line x1="624.00" y1="153.24" x2="648.00" y2="153.24" stroke="#1f2933" stroke-width="2"/>
+<line x1="624.00" y1="115.01" x2="648.00" y2="115.01" stroke="#1f2933" stroke-width="2"/>
+<text x="636.00" y="123.77" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="14" font-weight="700" fill="#1f2933">0.616</text>
+<text x="636.00" y="496.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" font-weight="400" fill="#1f2933" transform="rotate(-20.0 636.00 496.00)">Joint</text>
+<rect x="765.00" y="174.44" width="54.00" height="293.56" rx="0" fill="#8d99ae" stroke="#1f2933" stroke-width="0.8" opacity="0.88"/>
+<line x1="792.00" y1="198.13" x2="792.00" y2="151.15" stroke="#1f2933" stroke-width="2"/>
+<line x1="780.00" y1="198.13" x2="804.00" y2="198.13" stroke="#1f2933" stroke-width="2"/>
+<line x1="780.00" y1="151.15" x2="804.00" y2="151.15" stroke="#1f2933" stroke-width="2"/>
+<text x="792.00" y="164.44" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="14" font-weight="700" fill="#1f2933">0.541</text>
+<text x="792.00" y="496.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" font-weight="400" fill="#1f2933" transform="rotate(-20.0 792.00 496.00)">Cons.</text>
+</svg>

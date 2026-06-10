@@ -10,39 +10,39 @@ import json
 
 def create_binary_spectrogram(audio_file, output_file=None, show_plot=False):
     """
-    从音频文件生成二值化频谱图指纹
+    Generate a binarized spectrogram fingerprint from an audio file.
     
-    参数:
-        audio_file: 输入音频文件路径
-        output_file: 输出图像路径(可选)
+    Args:
+        audio_file: Input audio file path.
+        output_file: Optional output image path.
     
-    返回:
-        二值化频谱图数组
+    Returns:
+        Binarized spectrogram array.
     """
-    # 加载音频文件
+    # Load the audio file.
     y, sr = librosa.load(audio_file, sr=None)
     
-    # 计算STFT (短时傅里叶变换)
+    # Compute the STFT.
     D = librosa.stft(y, n_fft=2048, hop_length=64)
     
-    # 将复数STFT转换为幅度谱
+    # Convert the complex STFT to a magnitude spectrum.
     magnitude = np.abs(D)
     
-    # 取对数以突出较弱信号
+    # Use the log scale to emphasize weaker signals.
     log_magnitude = librosa.amplitude_to_db(magnitude, ref=np.max)
     
-    # 翻转频率轴使低频在底部
+    # Flip the frequency axis so low frequencies are at the bottom.
     log_magnitude = np.flipud(log_magnitude)
     
-    # 应用阈值处理 - 只保留高能量区域
+    # Apply thresholding and keep only high-energy regions.
     threshold = threshold_otsu(log_magnitude)
-    binary_spectrogram = log_magnitude > (threshold + 6)  # 增加阈值以减少白点
+    binary_spectrogram = log_magnitude > (threshold + 6)  # Raise the threshold to reduce white speckles.
     
-    # 调整图像大小为128x32
+    # Resize to 128x32.
     binary_spectrogram_resized = resize(binary_spectrogram, (32, 128), 
                                          anti_aliasing=False, preserve_range=True).astype(bool)
     
-    # 将布尔值转换为0和1
+    # Convert booleans to 0/1 values.
     binary_spectrogram_resized = binary_spectrogram_resized.astype(np.uint8)
     frequencyPeaks = np.reshape(binary_spectrogram_resized, (4096,))
     # Log in English to avoid encoding issues on Windows consoles
@@ -52,13 +52,13 @@ def create_binary_spectrogram(audio_file, output_file=None, show_plot=False):
 
 def process_wav_files(audio_dir, output_file="audio/binary_array_dict.npy"):
     """
-    处理指定目录下的所有WAV文件
+    Process all WAV files under the given directory.
     
-    参数:
-        audio_dir: 包含WAV文件的目录路径
-        output_file: 输出的numpy文件名
+    Args:
+        audio_dir: Directory containing WAV files.
+        output_file: Output NumPy file path.
     """
-    # 查找所有WAV文件
+    # Find all WAV files.
     wav_files = glob.glob(os.path.join(audio_dir, "*.wav"))
     
     if not wav_files:
@@ -69,15 +69,15 @@ def process_wav_files(audio_dir, output_file="audio/binary_array_dict.npy"):
     
     binary_array_dict = {}
     
-    for index, wav_file in enumerate(tqdm(wav_files, desc="处理WAV文件")):
+    for index, wav_file in enumerate(tqdm(wav_files, desc="Processing WAV files")):
         try:
-            # 直接处理WAV文件，无需临时文件
+            # Process the WAV file directly without a temporary file.
             binary_spec = create_binary_spectrogram(wav_file, output_file=None, show_plot=False)
             
-            # 使用文件名作为键，或者使用索引
+            # Use the filename as the key.
             filename = os.path.basename(wav_file)
             binary_array_dict[filename] = binary_spec
-            # 或者使用索引: binary_array_dict[index] = binary_spec
+            # Alternative index key: binary_array_dict[index] = binary_spec
             
         except Exception as e:
             print(f"Failed to process file {wav_file}: {e}")
@@ -92,7 +92,7 @@ def process_wav_files(audio_dir, output_file="audio/binary_array_dict.npy"):
     return binary_array_dict
 
 def load_config_json(config_path):
-    """从 JSON 配置文件加载配置，出错时返回 None"""
+    """Load a JSON config file and return None on errors."""
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -107,11 +107,11 @@ if __name__ == "__main__":
 
     config_path = r"D:\Deduplication_framework\audio\method\audio_config.json"
     data = load_config_json(config_path)
-    # 指定包含WAV文件的目录
+    # Directory containing WAV files.
     audio_directory = data.get("paths", {}).get("dataset_dir", "./audio/dataset")
-    #audio_directory = "./audio/dataset"  # 修改为你的WAV文件目录
+    # audio_directory = "./audio/dataset"  # Replace with your WAV directory.
     
-    # 处理WAV文件
+    # Process WAV files.
     result = process_wav_files(audio_directory)
     
     if result:

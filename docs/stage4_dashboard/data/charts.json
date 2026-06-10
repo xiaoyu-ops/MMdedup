@@ -20,13 +20,13 @@
     },
     {
       "label": "人工标注目标",
-      "value": 1000,
+      "value": 3000,
       "unit": "pair-pairs",
       "note": "当前主标注表规模"
     },
     {
       "label": "已完成标注",
-      "value": 1000,
+      "value": 3000,
       "unit": "pair-pairs",
       "note": "来自 annotation_sheet_labeled.csv"
     }
@@ -35,17 +35,17 @@
     {
       "label": "重复",
       "key": "duplicate",
-      "value": 58
+      "value": 9
     },
     {
       "label": "近重复",
       "key": "near-duplicate",
-      "value": 237
+      "value": 453
     },
     {
       "label": "非重复",
       "key": "not-duplicate",
-      "value": 705
+      "value": 2538
     },
     {
       "label": "未标注",
@@ -76,12 +76,12 @@
     },
     {
       "label": "Stage 4 主评价",
-      "value": 90,
-      "status": "active"
+      "value": 100,
+      "status": "done"
     },
     {
       "label": "LLaVA 下游验证",
-      "value": 75,
+      "value": 65,
       "status": "active"
     }
   ],
@@ -123,10 +123,10 @@
       "note": "joint_fp=193; joint_fn=94; image_fp=115; image_fn=108; image_correct_joint_wrong=142; joint_correct_image_wrong=78; joint_fp_caption_equal_rate=0.425"
     },
     {
-      "label": "exp_stage4_training_manifests_200k_20260520",
-      "value": 0.39,
+      "label": "exp_stage4_training_manifests_200k_fair_op_v2_20260528",
+      "value": 0.32,
       "unit": "minutes",
-      "note": "A kept=200000; B kept=171997 rate=0.140; C kept=104395 rate=0.478; D kept=101752 rate=0.491; E kept=177957 rate=0.110"
+      "note": "A kept=200000; B kept=177796 rate=0.111; C kept=170783 rate=0.146; D kept=155127 rate=0.224; E kept=190744 rate=0.046; E rule=image>=0.85 AND text>=0.85; strict_duplicate_if_both>=0.95"
     },
     {
       "label": "exp_llava_stage4_real_train_smoke_E_20260520",
@@ -192,33 +192,27 @@
   "stage4_eval_best_f1": [
     {
       "label": "Image-only",
-      "value": 0.626,
+      "value": 0.333,
       "unit": "F1",
-      "note": "threshold=0.8; P=0.619; R=0.634"
+      "note": "rule=image>=0.85; P=0.218; R=0.701"
     },
     {
       "label": "Text-only",
-      "value": 0.456,
+      "value": 0.279,
       "unit": "F1",
-      "note": "threshold=0.6; P=0.295; R=1.000"
+      "note": "rule=text>=0.95; P=0.280; R=0.277"
     },
     {
       "label": "Naive union",
-      "value": 0.456,
+      "value": 0.322,
       "unit": "F1",
-      "note": "threshold=0.6; P=0.295; R=1.000"
+      "note": "rule=image>=0.85 OR text>=0.95; P=0.201; R=0.799"
     },
     {
-      "label": "Stage 4 joint",
-      "value": 0.583,
+      "label": "Stage 4 conservative",
+      "value": 0.541,
       "unit": "F1",
-      "note": "threshold=0.85; P=0.510; R=0.681"
-    },
-    {
-      "label": "Max score",
-      "value": 0.456,
-      "unit": "F1",
-      "note": "threshold=0.6; P=0.295; R=1.000"
+      "note": "rule=image>=0.85 AND text>=0.85; P=0.726; R=0.431"
     }
   ],
   "stage4_abcde_split_sizes": [
@@ -230,27 +224,27 @@
     },
     {
       "label": "B image_only",
-      "value": 171997,
+      "value": 177796,
       "unit": "kept pairs",
-      "note": "dropped=28,003; rate=0.140; image>=0.8"
+      "note": "dropped=22,204; rate=0.111; image>=0.85"
     },
     {
       "label": "C text_only",
-      "value": 104395,
+      "value": 170783,
       "unit": "kept pairs",
-      "note": "dropped=95,605; rate=0.478; text>=0.6"
+      "note": "dropped=29,217; rate=0.146; text>=0.95"
     },
     {
       "label": "D naive_union",
-      "value": 101752,
+      "value": 155127,
       "unit": "kept pairs",
-      "note": "dropped=98,248; rate=0.491; image>=0.8 OR text>=0.6"
+      "note": "dropped=44,873; rate=0.224; image>=0.85 OR text>=0.95"
     },
     {
-      "label": "E stage4_joint",
-      "value": 177957,
+      "label": "E stage4_score_assisted",
+      "value": 190744,
       "unit": "kept pairs",
-      "note": "dropped=22,043; rate=0.110; joint>=0.85"
+      "note": "dropped=9,256; rate=0.046; image>=0.85 AND text>=0.85; strict_duplicate_if_both>=0.95"
     }
   ],
   "threshold_dedup_rates": [
@@ -513,39 +507,71 @@
   ],
   "llava_formal_train25k": [
     {
-      "label": "A raw",
+      "label": "E Stage 4 score-assisted v2",
       "value": 100.0,
       "unit": "progress percent",
       "status": "trained",
-      "note": "trained; loss=4.2365; exit=0"
+      "note": "trained; loss=1.1180"
+    },
+    {
+      "label": "D naive union v2",
+      "value": 65.5,
+      "unit": "progress percent",
+      "status": "running",
+      "note": "running; latest_loss=3.2906"
+    },
+    {
+      "label": "A raw v2",
+      "value": 0.0,
+      "unit": "progress percent",
+      "status": "pending",
+      "note": "pending"
+    },
+    {
+      "label": "B image-only v2",
+      "value": 0.0,
+      "unit": "progress percent",
+      "status": "pending",
+      "note": "pending"
+    },
+    {
+      "label": "C text-only v2",
+      "value": 0.0,
+      "unit": "progress percent",
+      "status": "pending",
+      "note": "pending"
+    }
+  ],
+  "vqav2_quick_eval": [
+    {
+      "label": "A raw",
+      "value": 0.094,
+      "unit": "VQAv2 quick consensus",
+      "note": "exact=0.1020; n=1000; status=complete"
     },
     {
       "label": "B image-only",
-      "value": 100.0,
-      "unit": "progress percent",
-      "status": "trained",
-      "note": "trained; loss=0.4428; exit=0"
+      "value": 0.006,
+      "unit": "VQAv2 quick consensus",
+      "note": "exact=0.0060; n=1000; status=complete"
     },
     {
       "label": "C text-only",
-      "value": 100.0,
-      "unit": "progress percent",
-      "status": "trained",
-      "note": "trained; loss=3.8543; exit=0"
+      "value": 0.0037,
+      "unit": "VQAv2 quick consensus",
+      "note": "exact=0.0040; n=1000; status=complete"
     },
     {
       "label": "D naive union",
-      "value": 100.0,
-      "unit": "progress percent",
-      "status": "trained",
-      "note": "trained; loss=3.5730; exit=0"
+      "value": 0.001,
+      "unit": "VQAv2 quick consensus",
+      "note": "exact=0.0010; n=1000; status=complete"
     },
     {
-      "label": "E Stage 4 joint rerun",
-      "value": 30.5,
-      "unit": "progress percent",
-      "status": "running",
-      "note": "running; latest_loss=1.6779"
+      "label": "E Stage 4 joint",
+      "value": 0.0057,
+      "unit": "VQAv2 quick consensus",
+      "note": "exact=0.0060; n=1000; status=complete"
     }
   ]
 }

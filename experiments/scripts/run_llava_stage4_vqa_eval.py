@@ -353,15 +353,23 @@ def run_generation_eval(args: argparse.Namespace, records: list[EvalRecord]) -> 
     predictions_path = args.output_dir / "predictions.jsonl"
     exact_scores: list[float] = []
     vqa_scores: list[float] = []
+    relaxed_contains_scores: list[float] = []
+    relaxed_vqa_scores: list[float] = []
     with predictions_path.open("w", encoding="utf-8") as handle:
         for idx, record in enumerate(records):
             prediction = generate_answer(args, model, processor, record)
             exact = exact_match_score(prediction, record.answers) if record.answers else None
             vqa = vqa_consensus_score(prediction, record.answers) if record.answers else None
+            relaxed_contains = relaxed_contains_score(prediction, record.answers) if record.answers else None
+            relaxed_vqa = relaxed_vqa_consensus_score(prediction, record.answers) if record.answers else None
             if exact is not None:
                 exact_scores.append(exact)
             if vqa is not None:
                 vqa_scores.append(vqa)
+            if relaxed_contains is not None:
+                relaxed_contains_scores.append(relaxed_contains)
+            if relaxed_vqa is not None:
+                relaxed_vqa_scores.append(relaxed_vqa)
             handle.write(
                 json.dumps(
                     {
@@ -372,6 +380,8 @@ def run_generation_eval(args: argparse.Namespace, records: list[EvalRecord]) -> 
                         "answers": record.answers,
                         "exact_match": exact,
                         "vqa_consensus": vqa,
+                        "relaxed_contains": relaxed_contains,
+                        "relaxed_vqa_consensus": relaxed_vqa,
                     },
                     ensure_ascii=False,
                 )
@@ -385,6 +395,8 @@ def run_generation_eval(args: argparse.Namespace, records: list[EvalRecord]) -> 
         "predictions_jsonl": str(predictions_path),
         "exact_match": mean(exact_scores),
         "vqa_consensus": mean(vqa_scores),
+        "relaxed_contains": mean(relaxed_contains_scores),
+        "relaxed_vqa_consensus": mean(relaxed_vqa_scores),
         "num_scored_records": len(vqa_scores),
         "cuda_available": torch.cuda.is_available(),
         "gpu_name": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
@@ -452,6 +464,24 @@ def vqa_consensus_score(prediction: str, answers: list[str]) -> float:
     normalized_prediction = normalize_answer(prediction)
     matches = sum(1 for answer in answers if normalized_prediction == normalize_answer(answer))
     return min(1.0, matches / 3.0)
+
+
+def relaxed_contains_score(prediction: str, answers: list[str]) -> float:
+    normalized_prediction = normalize_answer(prediction)
+    return 1.0 if any(answer_mentioned(normalized_prediction, answer) for answer in answers) else 0.0
+
+
+def relaxed_vqa_consensus_score(prediction: str, answers: list[str]) -> float:
+    normalized_prediction = normalize_answer(prediction)
+    matches = sum(1 for answer in answers if answer_mentioned(normalized_prediction, answer))
+    return min(1.0, matches / 3.0)
+
+
+def answer_mentioned(normalized_prediction: str, answer: str) -> bool:
+    normalized_answer = normalize_answer(answer)
+    if not normalized_prediction or not normalized_answer:
+        return False
+    return f" {normalized_answer} " in f" {normalized_prediction} "
 
 
 def normalize_answer(value: str) -> str:

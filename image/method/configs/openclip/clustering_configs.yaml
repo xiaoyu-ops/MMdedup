@@ -7,7 +7,7 @@ paths_memory_loc: "D:\\\Deduplication_framework\\embeddings\\image_paths.npy"
 sorted_clusters_file_loc: "image\\clustering\\results\\ncentroids_2000\\sorted_clusters"
 save_folder: "image\\clustering\\results\\ncentroids_2000"
 path_str_dtype: "S256"
-ncentroids: 200 # 如果按39个为一族那么ncentroids应该为2564
+ncentroids: 200 # For 39 samples per cluster, ncentroids would be 2564.
 dataset_size: 10000
 emb_size: 512
 niter: 100

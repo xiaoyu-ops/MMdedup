@@ -27,10 +27,21 @@ def main() -> int:
     else:
         issues.append("missing source or dashboard experiment_ledger.csv")
 
-    if "exp_stage4_error_analysis_1000_200k_high_joint_20260520" in ledger_ids:
+    annotation = status.get("annotation", {})
+    fair_annotation_pending = (
+        annotation.get("experiment_id") == "exp_stage4_fair_annotation_3000_20260523"
+        and int(annotation.get("remaining", 0) or 0) > 0
+    )
+    if "exp_stage4_error_analysis_1000_200k_high_joint_20260520" in ledger_ids and not fair_annotation_pending:
         stage4 = _find_by_name(status.get("phase_progress", []), "Stage 4 主评价")
         if stage4.get("percent", 0) < 90:
             issues.append("Stage 4 主评价 phase percent is stale; expected >=90 after error analysis")
+    if fair_annotation_pending:
+        stage4 = _find_by_name(status.get("phase_progress", []), "Stage 4 主评价")
+        if stage4.get("percent", 100) >= 90:
+            issues.append("Stage 4 主评价 phase percent is too high while fair 3000 labels are pending")
+        if "旧 1000" not in str(stage4.get("detail", "")):
+            issues.append("Stage 4 主评价 phase should explain that old 1000 labels are diagnostic only")
 
     if "exp_llava_stage4_real_train_smoke_E_20260520" in ledger_ids:
         _check_llava_smoke_state(status, issues)

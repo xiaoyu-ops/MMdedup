@@ -7,19 +7,19 @@ import json
 from pathlib import Path
 from tqdm import tqdm
 
-# --- 引入项目根目录以调用真实 Pipeline API ---
+# --- Add the project root to call the real Pipeline API. ---
 PROJECT_ROOT = r"D:\Deduplication_framework"
 sys.path.insert(0, PROJECT_ROOT)
 
-# 动态添加 image 模块的搜索路径，防止相对导入错误
+# Dynamically add image module search paths to avoid relative import errors.
 sys.path.insert(0, os.path.join(PROJECT_ROOT, "image"))
 
 import torch
 import open_clip
 
-# 手动 Patch Pipeline API，防止 import 失败
-# 因为有时候相对导入或环境路径问题，pipeline_api 内部的 try-import 可能会失败
-# 我们在这里强行注入
+# Patch the Pipeline API manually to avoid import failures.
+# Relative imports or environment path issues can make pipeline_api try-import fail.
+# Inject dependencies here explicitly.
 import image.method.pipeline_api as pipeline_api
 pipeline_api.torch = torch
 pipeline_api.open_clip = open_clip
@@ -32,13 +32,13 @@ from image.method.pipeline_api import (
     _run_deduplication
 )
 
-# ================= 配置区域 =================
-# 指向与 benchmark_simclr_updated 相同的数据集
+# ================= Configuration =================
+# Point to the same dataset as benchmark_simclr_updated.
 IMAGE_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\imagenet_bloated"
 
 SAMPLE_SIZE = 10000 
 BATCH_SIZE = 64
-EPS = 0.07 # 对应流水线默认配置
+EPS = 0.07 # Matches the pipeline default config.
 RESULT_FILE = r"D:\Deduplication_framework\2026_new_experiment\result\image_benchmark_results.csv"
 MODEL_NAME = "hf-hub:laion/CLIP-ViT-B-16-laion2B-s34B-b88K"
 # ===========================================
@@ -52,15 +52,15 @@ from image.method.pipeline_api import (
     _run_deduplication
 )
 
-# ================= 配置区域 =================
-# 指向与 benchmark_simclr_updated 相同的数据集
+# ================= Configuration =================
+# Point to the same dataset as benchmark_simclr_updated.
 IMAGE_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\imagenet_bloated"
 
 SAMPLE_SIZE = 10000 
 BATCH_SIZE = 64
-EPS = 0.07 # 对应流水线默认配置
+EPS = 0.07 # Matches the pipeline default config.
 RESULT_FILE = r"D:\Deduplication_framework\2026_new_experiment\result\image_benchmark_results.csv"
-MODEL_NAME = "hf-hub:laion/CLIP-ViT-B-16-laion2B-s34B-b88K" # 必须与 configs/image_config.yaml 一致
+MODEL_NAME = "hf-hub:laion/CLIP-ViT-B-16-laion2B-s34B-b88K" # Must match configs/image_config.yaml.
 # ===========================================
 
 def get_all_images(root_dir):
@@ -71,7 +71,7 @@ def get_all_images(root_dir):
                 image_files.append(os.path.join(root, file))
     return image_files
 
-# Ground Truth 逻辑：文件名包含 _aug 视为同一组
+# Ground-truth logic: filenames containing _aug are treated as the same group.
 def parse_id(filename):
     name = os.path.splitext(filename)[0]
     if "_aug" in name:
@@ -93,18 +93,18 @@ def log_result(method, throughput, precision, recall, gpu_mem):
 def run_real_pipeline_benchmark():
     print(f"[Benchmark] Ours (Real Pipeline Logic: SemDeDup) on imagenet_bloated subset...")
     
-    # 1. 准备数据
+    # 1. Prepare data.
     all_files = get_all_images(IMAGE_DIR)
     if not all_files:
         print("No images found.")
         return
 
-    # 这里我们模拟流水线输入，使用 Path 对象
+    # Simulate pipeline input using Path objects.
     test_paths = [Path(f) for f in all_files[:SAMPLE_SIZE]]
     print(f"Total files to test: {len(test_paths)}")
     
-    # 2. 配置 Pipeline
-    # 我们构造与 YAML 配置相同的对象
+    # 2. Configure the pipeline.
+    # Construct objects equivalent to the YAML config.
     emb_config = EmbeddingConfig(
         backend="open_clip",
         model_name=MODEL_NAME,
@@ -112,12 +112,12 @@ def run_real_pipeline_benchmark():
         device="auto"
     )
     
-    # 关键点：这里我们要开启 SemDeDup，而非 pairwise
-    # 注意：SemDeDup 需要聚类。如果数据量太小(<1000)，pipeline 可能会回退或聚类数很少，这符合预期。
+    # Use SemDeDup here rather than pairwise.
+    # SemDeDup requires clustering; small datasets may fall back or produce few clusters.
     dedup_config = DedupConfig(
         method="semdedup", 
         eps=EPS,
-        legacy_cluster_dir=None, # 强制重新计算聚类
+        legacy_cluster_dir=None, # Force cluster recomputation.
         legacy_keep_indices_file=None
     )
     
@@ -125,8 +125,8 @@ def run_real_pipeline_benchmark():
     gpu_mem = 0
     
     try:
-        # 3. 调用真实 API 提取特征
-        # _compute_embeddings_open_clip 返回 (embeddings, valid_paths, failed_paths, backend_name)
+        # 3. Call the real API to extract features.
+        # _compute_embeddings_open_clip returns (embeddings, valid_paths, failed_paths, backend_name).
         embeddings, valid_paths, failed_paths, _ = _compute_embeddings_open_clip(test_paths, emb_config)
         
         extract_time = time.time()
@@ -135,13 +135,13 @@ def run_real_pipeline_benchmark():
         if torch.cuda.is_available():
             gpu_mem = torch.cuda.max_memory_allocated() / (1024**3)
 
-        # 4. 调用真实 API 进行 SemDeDup 去重
-        # 这会自动触发 K-Means 聚类和簇内去重
+        # 4. Call the real API for SemDeDup deduplication.
+        # This triggers K-Means clustering and intra-cluster deduplication.
         dedup_result = _run_deduplication(
             valid_paths,
             embeddings,
             dedup_config,
-            indices=None # 不传递 indices，让它根据 embedding 动态聚类
+            indices=None # Do not pass indices; cluster dynamically from embeddings.
         )
         
     except Exception as e:
@@ -154,40 +154,40 @@ def run_real_pipeline_benchmark():
     throughput = len(test_paths) / total_time if total_time > 0 else 0
     print(f"Pipeline finished. Total Throughput (Extract+SemDeDup): {throughput:.2f} imgs/s")
     
-    # 5. 评估结果 vs Ground Truth
+    # 5. Evaluate results against ground truth.
     
     kept_set = set([str(p) for p in dedup_result['keepers']])
-    # 被删掉的文件集合
+    # Removed file set.
     
-    # 简单起见，从 valid_paths 中减去 kept_set 即可得到的被删列表
+    # For simplicity, removed files are valid_paths minus kept_set.
     valid_paths_str = [str(p) for p in valid_paths]
     removed_files = [p for p in valid_paths_str if p not in kept_set]
     
     print(f"Kept: {len(kept_set)}, Removed: {len(removed_files)}")
     
-    # 开始算 P/R (Action-Based)
+    # Compute action-based precision and recall.
     print("Evaluating Precision & Recall...")
     
     # Parse IDs
     id_map = {str(p): parse_id(os.path.basename(str(p))) for p in valid_paths}
     all_labels = [id_map[p] for p in valid_paths_str]
     
-    # A. 计算 Total Ground Truth Pairs
+    # A. Compute total ground-truth pairs.
     from collections import Counter
     cnt = Counter(all_labels)
     # total_gt_pairs = sum([(c*(c-1))//2 for c in cnt.values() if c > 1])
     # print(f"Total Ground Truth Duplicate Pairs: {total_gt_pairs}")
     
-    # --- 采用 Action-Based Evaluation (更适合 SemDeDup) ---
-    # Precision = (被成功去除的冗余) / (所有被去除的文件)
-    # Recall = (被成功去除的冗余) / (Ground Truth 中应该被去除的总数)
+    # --- Use action-based evaluation, which is better suited to SemDeDup. ---
+    # Precision = correctly removed redundant files / all removed files.
+    # Recall = correctly removed redundant files / all ground-truth removable files.
     
     unique_ids_count = len(cnt)
     total_should_remove = len(valid_paths) - unique_ids_count
     
-    tp_action = 0 # 删得对
+    tp_action = 0 # Correct removals.
     
-    # 建立 Keepers 的 ID 集合
+    # Build the set of keeper ids.
     keeper_ids = set()
     for k in kept_set:
         keeper_ids.add(id_map[k])
@@ -195,10 +195,10 @@ def run_real_pipeline_benchmark():
     for removed in removed_files:
         rid = id_map[removed]
         if rid in keeper_ids:
-            # 删了它，但这个 ID 还有别的副本留着 -> 删对了 (冗余)
+            # Removed while another copy of the same id remains: correct redundant removal.
             tp_action += 1
         else:
-            # 删了它，结果这个 ID 全军覆没（或者本来就只有一个） -> 删错了
+            # Removed the only remaining copy for this id: incorrect removal.
             pass
             
     actual_precision = tp_action / len(removed_files) if len(removed_files) > 0 else 0

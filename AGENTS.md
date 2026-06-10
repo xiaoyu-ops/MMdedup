@@ -2,7 +2,7 @@
 
 > Last updated: 2026-05-10
 > Branch: `codex/plan-b-stage4-pair-dedup`
-> Current target: CIKM 2026 Full Paper
+> Current target: ICDM 2026
 
 This file is the working handoff for Codex and human collaborators on the Plan B
 revision of MMdedup. It records the current thesis, stage goals, required
@@ -12,6 +12,21 @@ artifacts, and experiment source-of-truth rules.
 
 We are pausing the Plan A branch (`feat/text-qsemdedup`) and returning to a
 more focused Plan B from `main`.
+
+Update for the ICDM revision:
+
+- The old 1,000-row high-joint annotation set is now dev / threshold diagnostic
+  data only. Do not treat it as the final held-out Stage 4 benchmark.
+- The current final Stage 4 evaluation path is a new 3,000-row label-agnostic
+  score-space stratified annotation set.
+- The old text-only and naive-union thresholds were too low and must not be
+  reused. Thresholds should be selected on dev data, saved as source-of-truth,
+  and reported with their config.
+- The final held-out main table must be recomputed after the 3,000 fair labels
+  are complete.
+- LLaVA downstream training/evaluation should wait until the new Stage 4
+  operating point is fixed. The previous A/B/C/D/E VQAv2 quick eval is a
+  diagnostic failure record, not final downstream evidence.
 
 The key reviewer criticism is:
 
@@ -222,7 +237,11 @@ Required edits:
 - Add related work discussion for SemDeDup, DataComp, FairDeDup, and SSCD.
 - Discuss pHash / MD5 / MFCC favorable results honestly as boundary cases.
 
-## CIKM Full Timeline
+## Historical CIKM Full Timeline
+
+This section is retained as historical context only. The active target is now
+ICDM 2026, and the immediate blocker is completing the new 3,000-row fair
+score-space annotation set before final Stage 4 evaluation and retraining.
 
 CIKM 2026 Full Paper submission deadline: 2026-05-23 AoE.
 
@@ -351,7 +370,7 @@ Current data source decision:
 
 Current modality focus:
 
-- CIKM Plan B focuses on image-caption cross-modal Stage 4.
+- The active ICDM revision focuses on image-caption cross-modal Stage 4.
 - Audio is retained as existing system capability but should not receive major
   new work or become a main experiment for this submission.
 
@@ -505,11 +524,11 @@ Required paper-number workflow:
 3. Get Stage 4 vs naive baseline P/R/F1.
 4. Run LLaVA minimum downstream validation.
 5. Add efficiency table.
-6. Write and polish CIKM full paper.
+6. Write and polish the ICDM revision.
 
 ## Deferred / Non-Blocking Items
 
-These are useful but must not block the core CIKM Full path:
+These are useful but must not block the core ICDM revision path:
 
 - Second-seed repeats for all LLaVA configurations, if the first-seed A/B/C/D/E
   comparison is not yet complete.

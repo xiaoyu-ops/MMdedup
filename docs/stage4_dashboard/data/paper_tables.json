@@ -4,9 +4,9 @@
     "title": "数据集与 Ground Truth 构建",
     "paper_location": "论文位置：Dataset construction；表：CC3M 候选挖掘与标注统计",
     "status": "ready",
-    "what_it_answers": "我们用了什么真实数据、为什么不是随机抽样、标注集有多少正负例。",
-    "recommended_claim": "We construct a real CC3M-based hard-candidate benchmark by first mining likely duplicate image-caption pair-pairs from a 200K pool and then manually annotating 1,000 candidate pairs.",
-    "do_not_write": "不要写 raw CC3M 的自然重复率就是 29.5%；这个比例只属于 high-joint hard-candidate 标注集。",
+    "what_it_answers": "我们用了什么真实数据、为什么改用 score-space 分层采样、标注集当前完成到哪里。",
+    "recommended_claim": "We construct a real CC3M-based evaluation set by mining candidate image-caption pair-pairs from a 200K pool and then applying label-agnostic stratified sampling over image, text, and joint similarities.",
+    "do_not_write": "不要再把旧 high-joint 1000 标注集当作最终 held-out GT，也不要写 raw CC3M 的自然重复率就是旧正例比例。",
     "table_columns": [
       "项目",
       "当前数字",
@@ -24,24 +24,29 @@
         "人工标注前先挖掘可能重复的候选 pair-pairs。"
       ],
       [
-        "High-joint 候选池",
-        "129,139",
-        "按 joint similarity 和 image similarity 过滤，用于标注采样。"
+        "公平分层候选",
+        "3,000",
+        "按 image/text/joint score-space 分层采样。"
       ],
       [
         "已标注 pair-pairs",
-        "1,000",
+        "3,000",
         "用于 Stage 4 评价的人工标注样本。"
       ],
       [
         "正例数量",
-        "295",
+        "462",
         "duplicate + near-duplicate。"
       ],
       [
         "负例数量",
-        "705",
+        "2,538",
         "not-duplicate。"
+      ],
+      [
+        "Audit 预留行",
+        "600",
+        "主标注后给合作者抽查。"
       ]
     ],
     "evidence": [
@@ -56,26 +61,36 @@
         "description": "500K mined candidate pair-pairs."
       },
       {
-        "title": "High-joint filter",
-        "href": "data/paper/stage4_candidates_200k_high_joint_metrics.json",
-        "description": "Filtered candidate pool for annotation."
+        "title": "Fair stratified candidates",
+        "href": "data/paper/stage4_fair_candidates_3000_metrics.json",
+        "description": "Score-space stratified 3000-row sample."
       },
       {
-        "title": "Labeled annotations",
+        "title": "Fair annotation sheet",
+        "href": "data/paper/stage4_fair_annotation_3000_sheet.csv",
+        "description": "Current 3000-row labeling sheet."
+      },
+      {
+        "title": "Fair labeled annotations",
+        "href": "data/paper/stage4_fair_annotation_3000_labeled.csv",
+        "description": "Completed 3000-row fair held-out labels."
+      },
+      {
+        "title": "Legacy labeled annotations",
         "href": "data/paper/stage4_annotation_1000_high_joint_labeled.csv",
-        "description": "Human-labeled 1,000 row benchmark."
+        "description": "Legacy 1,000-row dev diagnostic set."
       }
     ],
-    "gap": "如果要正式报告 inter-annotator agreement，需要真实合作者 audit；当前 audit 只是流程占位。"
+    "gap": "3000 条主标注已完成；正式报告 inter-annotator agreement 仍需要真实合作者 audit。"
   },
   {
     "id": "main-stage4-evaluation",
     "title": "主评价：Stage 4 与 Baselines 对比",
-    "paper_location": "论文表：CC3M hard-candidate benchmark 上的 Precision / Recall / F1",
-    "status": "ready_with_caution",
+    "paper_location": "论文表：CC3M 3000 fair held-out benchmark 上的 Precision / Recall / F1",
+    "status": "ready",
     "what_it_answers": "Stage 4 是否比三个单模态拼接/naive union 更合理。",
-    "recommended_claim": "On the current hard-candidate benchmark, Stage 4 improves over the naive union baseline, but image-only remains stronger; the paper should present this honestly and use error analysis to explain why.",
-    "do_not_write": "不要写 Stage 4 全面超过所有单模态 baseline；当前 image-only F1 更高。",
+    "recommended_claim": "Using the unified conservative operating point, Stage 4 achieves the best F1 among A/B/C/D/E on the 3,000-row fair held-out labels and substantially improves over naive union.",
+    "do_not_write": "不要把旧 1000 high-joint P/R/F1 当作 ICDM 最终主表，也不要沿用旧 text/naive 阈值。",
     "table_columns": [
       "方法",
       "阈值",
@@ -87,47 +102,65 @@
     "rows": [
       [
         "Image-only",
-        "0.8",
-        "0.619",
-        "0.634",
-        "0.626",
-        "当前 GT 上最强 baseline。"
+        "image>=0.85",
+        "0.218",
+        "0.701",
+        "0.333",
+        "单模态图像 baseline；在 3000 fair held-out 上低于 Stage 4 conservative。"
       ],
       [
         "Text-only",
-        "0.6",
-        "0.295",
-        "1.000",
-        "0.456",
-        "在 high-joint 候选集上明显过度预测正例。"
+        "text>=0.95",
+        "0.280",
+        "0.277",
+        "0.279",
+        "使用与下游 C split 对齐的 text>=0.95 固定阈值。"
       ],
       [
         "Naive union",
-        "0.6",
-        "0.295",
-        "1.000",
-        "0.456",
+        "image=None, text=None",
+        "0.201",
+        "0.799",
+        "0.322",
         "单模态结果并集，代表简单拼接式多模态 baseline。"
       ],
       [
-        "Stage 4 joint",
-        "0.85",
-        "0.510",
-        "0.681",
-        "0.583",
-        "超过 naive union，但未超过 image-only。"
+        "Stage 4 conservative",
+        "image>=0.85 AND text>=0.85",
+        "0.726",
+        "0.431",
+        "0.541",
+        "统一使用 image>=0.85 AND text>=0.85；在主表中超过 image-only 与 naive union。"
+      ],
+      [
+        "Stage 4 joint (alt)",
+        "joint>=0.85",
+        "0.569",
+        "0.671",
+        "0.616",
+        "更偏 recall/F1 的 alternative operating point；不作为统一主规则。"
       ]
     ],
     "evidence": [
       {
-        "title": "Main metrics",
-        "href": "data/paper/stage4_eval_metrics.json",
-        "description": "Best P/R/F1 by score."
+        "title": "Fair held-out eval metrics",
+        "href": "data/paper/stage4_fair_eval_3000_metrics.json",
+        "description": "Manual fixed-threshold evaluation on 3,000 fair labels."
       },
       {
-        "title": "Threshold sweep",
-        "href": "data/paper/stage4_eval_per_threshold_metrics.csv",
-        "description": "Complete threshold sweep."
+        "title": "Fair held-out fixed-threshold CSV",
+        "href": "data/paper/stage4_fair_eval_3000_fixed_threshold_metrics.csv",
+        "description": "Fixed-threshold P/R/F1 rows."
+      },
+      {
+        "title": "Dev threshold diagnostic",
+        "href": "data/paper/stage4_threshold_diagnostic_1000_metrics.json",
+        "description": "Threshold diagnosis on legacy 1,000 labels."
+      },
+      {
+        "title": "Dev naive-union grid",
+        "href": "data/paper/stage4_threshold_diagnostic_1000_naive_union_grid_metrics.csv",
+        "description": "Naive-union threshold grid diagnosis."
       },
       {
         "title": "Experiment ledger",
@@ -135,7 +168,7 @@
         "description": "Traceable experiment record."
       }
     ],
-    "gap": "如果想增强主 claim，下一步不是改口径，而是按预定方案跑 fair operating point / 下游验证。"
+    "gap": "主评价已完成；下一步把该表写进论文并绑定 experiment id。"
   },
   {
     "id": "error-analysis",
@@ -207,8 +240,8 @@
     "paper_location": "论文表：LLaVA 训练数据规模与下游结果",
     "status": "partial",
     "what_it_answers": "原始、单模态、naive union、Stage 4 五组训练数据规模分别是多少，后续 LLaVA 怎么跑。",
-    "recommended_claim": "At this stage, the dashboard supports reporting materialized A/B/C/D/E training manifests and a real LLaVA-1.5 4-bit LoRA smoke test, but not downstream benchmark performance.",
-    "do_not_write": "不要写 VQAv2/TextVQA 有结果；当前 manifest 与真实模型 smoke 可证明训练链路可用，但正式下游结果还没有产生。",
+    "recommended_claim": "The dashboard supports reporting updated A/B/C/D/E v2 training manifests; downstream LLaVA training/evaluation must be rerun before making final performance claims.",
+    "do_not_write": "不要把旧 VQAv2 quick eval 写成完整正式下游 benchmark；它对应旧 split/旧标注链路，只能作为诊断记录。",
     "table_columns": [
       "组别",
       "方法",
@@ -229,34 +262,34 @@
       [
         "B",
         "image_only",
-        "171,997",
-        "28,003",
-        "0.140",
-        "image>=0.8"
+        "177,796",
+        "22,204",
+        "0.111",
+        "image>=0.85"
       ],
       [
         "C",
         "text_only",
-        "104,395",
-        "95,605",
-        "0.478",
-        "text>=0.6"
+        "170,783",
+        "29,217",
+        "0.146",
+        "text>=0.95"
       ],
       [
         "D",
         "naive_union",
-        "101,752",
-        "98,248",
-        "0.491",
-        "image>=0.8 OR text>=0.6"
+        "155,127",
+        "44,873",
+        "0.224",
+        "image>=0.85 OR text>=0.95"
       ],
       [
         "E",
-        "stage4_joint",
-        "177,957",
-        "22,043",
-        "0.110",
-        "joint>=0.85"
+        "stage4_score_assisted",
+        "190,744",
+        "9,256",
+        "0.046",
+        "image>=0.85 AND text>=0.85; strict_duplicate_if_both>=0.95"
       ]
     ],
     "evidence": [
@@ -276,12 +309,17 @@
         "description": "Notes and source metrics."
       },
       {
+        "title": "VQAv2 quick eval metrics",
+        "href": "data/paper/llava_stage4_vqav2_quick_metrics.json",
+        "description": "旧 A/B/C/D/E 五组 1,000-sample VQAv2 quick eval 诊断记录。"
+      },
+      {
         "title": "Experiment ledger",
         "href": "data/experiment_ledger.csv",
-        "description": "Includes data smoke and real LLaVA-1.5 4-bit LoRA smoke records."
+        "description": "Includes current v2 split plus old downstream diagnostic records."
       }
     ],
-    "gap": "下一步必须在 Windows 3090 上跑完整 A/B/C/D/E LLaVA LoRA，并产出 VQAv2/TextVQA 指标。"
+    "gap": "新 v2 split 已生成；下一步在 Windows RTX 3090 上重新 smoke、训练、评测 A/B/C/D/E。"
   },
   {
     "id": "efficiency-overhead",
@@ -309,7 +347,7 @@
       ],
       [
         "评价脚本 wall-clock",
-        "0.0 s",
+        "n/a",
         "已有，但不是 GPU 开销"
       ],
       [
@@ -378,8 +416,8 @@
       ],
       [
         "Stage 4 superiority",
-        "目前只超过 naive union",
-        "必须说明 image-only 在当前 benchmark 更强。"
+        "3000 fair held-out 上超过 image-only 与 naive union",
+        "必须说明阈值来自旧 1000 dev diagnostic。"
       ],
       [
         "Downstream performance",

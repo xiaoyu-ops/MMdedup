@@ -19,7 +19,7 @@
 %\usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{float}
-\usepackage{tabularx} % 引入tabularx宏包
+\usepackage{tabularx} % Load the tabularx package.
 
 \usepackage{threeparttable}
 \usepackage{multirow}
@@ -751,7 +751,7 @@ Traditional pairwise comparison methods incur \( O(n^2) \) time complexity, infe
 \begin{table}[t!]
  \caption{Parameter Definitions for Image Deduplication}
     \centering
-    \begin{tabular}{|l|l|} % 用 |l|l| 
+    \begin{tabular}{|l|l|} % Use vertical rules around both columns.
         \hline 
         Notation & Semantics \\
         \hline
@@ -862,7 +862,7 @@ The theoretical underpinning of our method is the probabilistic guarantee afford
 \begin{table}[htbp!]
 \caption{Parameter Definitions for Audio Deduplication}
     \centering
-    \begin{tabular}{|l|l|} % 带竖线的表格格式
+    \begin{tabular}{|l|l|} % Table format with vertical rules.
         \hline 
         Notation & Semantics \\
         \hline
@@ -906,7 +906,7 @@ The theoretical underpinning of our method is the probabilistic guarantee afford
     \label{tab:parameters}
 \end{table}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%文本
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text
 \subsection{Text Deduplication}
 
 The integrity of large-scale machine learning (ML) datasets is critically undermined by the widespread presence of near-duplicates. In line with our framework's design rationale of prioritizing computational efficiency for initial bulk cleaning, our text deduplication pipeline focuses on eliminating the most pervasive form of redundancy in web data: syntactic duplicates (e.g., boilerplate, copy-pasted articles). While deep semantic models like SBERT \cite{reimers2019sentencebertsentenceembeddingsusing} can capture paraphrasing , their computational overhead is prohibitive for a first-pass analysis on petabyte-scale corpora \cite{lee2022deduplicatingtrainingdatamakes}. Our approach, therefore, employs a highly efficient multi-granularity N-gram method, which is specifically optimized to achieve maximum throughput while effectively capturing a broad range of syntactic and lexical variations.

@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import time
 
-# 演示 ASCII tqdm 与中文输出的简短脚本
+# Short smoke test for ASCII tqdm and non-ASCII console output.
 print("开始中文输出测试：")
 for _ in tqdm(range(100), desc="分类中", ascii=True):
     time.sleep(0.01)

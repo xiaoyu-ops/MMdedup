@@ -10,8 +10,8 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import csv
 
-# ================= 配置区域 =================
-# 指向 imagenet_bloated 文件夹
+# ================= Configuration =================
+# Path to the imagenet_bloated folder.
 IMAGE_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\imagenet_bloated"
 
 SAMPLE_SIZE = 10000 
@@ -68,7 +68,7 @@ def run_simclr_benchmark():
     if not all_files: return
     test_files = all_files[:SAMPLE_SIZE]
     
-    # 加载 ResNet
+    # Load ResNet.
     model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
     model = nn.Sequential(*list(model.children())[:-1]) 
     model.to(device).eval()
@@ -92,7 +92,7 @@ def run_simclr_benchmark():
     throughput = len(test_files)/extract_time
     embeddings = np.concatenate(feats_list)
     
-    # 统计 Precision/Recall
+    # Compute precision and recall.
     print("   正在计算相似度矩阵...")
     id_list = [parse_id(os.path.basename(p)) for p in paths_list]
     from collections import Counter

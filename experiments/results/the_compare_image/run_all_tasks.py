@@ -3,8 +3,8 @@ import time
 import sys
 import os
 
-# ================= 配置区域 =================
-# 按顺序放入您要运行的脚本文件名
+# ================= Configuration =================
+# Add script filenames in the order they should run.
 SCRIPTS = [
     "run_md5_full.py",
     "run_phash_full.py",
@@ -13,8 +13,8 @@ SCRIPTS = [
 # ===========================================
 
 def run_script(script_name):
-    """运行单个脚本并计时"""
-    # 获取当前脚本所在目录，确保能找到同级目录下的子脚本
+    """Run one script and measure elapsed time."""
+    # Get this script directory so sibling scripts can be found.
     current_dir = os.path.dirname(os.path.abspath(__file__))
     script_path = os.path.join(current_dir, script_name)
 
@@ -30,8 +30,8 @@ def run_script(script_name):
     start_time = time.time()
     
     try:
-        # 使用当前 Python 环境运行子脚本
-        # check=True 表示如果脚本报错(退出码非0)，会抛出异常
+        # Use the current Python executable to run the child script.
+        # check=True raises an exception when the child script exits non-zero.
         subprocess.run([sys.executable, script_path], check=True)
         
         end_time = time.time()

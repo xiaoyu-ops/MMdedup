@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="500" viewBox="0 0 720 500">
+<rect width="100%" height="100%" fill="white"/>
+<text x="360.00" y="38.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="28" font-weight="700" fill="#222222">COCO Caption Transfer</text>
+<line x1="82.00" y1="400.00" x2="637.00" y2="400.00" stroke="#d9d9d9" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="72.00" y="405.00" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="18" font-weight="700" fill="#222222">0.0</text>
+<line x1="82.00" y1="329.76" x2="637.00" y2="329.76" stroke="#d9d9d9" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="72.00" y="334.76" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="18" font-weight="700" fill="#222222">50</text>
+<line x1="82.00" y1="259.52" x2="637.00" y2="259.52" stroke="#d9d9d9" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="72.00" y="264.52" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="18" font-weight="700" fill="#222222">100</text>
+<line x1="82.00" y1="189.29" x2="637.00" y2="189.29" stroke="#d9d9d9" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="72.00" y="194.29" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="18" font-weight="700" fill="#222222">150</text>
+<line x1="82.00" y1="119.05" x2="637.00" y2="119.05" stroke="#d9d9d9" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="72.00" y="124.05" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="18" font-weight="700" fill="#222222">200</text>
+<line x1="82.00" y1="400.00" x2="637.00" y2="400.00" stroke="#222222" stroke-width="1.8"/>
+<line x1="82.00" y1="105.00" x2="82.00" y2="400.00" stroke="#222222" stroke-width="1.8"/>
+<text x="19.00" y="252.50" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="24" font-weight="700" fill="#222222" transform="rotate(-90.0 19.00 252.50)">Kept Pairs (K)</text>
+<rect x="116.50" y="119.05" width="42.00" height="280.95" rx="0" fill="#7f7f7f" stroke="#222222" stroke-width="0.8" opacity="0.72"/>
+<text x="137.50" y="428.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="20" font-weight="700" fill="#222222">A</text>
+<rect x="227.50" y="150.24" width="42.00" height="249.76" rx="0" fill="#7f7f7f" stroke="#222222" stroke-width="0.8" opacity="0.72"/>
+<text x="248.50" y="428.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="20" font-weight="700" fill="#222222">B</text>
+<rect x="338.50" y="160.09" width="42.00" height="239.91" rx="0" fill="#7f7f7f" stroke="#222222" stroke-width="0.8" opacity="0.72"/>
+<text x="359.50" y="428.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="20" font-weight="700" fill="#222222">C</text>
+<rect x="449.50" y="182.08" width="42.00" height="217.92" rx="0" fill="#d62728" stroke="#222222" stroke-width="0.8" opacity="0.72"/>
+<text x="470.50" y="428.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="20" font-weight="700" fill="#222222">D</text>
+<rect x="560.50" y="132.05" width="42.00" height="267.95" rx="0" fill="#2ca02c" stroke="#222222" stroke-width="0.8" opacity="0.72"/>
+<text x="581.50" y="428.00" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="20" font-weight="700" fill="#222222">E</text>
+<polyline points="137.50,154.49 248.50,155.70 359.50,159.56 470.50,127.23 581.50,130.00" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="137.50,380.88 248.50,382.72 359.50,381.86 470.50,372.29 581.50,369.78" fill="none" stroke="#1f77b4" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="5 4"/>
+<circle cx="137.50" cy="154.49" r="5.50" fill="white" stroke="#222222" stroke-width="2" opacity="1.0"/>
+<circle cx="248.50" cy="155.70" r="5.50" fill="white" stroke="#222222" stroke-width="2" opacity="1.0"/>
+<circle cx="359.50" cy="159.56" r="5.50" fill="white" stroke="#222222" stroke-width="2" opacity="1.0"/>
+<circle cx="470.50" cy="127.23" r="5.50" fill="white" stroke="#222222" stroke-width="2" opacity="1.0"/>
+<circle cx="581.50" cy="130.00" r="5.50" fill="white" stroke="#222222" stroke-width="2" opacity="1.0"/>
+<rect x="132.00" y="375.38" width="11.00" height="11.00" rx="0" fill="white" stroke="#1f77b4" stroke-width="2" opacity="1.0"/>
+<rect x="243.00" y="377.22" width="11.00" height="11.00" rx="0" fill="white" stroke="#1f77b4" stroke-width="2" opacity="1.0"/>
+<rect x="354.00" y="376.36" width="11.00" height="11.00" rx="0" fill="white" stroke="#1f77b4" stroke-width="2" opacity="1.0"/>
+<rect x="465.00" y="366.79" width="11.00" height="11.00" rx="0" fill="white" stroke="#1f77b4" stroke-width="2" opacity="1.0"/>
+<rect x="576.00" y="364.28" width="11.00" height="11.00" rx="0" fill="white" stroke="#1f77b4" stroke-width="2" opacity="1.0"/>
+<text x="649.00" y="370.29" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="18" font-weight="700" fill="#222222">0.2</text>
+<text x="649.00" y="283.53" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="18" font-weight="700" fill="#222222">0.4</text>
+<text x="649.00" y="196.76" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="18" font-weight="700" fill="#222222">0.6</text>
+<text x="649.00" y="110.00" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="18" font-weight="700" fill="#222222">0.8</text>
+<line x1="637.00" y1="105.00" x2="637.00" y2="400.00" stroke="#222222" stroke-width="1.8"/>
+<text x="700.00" y="252.50" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="22" font-weight="700" fill="#222222" transform="rotate(90.0 700.00 252.50)">Caption Score</text>
+<rect x="178.00" y="63.00" width="18.00" height="15.00" rx="0" fill="#7f7f7f" stroke="#222222" stroke-width="0.9" opacity="1.0"/>
+<text x="206.00" y="76.00" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="16" font-weight="700" fill="#222222">Kept Pairs</text>
+<rect x="308.00" y="63.00" width="18.00" height="15.00" rx="0" fill="#222222" stroke="#222222" stroke-width="0.9" opacity="1.0"/>
+<text x="336.00" y="76.00" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="16" font-weight="700" fill="#222222">CIDEr</text>
+<rect x="438.00" y="63.00" width="18.00" height="15.00" rx="0" fill="#1f77b4" stroke="#222222" stroke-width="0.9" opacity="1.0"/>
+<text x="466.00" y="76.00" text-anchor="start" font-family="Times New Roman, Times, serif" font-size="16" font-weight="700" fill="#222222">BLEU-4</text>
+</svg>
