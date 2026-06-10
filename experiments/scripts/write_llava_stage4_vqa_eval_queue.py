@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-DEFAULT_REPO = "/mnt/c/Users/sysu/code/the_work_of_dedup"
+DEFAULT_REPO = "/mnt/c/Users/sysu/code/MMdedup"
 DEFAULT_ENV = "/home/xiaoyu/stage4_llava_env/bin/activate"
 DEFAULT_RESULT_ROOT = "experiments/results/plan_b_stage4"
 

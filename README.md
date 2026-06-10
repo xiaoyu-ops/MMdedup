@@ -43,7 +43,7 @@ Experiment numbers that may appear in the paper should be traced through `experi
 ## Repository Layout
 
 ```text
-the_work_of_dedup/
+MMdedup/
 ├── audio/                         # Audio fingerprint and deduplication code
 ├── image/                         # Image embedding and Q-SemDeDup code
 ├── text/                          # Text near-duplicate detection code

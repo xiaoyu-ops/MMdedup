@@ -553,7 +553,7 @@ B/C vs A：单模态去重的效果
 | 检查项 | 结果 | 备注 |
 | --- | --- | --- |
 | 远程控制 | 已完成 | Mac 通过 Tailscale + SSH 免密控制 Windows：sysu@100.105.237.38。 |
-| 项目路径 | C:\Users\sysu\code\the_work_of_dedup | 分支 codex/plan-b-stage4-pair-dedup，提交 a70b383。 |
+| 项目路径 | C:\Users\sysu\code\MMdedup | 分支 codex/plan-b-stage4-pair-dedup，提交 a70b383。 |
 | GPU | NVIDIA GeForce RTX 3090, 24GB | nvidia-smi 正常。 |
 | PyTorch / CUDA | torch 2.11.0+cu130；torch.cuda.is_available() = True | 已从 CUDA wheel 重装，避免 CPU 版 torch。 |
 | Windows smoke | 全部通过 | smoke_stage4_pair_dedup / annotation_flow / evaluation / adjudication 均通过。 |

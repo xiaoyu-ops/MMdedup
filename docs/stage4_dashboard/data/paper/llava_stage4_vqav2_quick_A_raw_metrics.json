@@ -1,7 +1,7 @@
 {
   "experiment_id": "exp_llava_stage4_vqa_vqav2_quick_A_raw_20260522",
   "model_id": "llava-hf/llava-1.5-7b-hf",
-  "adapter_dir": "/mnt/c/Users/sysu/code/the_work_of_dedup/experiments/results/plan_b_stage4/exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521/adapter",
+  "adapter_dir": "/mnt/c/Users/sysu/code/MMdedup/experiments/results/plan_b_stage4/exp_llava_stage4_train25k_A_raw_25000_2000steps_20260521/adapter",
   "eval_json": "experiments/results/plan_b_stage4/downstream_eval/vqav2_quick/vqav2_val_questions_1000.json",
   "annotations_json": "experiments/results/plan_b_stage4/downstream_eval/vqav2_quick/vqav2_val_annotations_1000.json",
   "num_eval_records": 1000,
@@ -17,7 +17,7 @@
   },
   "data_only": false,
   "status": "evaluated",
-  "predictions_jsonl": "/mnt/c/Users/sysu/code/the_work_of_dedup/experiments/results/plan_b_stage4/exp_llava_stage4_vqa_vqav2_quick_A_raw_20260522/predictions.jsonl",
+  "predictions_jsonl": "/mnt/c/Users/sysu/code/MMdedup/experiments/results/plan_b_stage4/exp_llava_stage4_vqa_vqav2_quick_A_raw_20260522/predictions.jsonl",
   "exact_match": 0.102,
   "vqa_consensus": 0.094,
   "num_scored_records": 1000,
