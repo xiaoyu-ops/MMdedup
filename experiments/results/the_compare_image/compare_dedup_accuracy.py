@@ -26,7 +26,7 @@ def safe_collate(batch):
         return None
     return default_collate(batch)
 
-# ================= 1. 实验配置 =================
+# ================= 1. Experiment Configuration =================
 RAW_DATA_ROOT = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\imagenet_bloated\train"
 JSON_RESULT_DIR = r"D:\Deduplication_framework\2026_new_experiment\result" 
 
@@ -48,9 +48,9 @@ VAL_SPLIT = 0.2
 SPLIT_SEED = 42
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 CACHE_FILENAME = "cached_no_dedup_list.json"
-# 加速设置
+# Acceleration settings.
 torch.backends.cudnn.benchmark = True
-# WebDataset 设置
+# WebDataset settings.
 USE_WDS = False
 WDS_ROOT = r"D:\Deduplication_framework_wds_shards"
 WDS_SHUFFLE = 1000
@@ -90,14 +90,14 @@ class DedupJsonDataset(Dataset):
         print(f"   [Ready] Dataset size: {len(self.image_paths)} images")
 
     def _extract_label(self, filepath):
-        # 正确标签来自父目录名（0-999）
+        # Ground-truth labels come from parent directory names (0-999).
         try:
             parent = os.path.basename(os.path.dirname(filepath))
             if parent.isdigit():
                 return int(parent)
         except:
             pass
-        # 兜底：兼容旧的文件名规则
+        # Fallback for the old filename convention.
         try:
             filename = os.path.basename(filepath)
             match = re.search(r'_(\d+)(?:_aug|\.)', filename)
@@ -185,7 +185,7 @@ def run_training(method_name, json_file):
             return None
         dataset_size = len(dataset)
 
-        # 8:2 划分
+        # 80/20 split.
         rng = torch.Generator().manual_seed(SPLIT_SEED)
         indices = torch.randperm(dataset_size, generator=rng).tolist()
         split_idx = int(dataset_size * (1 - VAL_SPLIT))
@@ -195,7 +195,7 @@ def run_training(method_name, json_file):
         train_set = Subset(dataset, train_idx)
         val_set = Subset(dataset, val_idx)
 
-        # Windows IO 设置
+        # Windows I/O settings.
         train_loader = DataLoader(
             train_set,
             batch_size=BATCH_SIZE,
@@ -220,15 +220,15 @@ def run_training(method_name, json_file):
     print("   [Model] Loading Pretrained Weights (Unfrozen)...")
     model = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
     
-    # 【关键点3】这里没有任何冻结代码！让模型自由学习！
-    # (之前的 param.requires_grad = False 已被移除)
+    # Key point 3: no freezing here; allow the model to learn freely.
+    # The previous param.requires_grad = False logic was removed.
     
     model.fc = nn.Linear(model.fc.in_features, NUM_CLASSES)
     model = model.to(DEVICE, memory_format=torch.channels_last)
     
     criterion = nn.CrossEntropyLoss()
     
-    # 【关键点4】优化器负责更新 model.parameters() (所有层)，不仅仅是 fc 层
+    # Key point 4: the optimizer updates all model parameters, not only the fc layer.
     optimizer = optim.Adam(model.parameters(), lr=LR)
     use_amp = (DEVICE.type == "cuda")
     scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
@@ -264,7 +264,7 @@ def run_training(method_name, json_file):
             acc = 100 * correct / total
             pbar.set_postfix({"Loss": f"{loss.item():.4f}", "Acc": f"{acc:.2f}%"})
 
-        # 验证
+        # Validation.
         if val_loader is not None:
             model.eval()
             val_correct = 0

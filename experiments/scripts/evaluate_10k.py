@@ -19,8 +19,8 @@ RESULT_FILE = r"D:\Deduplication_framework\2026_new_experiment\result\image_benc
 
 def parse_id(filename):
     """
-    文件名解析逻辑，需与基线一致。
-    例如 train-0_0_aug_noise.jpg -> train-0_0
+    Parse filenames consistently with the baseline.
+    Example: train-0_0_aug_noise.jpg -> train-0_0.
     """
     name = os.path.splitext(filename)[0]
     if "_aug" in name:
@@ -28,7 +28,7 @@ def parse_id(filename):
     return name
 
 def log_result_csv(method, throughput, precision, recall, gpu_mem):
-    """追加写入 CSV"""
+    """Append one result row to the CSV file."""
     file_exists = os.path.isfile(RESULT_FILE)
     try:
         with open(RESULT_FILE, mode='a', newline='', encoding='utf-8') as f:

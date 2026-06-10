@@ -5,16 +5,16 @@ import json
 from multiprocessing import Pool, cpu_count
 from tqdm import tqdm
 
-# ================= 配置区域 =================
+# ================= Configuration =================
 IMAGE_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\imagenet_bloated"
 OUTPUT_JSON = r"D:\Deduplication_framework\2026_new_experiment\result\phash_keep_list.json"
 # ============================================
 
 def get_phash_worker(file_path):
-    """单独的 Worker 函数，计算单个文件的 pHash"""
+    """Worker function that computes pHash for one file."""
     try:
         img = Image.open(file_path)
-        # 只要 hash 值字符串一样就算重复 (精确匹配以提升速度)
+        # Treat identical hash strings as duplicates for faster exact matching.
         file_hash = str(imagehash.phash(img))
         return file_hash, file_path
     except Exception:
@@ -44,7 +44,7 @@ def main():
     print(f"启动 {num_processes} 个进程进行 pHash 计算...")
 
     with Pool(processes=num_processes) as pool:
-        # pHash 计算是 CPU 密集型，多进程提升会很显著
+        # pHash computation is CPU-bound, so multiprocessing helps significantly.
         results = list(tqdm(pool.imap_unordered(get_phash_worker, files, chunksize=50), total=total_files, desc="Calculating pHash"))
 
     print("正在进行去重筛选...")

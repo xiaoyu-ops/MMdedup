@@ -10,13 +10,13 @@ from PIL import Image
 from tqdm import tqdm
 
 # ================= Configuration =================
-# 1. 直接指向原始脏数据文件夹
-# 注意：这里直接填您存放原始 wav 的绝对路径
+# 1. Point directly to the raw noisy data directory.
+# Set this to the absolute path that contains the original WAV files.
 RAW_DATA_PATH = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\digital_swamp_audio"
 
-# 2. 训练参数 (必须与之前保持一致以便对比)
+# 2. Training parameters. Keep them consistent with previous runs for comparison.
 BATCH_SIZE = 32
-EPOCHS = 10          # 保持 10 轮
+EPOCHS = 10          # Keep 10 epochs.
 LEARNING_RATE = 0.001
 # ===============================================
 
@@ -29,18 +29,18 @@ class AudioSpectrogramDataset(Dataset):
         self.samples = []
         self.classes = []
         
-        # 扫描原始文件夹
+        # Scan the raw directory.
         files = [f for f in os.listdir(root_dir) if f.endswith('.wav')]
         
-        # 解析类别 (适配 r01_... 等各种前缀)
+        # Parse class ids while supporting prefixes such as r01_.
         class_ids = set()
         temp_samples = []
         
         for f in files:
             try:
-                # 逻辑：文件名去后缀 -> 按 '-' 分割 -> 取最后一段
-                # 例: "r01_1-137-A-32.wav" -> "32"
-                # 例: "1-137-A-32.wav" -> "32"
+                # Logic: strip extension, split on '-', and use the last segment.
+                # Example: "r01_1-137-A-32.wav" -> "32"
+                # Example: "1-137-A-32.wav" -> "32"
                 name_no_ext = os.path.splitext(f)[0]
                 parts = name_no_ext.split('-')
                 label_str = parts[-1] 
@@ -64,7 +64,7 @@ class AudioSpectrogramDataset(Dataset):
     def __getitem__(self, idx):
         path, label = self.samples[idx]
         try:
-            # 4秒截断/填充
+            # Truncate or pad to 4 seconds.
             y, sr = librosa.load(path, sr=16000, duration=4)
             if len(y) < 16000*4:
                 y = np.pad(y, (0, 16000*4 - len(y)))
@@ -108,7 +108,7 @@ def run_baseline():
         print("[ERROR] No valid files found in raw directory.")
         return
 
-    # 划分数据集
+    # Split the dataset.
     train_size = int(0.8 * len(dataset))
     test_size = len(dataset) - train_size
     train_ds, test_ds = random_split(dataset, [train_size, test_size])
@@ -116,7 +116,7 @@ def run_baseline():
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
     test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
     
-    # 模型
+    # Model.
     model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
     model.fc = nn.Linear(model.fc.in_features, len(dataset.classes))
     model = model.to(device)
@@ -124,7 +124,7 @@ def run_baseline():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     
-    # 训练
+    # Train.
     for epoch in range(EPOCHS):
         model.train()
         pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{EPOCHS}", leave=False)
@@ -136,7 +136,7 @@ def run_baseline():
             loss.backward()
             optimizer.step()
             
-    # 测试
+    # Test.
     model.eval()
     correct = 0
     total = 0

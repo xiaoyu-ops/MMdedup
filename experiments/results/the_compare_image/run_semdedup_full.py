@@ -9,14 +9,14 @@ import numpy as np
 import json
 import multiprocessing
 
-# ================= 配置区域 =================
+# ================= Configuration =================
 IMAGE_DIR = r"D:\Deduplication_framework\2026_new_experiment\datasets\final_swamp_data\imagenet_bloated"
 OUTPUT_JSON = r"D:\Deduplication_framework\2026_new_experiment\result\semdedup_keep_list.json"
-# SemDeDup 参数
+# SemDeDup parameters.
 EPSILON = 0.07  
 THRESHOLD = 1 - EPSILON  # 0.93
-BATCH_SIZE = 512       # 增大 Batch Size 以利用 3090 显存
-NUM_WORKERS = 8        # 增加 CPU 线程以加速图片读取和解码
+BATCH_SIZE = 512       # Increase batch size to use RTX 3090 VRAM.
+NUM_WORKERS = 8        # Increase CPU workers to speed up image loading and decoding.
 # ===========================================
 
 class ImageListDataset(Dataset):
@@ -42,7 +42,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[SemDeDup] 使用设备: {device}")
 
-    # 1. 扫描文件结构
+    # 1. Scan file structure.
     print("扫描文件结构...")
     class_groups = {}
     if not os.path.exists(IMAGE_DIR):
@@ -54,7 +54,7 @@ def main():
         if imgs: 
             class_groups[r] = imgs
             
-    # 2. 准备推理列表
+    # 2. Prepare inference list.
     final_keep = []
     files_to_infer = []
     files_to_infer_map = {} # folder -> indices range
@@ -81,9 +81,9 @@ def main():
             json.dump(final_keep, f)
         return
 
-    # 3. 加载模型
+    # 3. Load model.
     print(f"每批处理: {BATCH_SIZE} 张, CPU 线程数: {NUM_WORKERS}")
-    # 开启 cudnn 自动寻优
+    # Enable cuDNN auto-tuning.
     torch.backends.cudnn.benchmark = True
     print("加载 ResNet50 模型...")
     try:
@@ -99,12 +99,12 @@ def main():
         transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 
-    # 4. 批量推理
+    # 4. Batch inference.
     print(f"开始批量特征提取 (Batch={BATCH_SIZE}, Workers={NUM_WORKERS})...")
     dataset = ImageListDataset(files_to_infer, transform=transform)
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=True)
     
-    # 分配大内存存储特征
+    # Allocate a large array for features.
     all_features = np.zeros((total_infer, 2048), dtype=np.float32)
     valid_mask = np.zeros(total_infer, dtype=bool)
 
@@ -113,7 +113,7 @@ def main():
             imgs = imgs.to(device)
             feats = model(imgs).squeeze() # [B, 2048]
             
-            # 归一化 (SemDeDup 强依赖 Cosine Sim, 必须归一化)
+            # Normalize features because SemDeDup relies on cosine similarity.
             if len(feats.shape) == 1: feats = feats.unsqueeze(0)
             norms = torch.norm(feats, p=2, dim=1, keepdim=True)
             feats = feats / (norms + 1e-8)
@@ -126,11 +126,11 @@ def main():
             valid_batch = (norms_np.squeeze() > 0.001)
             valid_mask[idxs_np] = valid_batch
 
-    # 5. SemDeDup 核心处理
+    # 5. Core SemDeDup processing.
     print("开始执行 SemDeDup 算法...")
     
     for folder, indices in tqdm(files_to_infer_map.items(), desc="SemDeDup Processing"):
-        # 获取当前文件夹的有效特征
+        # Get valid features for the current folder.
         folder_indices = [i for i in indices if valid_mask[i]]
         if not folder_indices: continue
             
@@ -143,16 +143,16 @@ def main():
             continue
             
         # === SemDeDup Logic ===
-        # B. 计算聚类中心
+        # B. Compute the cluster centroid.
         centroid = np.mean(feats, axis=0)
         centroid = centroid / (np.linalg.norm(centroid) + 1e-8)
         
-        # C. 计算相似度并排序
+        # C. Compute similarity and sort.
         sim_to_center = np.dot(feats, centroid)
-        sort_indices = np.argsort(sim_to_center)[::-1] # 降序
+        sort_indices = np.argsort(sim_to_center)[::-1] # Descending order.
         
-        # D. 动态去重
-        kept_local_indices = [] # 存的是 local index (0 to N-1)
+        # D. Dynamic deduplication.
+        kept_local_indices = [] # Store local indices from 0 to N-1.
         kept_feats = []
         
         for idx in sort_indices:
@@ -162,7 +162,7 @@ def main():
                 kept_local_indices.append(idx)
                 kept_feats.append(current_feat)
             else:
-                # 检查与已保留图片的相似度
+                # Compare against already retained images.
                 kept_feats_arr = np.array(kept_feats)
                 # [K, D] @ [D] -> [K]
                 sims = np.dot(kept_feats_arr, current_feat)
@@ -172,11 +172,11 @@ def main():
                     kept_local_indices.append(idx)
                     kept_feats.append(current_feat)
                     
-        # E. 收集结果
+        # E. Collect results.
         for idx in kept_local_indices:
             final_keep.append(current_valid_files[idx])
 
-    # 6. 保存
+    # 6. Save results.
     print(f"SemDeDup 完成! 总保留: {len(final_keep)}")
     with open(OUTPUT_JSON, "w") as f:
         json.dump(final_keep, f)
