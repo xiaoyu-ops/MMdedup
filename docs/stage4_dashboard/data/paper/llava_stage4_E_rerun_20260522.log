@@ -1,5 +1,5 @@
 RERUN_START 2026-05-22T15:21:40+08:00 exp_llava_stage4_train25k_E_stage4_joint_rerun1_25000_2000steps_20260522
-REPO=/mnt/c/Users/sysu/code/the_work_of_dedup
+REPO=/mnt/c/Users/sysu/code/MMdedup
 2f973435cbb0ca731fa60558ce06d96e9729a100
 Fri May 22 15:21:41 2026       
 +-----------------------------------------------------------------------------------------+
