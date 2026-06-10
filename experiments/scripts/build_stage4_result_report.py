@@ -350,11 +350,11 @@ def make_efficiency_rows(data: dict[str, Any]) -> list[list[Any]]:
 
 def build_markdown(data: dict[str, Any], tables: dict[str, ReportTable]) -> str:
     lines = [
-        "# MMdedup Plan B Stage 4 最终结果报告",
+        "# MMdedup Plan B Stage 4 Final Result Report",
         "",
-        f"生成时间: {data['generated_at']} Asia/Shanghai",
+        f"Generated at: {data['generated_at']} Asia/Shanghai",
         "",
-        "## 0. 摘要",
+        "## 0. Summary",
         "",
         "- 目标：服务 CIKM 2026 Full Paper 的 Plan B 修订。",
         "- 核心回应：新增 Stage 4，使用 CLIP joint embedding 做图文对级别跨模态去重。",
@@ -363,15 +363,15 @@ def build_markdown(data: dict[str, Any], tables: dict[str, ReportTable]) -> str:
         "- 当前补齐项：Stage 4 joint 阈值扫描展开表与现有可报告效率表已加入。",
         "- 本报告不包含进度面板逐项对照，只列可直接用于论文写作的数据与 source-of-truth。",
         "",
-        "## 1. 各实验实现思路",
+        "## 1. Experiment Design",
         "",
         *implementation_markdown(),
         "",
-        "## 2. 完整数据清单",
+        "## 2. Complete Data Inventory",
         "",
         *tables_to_markdown(list(tables.values())),
         "",
-        "## 3. Source-of-truth 文件",
+        "## 3. Source-of-truth Files",
         "",
         *source_files_markdown(),
     ]

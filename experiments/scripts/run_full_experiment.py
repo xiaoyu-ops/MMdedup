@@ -5,7 +5,7 @@ import time
 import subprocess
 from pathlib import Path
 
-# 配置
+# Configuration
 CONFIG_FILE = "experiments/configs/my_pipeline_full.yaml"
 RESULT_CSV = r"D:\Deduplication_framework\2026_new_experiment\result\image_benchmark_results.csv"
 SUMMARY_JSON = r"D:\Deduplication_framework\2026_new_experiment\result_full_global\summary.json"

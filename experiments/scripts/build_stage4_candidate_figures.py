@@ -608,26 +608,26 @@ def readme(files: list[Path]) -> None:
     lines = [
         "# Stage 4 Candidate Figures",
         "",
-        "这些图均由真实实验数据生成，暂时不直接加入正文，供后续挑选。",
+        "These figures are generated from real experiment data and are kept as paper candidates.",
         "",
-        "## 数据来源",
+        "## Data Sources",
         "",
         f"- `{PAIR_CSV.relative_to(ROOT)}`",
         f"- `{COCO_CSV.relative_to(ROOT)}`",
         f"- `{CI_JSON.relative_to(ROOT)}`",
         "",
-        "## 候选图",
+        "## Candidate Figures",
         "",
     ]
     descriptions = {
-        "01_pair_precision_recall_f1.svg": "主结果图候选：展示 pair-level P/R/F1，突出 Stage 4 joint 的平衡优势。",
-        "02_pair_f1_confidence_intervals.svg": "主结果图候选：展示 F1 和 95% CI，强调 joint 与 baselines 的稳定差距。",
-        "03_precision_recall_tradeoff.svg": "tradeoff 图候选：展示 precision-recall 平面，bubble size 表示预测阳性率。",
-        "04_error_decomposition_tp_fp_fn.svg": "错误分解图候选：展示 TP/FP/FN，突出 naive union 的 false positive 问题。",
-        "05_f1_delta_bootstrap_ci.svg": "显著性/稳健性图候选：展示 joint 相对 naive union/image-only 的 F1 delta 和 bootstrap CI。",
-        "06_coco_retention_caption_metrics.svg": "downstream 图候选：展示 kept pairs 与 CIDEr/BLEU-4 的 tradeoff。",
-        "07_dedup_rate_vs_cider.svg": "downstream tradeoff 图候选：展示 dedup rate 与 CIDEr，突出 E 的保守保留点。",
-        "08_kept_pairs_vs_caption_metrics.svg": "downstream 多指标图候选：展示 kept pairs 与 CIDEr/BLEU-4/ROUGE-L。",
+        "01_pair_precision_recall_f1.svg": "Main-result candidate showing pair-level precision, recall, and F1.",
+        "02_pair_f1_confidence_intervals.svg": "Main-result candidate showing F1 and 95% confidence intervals.",
+        "03_precision_recall_tradeoff.svg": "Precision-recall tradeoff candidate; bubble size encodes predicted positive rate.",
+        "04_error_decomposition_tp_fp_fn.svg": "Error decomposition candidate showing TP, FP, and FN counts.",
+        "05_f1_delta_bootstrap_ci.svg": "Robustness candidate showing F1 deltas and bootstrap confidence intervals.",
+        "06_coco_retention_caption_metrics.svg": "Downstream candidate showing kept pairs versus CIDEr/BLEU-4.",
+        "07_dedup_rate_vs_cider.svg": "Downstream tradeoff candidate showing dedup rate versus CIDEr.",
+        "08_kept_pairs_vs_caption_metrics.svg": "Downstream multi-metric candidate showing kept pairs versus CIDEr/BLEU-4/ROUGE-L.",
     }
     for path in files:
         rel = path.relative_to(OUT_DIR).as_posix()

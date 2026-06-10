@@ -3,16 +3,16 @@ import numpy as np
 import hashlib
 from tqdm import tqdm
 
-#生成签名矩阵
+# Generate the signature matrix.
 def generate_minhash_signatures(matrix, num_hashes):
     num_rows, num_cols = matrix.shape
     signature_matrix = np.full((num_hashes, num_cols), np.inf)
     
     for i in range(num_hashes):
-        # 生成行的随机排列（这是哈希函数的体现）
+        # Generate a random row permutation, which acts as the hash function.
         permutation = np.random.permutation(num_rows)
         
-        # 对每列找到排列后第一个1的位置
+        # For each column, find the first 1 after applying the permutation.
         for col in range(num_cols):
             for row_idx in permutation:
                 if matrix[row_idx, col] == 1:
@@ -23,9 +23,9 @@ def generate_minhash_signatures(matrix, num_hashes):
 
 def caculate_S(b,r):
     """
-    计算相似度所需的band数量和每个band的行数
-    :param b: 分区(band)的数量
-    :param r: 每个分区的行数
+    Evaluate whether the band count and rows-per-band setting are reasonable.
+    :param b: Number of bands.
+    :param r: Number of rows per band.
     """
     test = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     for s in test:
@@ -50,49 +50,49 @@ def caculate_S(b,r):
     return print("这个b,r组合是合理的")
 
 
-# 经过上面的计算，我们可以知道签名矩阵的行数应该是200，分区数量b=20，每个分区的行数r=10
-# 但是我们现在测试的矩阵是比较小的，所以我们可以将b和r设置为5和2来进行测试
+# For the full setting, the signature matrix should have 200 rows with b=20
+# bands and r=10 rows per band. This small test matrix uses b=5 and r=2.
 def minHash(input_matrix, b, r):
     """
-    将相似向量映射到同一个哈希桶中
-    :param input_matrix: 输入矩阵
-    :param b: 分区(band)的数量
-    :param r: 每个分区的行数
-    :return 哈希桶: 一个字典，键是哈希值，值是列号
+    Map similar vectors into the same hash buckets.
+    :param input_matrix: Input matrix.
+    :param b: Number of bands.
+    :param r: Number of rows per band.
+    :return: Hash buckets keyed by hash value, with column ids as values.
     """
 
     hashBuckets = {}
 
-    # 对矩阵进行n次排列
+    # Apply n permutations to the matrix.
     n = b * r
 
-    # 生成签名矩阵
+    # Generate the signature matrix.
     sigMatrix = generate_minhash_signatures(input_matrix, n)
 
-    # 分区行的起始和结束位置
+    # Start and end row positions for the current band.
     begin, end = 0, r
 
-    # 计算分区级别数量
+    # Count processed bands.
     count = 0
 
-    while end <= sigMatrix.shape[0]:#此处sigMatrix.shape[0]代表的是总行数
+    while end <= sigMatrix.shape[0]:  # sigMatrix.shape[0] is the total row count.
 
         count += 1
 
-        # 遍历签名矩阵的列
-        for colNum in tqdm(range(sigMatrix.shape[1]),desc="处理列"): # colNum代表列号
+        # Iterate over signature matrix columns.
+        for colNum in tqdm(range(sigMatrix.shape[1]), desc="Processing columns"):  # colNum is the column id.
 
-            # 生成哈希对象，我们使用md5
+            # Create the MD5 hash object.
             hashObj = hashlib.md5()
 
-            # 计算哈希值
+            # Compute the hash value.
             band = str(sigMatrix[begin: begin + r, colNum]) + str(count)
             hashObj.update(band.encode())
 
-            # 使用哈希值作为桶标签
+            # Use the hash value as the bucket tag.
             tag = hashObj.hexdigest()
 
-            # 更新字典
+            # Update the bucket dictionary.
             if tag not in hashBuckets:
                 hashBuckets[tag] = [colNum]
             elif colNum not in hashBuckets[tag]:
@@ -100,18 +100,18 @@ def minHash(input_matrix, b, r):
         begin += r
         end += r
 
-    # 返回一个字典
+    # Return the bucket dictionary.
     return hashBuckets
 
 
-# 现在我们可以使用哈希桶来查找相似的向量
-# 多次在同一个哈希桶的我们可以认为是相似的
+# Hash buckets can now be used to find similar vectors. Vectors that collide in
+# the same bucket multiple times are treated as similarity candidates.
 
 def count_bucket_collisions(hash_buckets):
-    """统计每对向量共享同一个哈希桶的次数"""
+    """Count how often each vector pair shares a hash bucket."""
     collision_counts = {}
     
-    for bucket, items in tqdm(hash_buckets.items(),desc="统计在一个桶"):#bucket接受的是键，items接受的是值
+    for bucket, items in tqdm(hash_buckets.items(), desc="Counting bucket collisions"):  # bucket is the key, items are values.
         if len(items) > 1:
             for i in range(len(items)):
                 for j in range(i+1, len(items)):
@@ -121,11 +121,11 @@ def count_bucket_collisions(hash_buckets):
     return collision_counts
 
 def verify_similarity(pair, original_matrix, min_collisions=2, similarity_threshold=0.6):
-    """计算并验证两个向量的实际相似度"""
+    """Compute and validate the actual similarity between two vectors."""
     vec1 = original_matrix[:, pair[0]]
     vec2 = original_matrix[:, pair[1]]
     
-    # 计算Jaccard相似度
+    # Compute Jaccard similarity.
     intersection = np.sum(np.logical_and(vec1, vec2))
     union = np.sum(np.logical_or(vec1, vec2))
     
@@ -133,24 +133,24 @@ def verify_similarity(pair, original_matrix, min_collisions=2, similarity_thresh
     return similarity >= similarity_threshold, similarity
 
 def find_similar_items(hash_buckets, matrix, collision_threshold=2, similarity_threshold=0.75):
-    """找出真正相似的项目"""
-    # 第一阶段：找出候选对
+    """Find truly similar items."""
+    # Stage 1: find candidate pairs.
     collisions = count_bucket_collisions(hash_buckets)
     candidate_pairs = [pair for pair, count in collisions.items() if count >= collision_threshold]
     
-    # 第二阶段：验证相似度
+    # Stage 2: verify similarity.
     similar_pairs = []
-    for pair in tqdm(candidate_pairs, desc="验证相似度"):
+    for pair in tqdm(candidate_pairs, desc="Verifying similarity"):
         is_similar, score = verify_similarity(pair, matrix, similarity_threshold=similarity_threshold)
         if is_similar:
             similar_pairs.append((pair, score))
     
-    # 按相似度排序
+    # Sort by similarity.
     return sorted(similar_pairs, key=lambda x: x[1], reverse=True)
 
-    # 保存相似结果到文件
+    # Save similar results to a file.
 def save_similar_pairs_to_file(similar_pairs, filename="similar_pairs.txt"):
-        """将相似对保存到文件"""
+        """Save similar pairs to a file."""
         with open(filename, 'w') as f:
             for pair, score in similar_pairs:
                 f.write(f"Pair: {pair}, Similarity: {score}\n")
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     matrix_true = np.array(list(binary_array_dict.values())).T
     print(f"matrix_true: {matrix_true}")
 
-    #学习LSH算法
+    # Learn the LSH algorithm on a small toy example.
     dataset = [ [1,1,0,0,0,1,1],[0,0,1,1,1,0,0],[1,0,0,0,0,1,1]]
     query = [0,1,1,1,1,0,0]
     dataset.append(query)
@@ -180,10 +180,10 @@ if __name__ == "__main__":
     print("哈希桶:\n", hashBuckets)
 
     print(f"最后得到的相似对结果{find_similar_items(hashBuckets, matrix)}")
-    # 以上是基础测试，接下来进行真的数据测试
+    # The above is a basic test; now run on real data.
     hashBuckets_true = minHash(matrix_true, 20, 10)
     print("真实数据hash桶:\n", hashBuckets_true)
     print(f"真实数据最后得到的相似对结果{find_similar_items(hashBuckets_true, matrix_true)}")
 
     save_similar_pairs_to_file(find_similar_items(hashBuckets_true, matrix_true), "similar_pairs.txt")
-    #这个代码目前还有错误，我们只需要知道要去重的就行。
+    # This script is exploratory; the production pipeline uses the reusable audio API.

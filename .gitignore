@@ -1,24 +1,27 @@
-# ── 数据集与大文件 ──────────────────────────────────────
+# Datasets and large local inputs
 mix_dataset/
 mix_dataset_10k/
 mix_dataset_eval/
 test_dataset/
 evaluation/
+/data/
+/datasets/
+/checkpoints/
+/models/
 
-# ── 实验产物（运行时生成，不入库） ──────────────────────
+# Runtime artifacts
 artifacts/
 outputs/
 output/
 tmp/
+.pipeline/
+.playwright-cli/
 experiments/results/download_datasets/
 experiments/results/artifacts_full_global/
 experiments/results/artifacts_10k/
 experiments/results/final_deduped_datasets/
 
-# ── omp 研究 harness（运行时状态） ───────────────────────
-.pipeline/
-
-# ── Python ───────────────────────────────────────────────
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -26,19 +29,34 @@ __pycache__/
 .venv/
 venv/
 .env
+.env.*
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.coverage
+htmlcov/
+build/
+dist/
 
-# ── Node / Codex ─────────────────────────────────────────
+# Node / frontend tooling
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# ── macOS ────────────────────────────────────────────────
+# macOS
 .DS_Store
 
-# ── 编辑器 ───────────────────────────────────────────────
+# Editors
+.idea/
+.vscode/
 *.swp
 *.bak
 *.tmp
 
-# ── 数据文件（非源码） ───────────────────────────────────
+# Data and binary files that are not source code
 *.wav
 *.bin
 *.pkl
@@ -46,6 +64,7 @@ node_modules/
 *.npy
 *.arrow
 *.csv
+!docs/stage4_dashboard/data/**/*.csv
 *.jsonl
 *.jpg
 *.jpeg
@@ -53,15 +72,18 @@ node_modules/
 *.pdf
 !paper/*.pdf
 *.exe
+*.pt
+*.pth
+*.safetensors
 
-# ── 压缩包 ───────────────────────────────────────────────
+# Archives
 *.gz
 *.zip
 *.tar
 *.rar
 *.7z
 
-# ── 构建 / 日志 ──────────────────────────────────────────
+# Build outputs and logs
 *.log
 *.cache
 *.aux
@@ -73,11 +95,11 @@ node_modules/
 *.toc
 *.html
 
-# ── 配置（含机器相关路径，不入库） ──────────────────────
+# Machine-specific configuration
 *.yaml
 !experiments/configs/stage4_pair_dedup.yaml
 
-# ── 其他 ─────────────────────────────────────────────────
+# Local scratch files
 audio/test.py
 tests/
 A_raw

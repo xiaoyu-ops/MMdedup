@@ -222,7 +222,7 @@ def _plan_requirements() -> list[dict[str, object]]:
                 "先挖掘 candidate pair-pairs，再人工标注",
                 "1000 条已标注 pair-pairs",
                 "尽量获得 200 个 positive examples",
-                "20% 合作者抽查子集",
+                "20% collaborator audit subset",
             ],
             "current_outputs": [
                 "200K CC3M 数据池",

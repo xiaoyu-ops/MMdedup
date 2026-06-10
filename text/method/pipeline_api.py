@@ -42,8 +42,8 @@ class TextDedupConfig:
     simhash_window: int = 1000
     max_words: int = 200
     max_char_grams: int = 200
-    # 当候选数超过 max_candidates 时，使用滚动窗口快速去重，
-    # 该值表示每次仅与最近保留的 `window_size` 个样本比较
+    # When the candidate count exceeds max_candidates, use a rolling-window
+    # comparison and only compare against the most recent retained samples.
     window_size: int = 100
 
 

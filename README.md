@@ -1,162 +1,139 @@
-# MMdedup: A Parallel and Pipelined Multimodal Data Deduplication Framework
+# MMdedup
 
-> **Paper**: *MMdedup: A Parallel and Pipelined Multimodal Data Deduplication Framework for MLLM Training*
-> Submitted to VLDB 2026 Research Track (#2442)
+MMdedup is an end-to-end multimodal data cleaning and deduplication framework for building machine learning training corpora from mixed web data. It combines file sorting, modality-specific deduplication, and an ICDM-oriented Stage 4 extension for image-caption pair-level deduplication.
 
-A high-performance, modular framework for deduplicating massive multi-modal datasets (Image, Audio, Text) designed for MLLM training data pipelines.
+The repository currently serves two purposes:
 
-## Key Innovation: Quality-Aware Semantic Deduplication (Q-SemDeDup)
+- A reusable Python codebase for sorting and deduplicating image, audio, and text files.
+- A reproducible research workspace for the MMdedup paper revision, including Stage 4 experiment scripts, source-of-truth metrics, dashboard exports, and paper assets.
 
-Unlike traditional methods (e.g., SemDeDup) that blindly select the image closest to the cluster centroid, our framework introduces **Quality-Aware Sorting**:
+## What This Project Does
 
-$$Score = \alpha \cdot Sim(x, C) + (1-\alpha) \cdot Norm(Quality(x))$$
+MMdedup addresses a practical problem in multimodal dataset curation: raw crawled corpora usually contain mixed file types, corrupted files, exact duplicates, near duplicates, and duplicated image-caption training units. The system is organized as a staged pipeline:
 
-- $Sim(x, C)$: semantic similarity to the cluster centroid (representativeness)
-- $Quality(x)$: image quality metric (e.g., file size / resolution)
-- $\alpha = 0.7$ by default — balances semantic precision with visual quality
+1. **Stage 1: File sorting**
+   Classify raw files into image, audio, text, or unknown buckets and write manifests for downstream stages.
 
-This retains the **highest-quality version** of an image among near-duplicates, acting as both a deduplicator and a dataset cleaner.
+2. **Stage 2: Modality-level deduplication**
+   Run specialized deduplication modules for each modality:
+   - Image: CLIP/OpenCLIP embeddings plus quality-aware semantic deduplication.
+   - Audio: spectrogram fingerprinting and LSH-style candidate retrieval.
+   - Text: n-gram/Jaccard or MinHash-style near-duplicate detection.
 
-## Features
+3. **Stage 3: Reporting**
+   Aggregate stage summaries into machine-readable JSON and a Markdown report.
 
-- **Automated Zero-Shot SemDeDup**: runs `MiniBatchKMeans` on-the-fly; no pre-computed K-Means indices required. Falls back to folder-based strategy when memory is constrained.
-- **High Throughput**: >100 files/s on standard hardware (3–5× faster than baseline SemDeDup).
-- **Multi-Modal Pipeline**: Image (CLIP/Q-SemDeDup), Audio (spectrum fingerprinting + LSH), Text (n-gram Jaccard / MinHash).
-- **Resume Support**: stage-level `_SUCCESS` flags skip already-completed stages on retry.
-- **Parallel Modalities**: image/audio/text stages run concurrently via `ThreadPoolExecutor`.
+4. **Stage 4: Image-caption pair deduplication**
+   Deduplicate image-caption pairs as multimodal training units. Stage 4 encodes images and captions, builds pair-level representations, scores candidate pairs, and evaluates cross-modal operating points against image-only, text-only, and naive-union baselines.
 
-## Architecture
+## Current Research Direction
 
-Three-stage pipeline orchestrated by `PipelineOrchestrator`:
+The active revision target is an ICDM 2026 version of the paper. The main research answer is not merely to run three independent single-modality deduplication pipelines side by side. The added Stage 4 evaluates whether image-caption pairs can be deduplicated more effectively as multimodal units.
 
+The current paper-facing Stage 4 workflow uses:
+
+- A CC3M-derived image-caption pool.
+- Candidate mining with image, text, and joint similarity signals.
+- A 3,000-row score-space stratified held-out annotation set.
+- Baselines for image-only, text-only, naive union, and Stage 4 pair-level rules.
+- LLaVA downstream validation scripts for A/B/C/D/E training splits.
+
+Experiment numbers that may appear in the paper should be traced through `experiments/results/plan_b_stage4/experiment_ledger.csv` and the mirrored dashboard data under `docs/stage4_dashboard/data/`.
+
+## Repository Layout
+
+```text
+the_work_of_dedup/
+├── audio/                         # Audio fingerprint and deduplication code
+├── image/                         # Image embedding and Q-SemDeDup code
+├── text/                          # Text near-duplicate detection code
+├── pipelines/                     # Pipeline orchestration and modality runners
+│   ├── sorter.py                  # File classification and manifest generation
+│   ├── orchestrator.py            # Multistage pipeline execution
+│   ├── multimodal_runner.py       # Main pipeline CLI entry point
+│   └── stage4_pair_dedup.py       # Image-caption pair-level Stage 4 pipeline
+├── experiments/
+│   ├── configs/                   # Reproducible example configs
+│   ├── scripts/                   # Evaluation, annotation, dashboard, and LLaVA helpers
+│   └── results/plan_b_stage4/     # Source-of-truth Stage 4 ledgers and daily logs
+├── docs/
+│   ├── stage4_dashboard/          # Front-end-readable dashboard data and reports
+│   └── reports/                   # Generated research reports
+├── paper/                         # Paper drafts, references, figures, and revision notes
+├── requirements/                  # Dependency notes
+├── pyproject.toml                 # Project metadata and uv dependency groups
+└── AGENTS.md                      # Project-specific collaboration and experiment rules
 ```
-Input Files
-    │
-    ▼
-Stage 1 — Sorter          pipelines/sorter.py
-    │  Classifies files into image / audio / text by extension + heuristics
-    │  Writes manifest.csv to artifacts/<run_id>/stage1_sorter/
-    ▼
-Stage 2 — Modality Runners (parallel)
-    ├── image/method/pipeline_api.py   CLIP embeddings → Q-SemDeDup clustering
-    ├── audio/method/pipeline_api.py   Spectrum fingerprint → LSH dedup
-    └── text/method/pipeline_api.py    N-gram Jaccard similarity
-    │  Each runner writes {modality}_runner_summary.json to its output dir
-    ▼
-Stage 3 — Report           orchestrator._generate_report_markdown
-    Aggregates all summaries → summary.json + Markdown report
-```
 
-## Benchmark Results
+## Installation
 
-### Full-Scale Run (3.8M images — ImageNet-bloated)
-
-| Metric | Value |
-| :--- | :--- |
-| Total inputs | 3,828,733 |
-| Throughput | **101.22 files/s** |
-| Duplicates removed | 2,574,850 (67.25%) |
-| Unique retained | 1,253,883 (32.75%) |
-
-### Ablation Study (17.5k mixed multimodal dataset)
-
-| Configuration | Dedup Rate | Storage Saved |
-| :--- | :--- | :--- |
-| Image dedup only | 47.67% | 200.47 MB |
-| Audio dedup only | 39.82% | 731.02 MB |
-| Text dedup only | 47.72% | 0.51 MB |
-
-### Image Dedup Comparison (10k subset)
-
-| Method | Precision | Recall | Throughput | Note |
-| :--- | :--- | :--- | :--- | :--- |
-| **Ours (Q-SemDeDup)** | **85.2%** | 69–90% | **~100 imgs/s** | Quality-aware selection |
-| SemDeDup (original) | 93.7% | 96.2% | 27.9 imgs/s | Static, pre-computed only |
-| SimCLR | 18.2% | 99.6% | 45.0 imgs/s | Low precision |
-
-## Usage
-
-### 1. Install
+The project uses `uv` for local development.
 
 ```bash
-# Base only (sorter + orchestrator)
+# Base pipeline dependencies
 uv sync
 
-# With image support (CLIP, scikit-learn, Pillow)
+# Image support: CLIP/OpenCLIP, PyTorch, Pillow, scikit-learn
 uv sync --extra image
+
+# Audio support
+uv sync --extra audio
+
+# Text support
+uv sync --extra text
 
 # Everything
 uv sync --extra all
 ```
 
-### 2. Configure
+The Stage 4 and LLaVA scripts may require additional GPU-side packages depending on the experiment environment. Paper-facing LLaVA runs were designed for a Windows machine with an RTX 3090 and mirrored back into this repository as source-of-truth records.
 
-Edit `experiments/configs/my_pipeline.yaml` to point to your dataset.
+## Quick Start
 
-### 3. Run
+Run the multimodal pipeline with a YAML config:
 
 ```bash
-# Full multimodal pipeline
-python -m pipelines.multimodal_runner --config experiments/configs/my_pipeline.yaml
-
-# Skip the report stage
-python -m pipelines.multimodal_runner --config experiments/configs/my_pipeline.yaml --no-report
-
-# Evaluate against ground truth
-python experiments/scripts/evaluate_10k.py
-python experiments/tools/run_comparative_evaluation.py
+uv run python -m pipelines.multimodal_runner \
+  --config experiments/configs/stage4_pair_dedup.yaml
 ```
 
-## Project Structure
+For the general image/audio/text pipeline, use or adapt the configs in `experiments/configs/`. Many historical configs contain local Windows paths; update those paths before running on a new machine.
 
-```
-the_work_of_dedup/
-├── paper/                          # Paper assets
-│   ├── latex/                      # LaTeX source (main.tex, references.bib, figures/)
-│   ├── submission.pdf              # Submitted PDF (VLDB 2026)
-│   ├── review.pdf                  # Reviewer comments PDF
-│   ├── meta-review.pdf             # Meta-review PDF
-│   └── 审稿意见.md                  # Detailed review analysis (Chinese)
-│
-├── pipelines/                      # Pipeline orchestration
-│   ├── orchestrator.py             # Main 3-stage orchestrator
-│   ├── sorter.py                   # Stage 1: file classifier
-│   ├── sorter_stage.py
-│   └── modalities/                 # Per-modality subprocess runners
-│
-├── image/                          # Image dedup module (Q-SemDeDup)
-├── audio/                          # Audio dedup module (fingerprint + LSH)
-├── text/                           # Text dedup module (n-gram Jaccard)
-│
-├── experiments/
-│   ├── configs/                    # Pipeline YAML configs
-│   ├── scripts/                    # Experiment scripts
-│   │   ├── run_full_experiment.py
-│   │   ├── insert_duplicates.py    # Synthetic duplicate injection
-│   │   └── evaluate_10k.py
-│   ├── tools/                      # Comparative evaluation helpers
-│   │   ├── generate_mix_dataset_10k.py
-│   │   └── run_comparative_evaluation.py
-│   └── results/                    # Experiment outputs (ablation, comparisons)
-│
-├── docs/                           # Design documents
-├── pyproject.toml                  # Dependencies (uv extras: image, audio, text, all)
-└── CLAUDE.md                       # Dev guide for Claude Code
+Run Stage 4 smoke tests:
+
+```bash
+uv run python experiments/scripts/smoke_stage4_pair_dedup.py
+uv run python experiments/scripts/smoke_stage4_evaluation.py
 ```
 
-## Configuration Reference
+Regenerate and validate the Stage 4 dashboard data after changing source-of-truth metrics:
 
-Key `general` fields in the pipeline YAML:
+```bash
+uv run python experiments/scripts/build_stage4_dashboard_data.py
+uv run python experiments/scripts/check_stage4_dashboard_consistency.py
+```
 
-| Field | Effect |
-| :--- | :--- |
-| `input_root` | Directory to scan for input files |
-| `output_root` | Where final results and reports are written |
-| `temp_root` | Artifacts directory (logs, manifests, stage flags) |
-| `resume: true` | Skip stages with an existing `_SUCCESS` flag |
-| `parallel_modalities: true` | Run image/audio/text stages concurrently |
-| `batch_size` | Files per orchestrator chunk (`0` disables chunking for image) |
+## Reproducibility Rules
 
----
+Paper-facing results should never be copied directly from console output into the manuscript. Each result should have:
 
-*For detailed documentation, see [docs/README.md](docs/README.md).*
+- An experiment id.
+- A config file or command description.
+- Hardware and environment information.
+- Raw outputs or intermediate artifacts.
+- A metrics JSON/CSV.
+- A row in `experiments/results/plan_b_stage4/experiment_ledger.csv`.
+- A refreshed dashboard export under `docs/stage4_dashboard/data/`.
+
+Large datasets, model checkpoints, generated images, raw predictions, temporary outputs, and machine-specific configs are intentionally ignored by `.gitignore`. The committed files are meant to preserve code, reproducible configuration examples, curated metrics, and paper-facing summaries without shipping large private datasets.
+
+## Important Notes For Open Source Users
+
+- The repository contains historical research artifacts as well as reusable code. Prefer `pipelines/`, `audio/`, `image/`, `text/`, and `experiments/scripts/` for active implementation work.
+- Some legacy configs reference local Windows paths. Treat them as templates and replace paths before running.
+- Stage 4 evaluation depends on annotation and metric files already mirrored into the repository; raw CC3M images and LLaVA checkpoints are not included.
+- Dashboard JSON/CSV files are a project-facing snapshot, not the primary source of truth. The experiment ledger and per-experiment metrics remain authoritative.
+
+## Citation
+
+The paper is under revision. A citation entry will be added after the public manuscript metadata is finalized.
